@@ -1,0 +1,14 @@
+{
+  "groupId":"org.lockss.laaws",
+  "artifactId":"laaws-poller",
+  "artifactVersion":"1.0.0-SNAPSHOT",
+  "basePackage":"org.lockss.laaws.poller",
+  "configPackage":"org.lockss.laaws.poller.config",
+  "modelPackage":"org.lockss.laaws.poller.model",
+  "apiPackage":"org.lockss.laaws.poller.api",
+  "invokerPackage":"org.lockss.laaws.poller",
+  "hideGenerationTimestamp": true,
+  "title": "Lockss Laaws Poller",
+  "java8": true,
+  "delegatePattern": true
+}
