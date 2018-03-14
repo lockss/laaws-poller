@@ -6,26 +6,29 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.lockss.laaws.poller.model.CachedUriSet;
+import org.lockss.laaws.poller.model.CachedUriSetSpec;
 import org.springframework.validation.annotation.Validated;
 import javax.validation.Valid;
 import javax.validation.constraints.*;
 
 /**
- * The poll spec used to define this poll.
+ * The Poller Services poll spec used to define a poll.
  */
-@ApiModel(description = "The poll spec used to define this poll.")
+@ApiModel(description = "The Poller Services poll spec used to define a poll.")
 @Validated
 
-public class PollSpec   {
-  @JsonProperty("cachedUriSet")
-  private CachedUriSet cachedUriSet = null;
+public class PollDesc   {
+  @JsonProperty("auId")
+  private String auId = null;
+
+  @JsonProperty("cuSetSpec")
+  private CachedUriSetSpec cuSetSpec = null;
 
   @JsonProperty("pollType")
   private Integer pollType = null;
 
-  @JsonProperty("protocolVersion")
-  private Integer protocolVersion = null;
+  @JsonProperty("protocol")
+  private Integer protocol = null;
 
   @JsonProperty("pluginPollVersion")
   private String pluginPollVersion = null;
@@ -33,7 +36,7 @@ public class PollSpec   {
   /**
    * The V3 poll variation.
    */
-  public enum PollVariantEnum {
+  public enum VariantEnum {
     POR("PoR"),
     
     POP("PoP"),
@@ -44,7 +47,7 @@ public class PollSpec   {
 
     private String value;
 
-    PollVariantEnum(String value) {
+    VariantEnum(String value) {
       this.value = value;
     }
 
@@ -55,8 +58,8 @@ public class PollSpec   {
     }
 
     @JsonCreator
-    public static PollVariantEnum fromValue(String text) {
-      for (PollVariantEnum b : PollVariantEnum.values()) {
+    public static VariantEnum fromValue(String text) {
+      for (VariantEnum b : VariantEnum.values()) {
         if (String.valueOf(b.value).equals(text)) {
           return b;
         }
@@ -65,47 +68,67 @@ public class PollSpec   {
     }
   }
 
-  @JsonProperty("pollVariant")
-  private PollVariantEnum pollVariant = null;
+  @JsonProperty("variant")
+  private VariantEnum variant = null;
 
   @JsonProperty("modulus")
   private Integer modulus = null;
 
-  public PollSpec cachedUriSet(CachedUriSet cachedUriSet) {
-    this.cachedUriSet = cachedUriSet;
+  public PollDesc auId(String auId) {
+    this.auId = auId;
     return this;
   }
 
   /**
-   * Get cachedUriSet
-   * @return cachedUriSet
+   * The id which defines the poll
+   * @return auId
   **/
-  @ApiModelProperty(required = true, value = "")
+  @ApiModelProperty(required = true, value = "The id which defines the poll")
   @NotNull
+
+
+  public String getAuId() {
+    return auId;
+  }
+
+  public void setAuId(String auId) {
+    this.auId = auId;
+  }
+
+  public PollDesc cuSetSpec(CachedUriSetSpec cuSetSpec) {
+    this.cuSetSpec = cuSetSpec;
+    return this;
+  }
+
+  /**
+   * Get cuSetSpec
+   * @return cuSetSpec
+  **/
+  @ApiModelProperty(value = "")
 
   @Valid
 
-  public CachedUriSet getCachedUriSet() {
-    return cachedUriSet;
+  public CachedUriSetSpec getCuSetSpec() {
+    return cuSetSpec;
   }
 
-  public void setCachedUriSet(CachedUriSet cachedUriSet) {
-    this.cachedUriSet = cachedUriSet;
+  public void setCuSetSpec(CachedUriSetSpec cuSetSpec) {
+    this.cuSetSpec = cuSetSpec;
   }
 
-  public PollSpec pollType(Integer pollType) {
+  public PollDesc pollType(Integer pollType) {
     this.pollType = pollType;
     return this;
   }
 
   /**
-   * The type of poll being requested.
+   * The type of poll to run. Only V3 is supported.
+   * minimum: 3
    * @return pollType
   **/
-  @ApiModelProperty(required = true, value = "The type of poll being requested.")
-  @NotNull
+  @ApiModelProperty(value = "The type of poll to run. Only V3 is supported.")
 
-
+@Min(3)
   public Integer getPollType() {
     return pollType;
   }
@@ -114,36 +137,36 @@ public class PollSpec   {
     this.pollType = pollType;
   }
 
-  public PollSpec protocolVersion(Integer protocolVersion) {
-    this.protocolVersion = protocolVersion;
+  public PollDesc protocol(Integer protocol) {
+    this.protocol = protocol;
     return this;
   }
 
   /**
    * The version of polling protocol.
-   * @return protocolVersion
+   * @return protocol
   **/
   @ApiModelProperty(value = "The version of polling protocol.")
 
 
-  public Integer getProtocolVersion() {
-    return protocolVersion;
+  public Integer getProtocol() {
+    return protocol;
   }
 
-  public void setProtocolVersion(Integer protocolVersion) {
-    this.protocolVersion = protocolVersion;
+  public void setProtocol(Integer protocol) {
+    this.protocol = protocol;
   }
 
-  public PollSpec pluginPollVersion(String pluginPollVersion) {
+  public PollDesc pluginPollVersion(String pluginPollVersion) {
     this.pluginPollVersion = pluginPollVersion;
     return this;
   }
 
   /**
-   * The version of the polling features of the poll.
+   * The version of the polling features needed by the plugin.
    * @return pluginPollVersion
   **/
-  @ApiModelProperty(value = "The version of the polling features of the poll.")
+  @ApiModelProperty(value = "The version of the polling features needed by the plugin.")
 
 
   public String getPluginPollVersion() {
@@ -154,27 +177,27 @@ public class PollSpec   {
     this.pluginPollVersion = pluginPollVersion;
   }
 
-  public PollSpec pollVariant(PollVariantEnum pollVariant) {
-    this.pollVariant = pollVariant;
+  public PollDesc variant(VariantEnum variant) {
+    this.variant = variant;
     return this;
   }
 
   /**
    * The V3 poll variation.
-   * @return pollVariant
+   * @return variant
   **/
   @ApiModelProperty(value = "The V3 poll variation.")
 
 
-  public PollVariantEnum getPollVariant() {
-    return pollVariant;
+  public VariantEnum getVariant() {
+    return variant;
   }
 
-  public void setPollVariant(PollVariantEnum pollVariant) {
-    this.pollVariant = pollVariant;
+  public void setVariant(VariantEnum variant) {
+    this.variant = variant;
   }
 
-  public PollSpec modulus(Integer modulus) {
+  public PollDesc modulus(Integer modulus) {
     this.modulus = modulus;
     return this;
   }
@@ -203,30 +226,32 @@ public class PollSpec   {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    PollSpec pollSpec = (PollSpec) o;
-    return Objects.equals(this.cachedUriSet, pollSpec.cachedUriSet) &&
-        Objects.equals(this.pollType, pollSpec.pollType) &&
-        Objects.equals(this.protocolVersion, pollSpec.protocolVersion) &&
-        Objects.equals(this.pluginPollVersion, pollSpec.pluginPollVersion) &&
-        Objects.equals(this.pollVariant, pollSpec.pollVariant) &&
-        Objects.equals(this.modulus, pollSpec.modulus);
+    PollDesc pollDesc = (PollDesc) o;
+    return Objects.equals(this.auId, pollDesc.auId) &&
+        Objects.equals(this.cuSetSpec, pollDesc.cuSetSpec) &&
+        Objects.equals(this.pollType, pollDesc.pollType) &&
+        Objects.equals(this.protocol, pollDesc.protocol) &&
+        Objects.equals(this.pluginPollVersion, pollDesc.pluginPollVersion) &&
+        Objects.equals(this.variant, pollDesc.variant) &&
+        Objects.equals(this.modulus, pollDesc.modulus);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(cachedUriSet, pollType, protocolVersion, pluginPollVersion, pollVariant, modulus);
+    return Objects.hash(auId, cuSetSpec, pollType, protocol, pluginPollVersion, variant, modulus);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class PollSpec {\n");
+    sb.append("class PollDesc {\n");
     
-    sb.append("    cachedUriSet: ").append(toIndentedString(cachedUriSet)).append("\n");
+    sb.append("    auId: ").append(toIndentedString(auId)).append("\n");
+    sb.append("    cuSetSpec: ").append(toIndentedString(cuSetSpec)).append("\n");
     sb.append("    pollType: ").append(toIndentedString(pollType)).append("\n");
-    sb.append("    protocolVersion: ").append(toIndentedString(protocolVersion)).append("\n");
+    sb.append("    protocol: ").append(toIndentedString(protocol)).append("\n");
     sb.append("    pluginPollVersion: ").append(toIndentedString(pluginPollVersion)).append("\n");
-    sb.append("    pollVariant: ").append(toIndentedString(pollVariant)).append("\n");
+    sb.append("    variant: ").append(toIndentedString(variant)).append("\n");
     sb.append("    modulus: ").append(toIndentedString(modulus)).append("\n");
     sb.append("}");
     return sb.toString();

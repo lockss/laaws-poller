@@ -5,28 +5,34 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.lockss.laaws.poller.model.PollRepairQueue;
-import org.lockss.laaws.poller.model.PollSpec;
-import org.lockss.laaws.poller.model.PollTallyStatus;
+import java.util.ArrayList;
+import java.util.List;
+import org.lockss.laaws.poller.model.PeerData;
+import org.lockss.laaws.poller.model.PollDesc;
+import org.lockss.laaws.poller.model.RepairQueue;
+import org.lockss.laaws.poller.model.TallyData;
 import org.springframework.validation.annotation.Validated;
 import javax.validation.Valid;
 import javax.validation.constraints.*;
 
 /**
- * A description of a poll being performed by the Poller
+ * The details of a poll being performed or queued by the Poller
  */
-@ApiModel(description = "A description of a poll being performed by the Poller")
+@ApiModel(description = "The details of a poll being performed or queued by the Poller")
 @Validated
 
-public class Poll   {
+public class PollDetail   {
+  @JsonProperty("pollDesc")
+  private PollDesc pollDesc = null;
+
   @JsonProperty("pollerId")
   private String pollerId = null;
 
+  @JsonProperty("status")
+  private String status = null;
+
   @JsonProperty("pollKey")
   private String pollKey = null;
-
-  @JsonProperty("pollSpec")
-  private PollSpec pollSpec = null;
 
   @JsonProperty("createTime")
   private Long createTime = null;
@@ -34,17 +40,14 @@ public class Poll   {
   @JsonProperty("duration")
   private Long duration = null;
 
-  @JsonProperty("pollDeadline")
-  private Long pollDeadline = null;
+  @JsonProperty("deadline")
+  private Long deadline = null;
 
   @JsonProperty("outerCircleTarget")
   private Integer outerCircleTarget = null;
 
   @JsonProperty("hashAlgorithm")
   private String hashAlgorithm = null;
-
-  @JsonProperty("status")
-  private String status = null;
 
   @JsonProperty("voteMargin")
   private Integer voteMargin = null;
@@ -59,15 +62,38 @@ public class Poll   {
   private Integer quorum = null;
 
   @JsonProperty("votedPeers")
-  private Integer votedPeers = null;
+  @Valid
+  private List<PeerData> votedPeers = null;
 
-  @JsonProperty("tallyStatus")
-  private PollTallyStatus tallyStatus = null;
+  @JsonProperty("tally")
+  private TallyData tally = null;
 
   @JsonProperty("repairQueue")
-  private PollRepairQueue repairQueue = null;
+  private RepairQueue repairQueue = null;
 
-  public Poll pollerId(String pollerId) {
+  public PollDetail pollDesc(PollDesc pollDesc) {
+    this.pollDesc = pollDesc;
+    return this;
+  }
+
+  /**
+   * Get pollDesc
+   * @return pollDesc
+  **/
+  @ApiModelProperty(required = true, value = "")
+  @NotNull
+
+  @Valid
+
+  public PollDesc getPollDesc() {
+    return pollDesc;
+  }
+
+  public void setPollDesc(PollDesc pollDesc) {
+    this.pollDesc = pollDesc;
+  }
+
+  public PollDetail pollerId(String pollerId) {
     this.pollerId = pollerId;
     return this;
   }
@@ -88,153 +114,7 @@ public class Poll   {
     this.pollerId = pollerId;
   }
 
-  public Poll pollKey(String pollKey) {
-    this.pollKey = pollKey;
-    return this;
-  }
-
-  /**
-   * A randomly generated poll id
-   * @return pollKey
-  **/
-  @ApiModelProperty(required = true, value = "A randomly generated poll id")
-  @NotNull
-
-
-  public String getPollKey() {
-    return pollKey;
-  }
-
-  public void setPollKey(String pollKey) {
-    this.pollKey = pollKey;
-  }
-
-  public Poll pollSpec(PollSpec pollSpec) {
-    this.pollSpec = pollSpec;
-    return this;
-  }
-
-  /**
-   * Get pollSpec
-   * @return pollSpec
-  **/
-  @ApiModelProperty(required = true, value = "")
-  @NotNull
-
-  @Valid
-
-  public PollSpec getPollSpec() {
-    return pollSpec;
-  }
-
-  public void setPollSpec(PollSpec pollSpec) {
-    this.pollSpec = pollSpec;
-  }
-
-  public Poll createTime(Long createTime) {
-    this.createTime = createTime;
-    return this;
-  }
-
-  /**
-   * The timestamp  at which the poll was requested.
-   * @return createTime
-  **/
-  @ApiModelProperty(required = true, value = "The timestamp  at which the poll was requested.")
-  @NotNull
-
-
-  public Long getCreateTime() {
-    return createTime;
-  }
-
-  public void setCreateTime(Long createTime) {
-    this.createTime = createTime;
-  }
-
-  public Poll duration(Long duration) {
-    this.duration = duration;
-    return this;
-  }
-
-  /**
-   * The estimated duration for the poll.
-   * @return duration
-  **/
-  @ApiModelProperty(value = "The estimated duration for the poll.")
-
-
-  public Long getDuration() {
-    return duration;
-  }
-
-  public void setDuration(Long duration) {
-    this.duration = duration;
-  }
-
-  public Poll pollDeadline(Long pollDeadline) {
-    this.pollDeadline = pollDeadline;
-    return this;
-  }
-
-  /**
-   * The time by which the poll must have completed
-   * @return pollDeadline
-  **/
-  @ApiModelProperty(required = true, value = "The time by which the poll must have completed")
-  @NotNull
-
-
-  public Long getPollDeadline() {
-    return pollDeadline;
-  }
-
-  public void setPollDeadline(Long pollDeadline) {
-    this.pollDeadline = pollDeadline;
-  }
-
-  public Poll outerCircleTarget(Integer outerCircleTarget) {
-    this.outerCircleTarget = outerCircleTarget;
-    return this;
-  }
-
-  /**
-   * The number of peers from the poller outer circle to taget.
-   * @return outerCircleTarget
-  **/
-  @ApiModelProperty(value = "The number of peers from the poller outer circle to taget.")
-
-
-  public Integer getOuterCircleTarget() {
-    return outerCircleTarget;
-  }
-
-  public void setOuterCircleTarget(Integer outerCircleTarget) {
-    this.outerCircleTarget = outerCircleTarget;
-  }
-
-  public Poll hashAlgorithm(String hashAlgorithm) {
-    this.hashAlgorithm = hashAlgorithm;
-    return this;
-  }
-
-  /**
-   * The algorithm used by the hasher for this poll.
-   * @return hashAlgorithm
-  **/
-  @ApiModelProperty(required = true, value = "The algorithm used by the hasher for this poll.")
-  @NotNull
-
-
-  public String getHashAlgorithm() {
-    return hashAlgorithm;
-  }
-
-  public void setHashAlgorithm(String hashAlgorithm) {
-    this.hashAlgorithm = hashAlgorithm;
-  }
-
-  public Poll status(String status) {
+  public PollDetail status(String status) {
     this.status = status;
     return this;
   }
@@ -255,7 +135,127 @@ public class Poll   {
     this.status = status;
   }
 
-  public Poll voteMargin(Integer voteMargin) {
+  public PollDetail pollKey(String pollKey) {
+    this.pollKey = pollKey;
+    return this;
+  }
+
+  /**
+   * Key generated by poll manager when poll is created.
+   * @return pollKey
+  **/
+  @ApiModelProperty(value = "Key generated by poll manager when poll is created.")
+
+
+  public String getPollKey() {
+    return pollKey;
+  }
+
+  public void setPollKey(String pollKey) {
+    this.pollKey = pollKey;
+  }
+
+  public PollDetail createTime(Long createTime) {
+    this.createTime = createTime;
+    return this;
+  }
+
+  /**
+   * The timestamp  at which the poll was created.
+   * @return createTime
+  **/
+  @ApiModelProperty(value = "The timestamp  at which the poll was created.")
+
+
+  public Long getCreateTime() {
+    return createTime;
+  }
+
+  public void setCreateTime(Long createTime) {
+    this.createTime = createTime;
+  }
+
+  public PollDetail duration(Long duration) {
+    this.duration = duration;
+    return this;
+  }
+
+  /**
+   * The estimated duration for the poll.
+   * @return duration
+  **/
+  @ApiModelProperty(value = "The estimated duration for the poll.")
+
+
+  public Long getDuration() {
+    return duration;
+  }
+
+  public void setDuration(Long duration) {
+    this.duration = duration;
+  }
+
+  public PollDetail deadline(Long deadline) {
+    this.deadline = deadline;
+    return this;
+  }
+
+  /**
+   * The time by which the poll must have completed
+   * @return deadline
+  **/
+  @ApiModelProperty(value = "The time by which the poll must have completed")
+
+
+  public Long getDeadline() {
+    return deadline;
+  }
+
+  public void setDeadline(Long deadline) {
+    this.deadline = deadline;
+  }
+
+  public PollDetail outerCircleTarget(Integer outerCircleTarget) {
+    this.outerCircleTarget = outerCircleTarget;
+    return this;
+  }
+
+  /**
+   * The number of peers from the poller outer circle to taget.
+   * @return outerCircleTarget
+  **/
+  @ApiModelProperty(value = "The number of peers from the poller outer circle to taget.")
+
+
+  public Integer getOuterCircleTarget() {
+    return outerCircleTarget;
+  }
+
+  public void setOuterCircleTarget(Integer outerCircleTarget) {
+    this.outerCircleTarget = outerCircleTarget;
+  }
+
+  public PollDetail hashAlgorithm(String hashAlgorithm) {
+    this.hashAlgorithm = hashAlgorithm;
+    return this;
+  }
+
+  /**
+   * The algorithm used by the hasher for this poll.
+   * @return hashAlgorithm
+  **/
+  @ApiModelProperty(value = "The algorithm used by the hasher for this poll.")
+
+
+  public String getHashAlgorithm() {
+    return hashAlgorithm;
+  }
+
+  public void setHashAlgorithm(String hashAlgorithm) {
+    this.hashAlgorithm = hashAlgorithm;
+  }
+
+  public PollDetail voteMargin(Integer voteMargin) {
     this.voteMargin = voteMargin;
     return this;
   }
@@ -275,7 +275,7 @@ public class Poll   {
     this.voteMargin = voteMargin;
   }
 
-  public Poll voteDeadline(Long voteDeadline) {
+  public PollDetail voteDeadline(Long voteDeadline) {
     this.voteDeadline = voteDeadline;
     return this;
   }
@@ -284,8 +284,7 @@ public class Poll   {
    * The  time by which all voters must have voted.
    * @return voteDeadline
   **/
-  @ApiModelProperty(required = true, value = "The  time by which all voters must have voted.")
-  @NotNull
+  @ApiModelProperty(value = "The  time by which all voters must have voted.")
 
 
   public Long getVoteDeadline() {
@@ -296,7 +295,7 @@ public class Poll   {
     this.voteDeadline = voteDeadline;
   }
 
-  public Poll pollEnd(Long pollEnd) {
+  public PollDetail pollEnd(Long pollEnd) {
     this.pollEnd = pollEnd;
     return this;
   }
@@ -316,7 +315,7 @@ public class Poll   {
     this.pollEnd = pollEnd;
   }
 
-  public Poll quorum(Integer quorum) {
+  public PollDetail quorum(Integer quorum) {
     this.quorum = quorum;
     return this;
   }
@@ -336,48 +335,57 @@ public class Poll   {
     this.quorum = quorum;
   }
 
-  public Poll votedPeers(Integer votedPeers) {
+  public PollDetail votedPeers(List<PeerData> votedPeers) {
     this.votedPeers = votedPeers;
     return this;
   }
 
+  public PollDetail addVotedPeersItem(PeerData votedPeersItem) {
+    if (this.votedPeers == null) {
+      this.votedPeers = new ArrayList<>();
+    }
+    this.votedPeers.add(votedPeersItem);
+    return this;
+  }
+
   /**
-   * The number of peers who've voted.
+   * The data from peers whom voted.
    * @return votedPeers
   **/
-  @ApiModelProperty(value = "The number of peers who've voted.")
+  @ApiModelProperty(value = "The data from peers whom voted.")
 
+  @Valid
 
-  public Integer getVotedPeers() {
+  public List<PeerData> getVotedPeers() {
     return votedPeers;
   }
 
-  public void setVotedPeers(Integer votedPeers) {
+  public void setVotedPeers(List<PeerData> votedPeers) {
     this.votedPeers = votedPeers;
   }
 
-  public Poll tallyStatus(PollTallyStatus tallyStatus) {
-    this.tallyStatus = tallyStatus;
+  public PollDetail tally(TallyData tally) {
+    this.tally = tally;
     return this;
   }
 
   /**
-   * Get tallyStatus
-   * @return tallyStatus
+   * Get tally
+   * @return tally
   **/
   @ApiModelProperty(value = "")
 
   @Valid
 
-  public PollTallyStatus getTallyStatus() {
-    return tallyStatus;
+  public TallyData getTally() {
+    return tally;
   }
 
-  public void setTallyStatus(PollTallyStatus tallyStatus) {
-    this.tallyStatus = tallyStatus;
+  public void setTally(TallyData tally) {
+    this.tally = tally;
   }
 
-  public Poll repairQueue(PollRepairQueue repairQueue) {
+  public PollDetail repairQueue(RepairQueue repairQueue) {
     this.repairQueue = repairQueue;
     return this;
   }
@@ -390,11 +398,11 @@ public class Poll   {
 
   @Valid
 
-  public PollRepairQueue getRepairQueue() {
+  public RepairQueue getRepairQueue() {
     return repairQueue;
   }
 
-  public void setRepairQueue(PollRepairQueue repairQueue) {
+  public void setRepairQueue(RepairQueue repairQueue) {
     this.repairQueue = repairQueue;
   }
 
@@ -407,50 +415,50 @@ public class Poll   {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    Poll poll = (Poll) o;
-    return Objects.equals(this.pollerId, poll.pollerId) &&
-        Objects.equals(this.pollKey, poll.pollKey) &&
-        Objects.equals(this.pollSpec, poll.pollSpec) &&
-        Objects.equals(this.createTime, poll.createTime) &&
-        Objects.equals(this.duration, poll.duration) &&
-        Objects.equals(this.pollDeadline, poll.pollDeadline) &&
-        Objects.equals(this.outerCircleTarget, poll.outerCircleTarget) &&
-        Objects.equals(this.hashAlgorithm, poll.hashAlgorithm) &&
-        Objects.equals(this.status, poll.status) &&
-        Objects.equals(this.voteMargin, poll.voteMargin) &&
-        Objects.equals(this.voteDeadline, poll.voteDeadline) &&
-        Objects.equals(this.pollEnd, poll.pollEnd) &&
-        Objects.equals(this.quorum, poll.quorum) &&
-        Objects.equals(this.votedPeers, poll.votedPeers) &&
-        Objects.equals(this.tallyStatus, poll.tallyStatus) &&
-        Objects.equals(this.repairQueue, poll.repairQueue);
+    PollDetail pollDetail = (PollDetail) o;
+    return Objects.equals(this.pollDesc, pollDetail.pollDesc) &&
+        Objects.equals(this.pollerId, pollDetail.pollerId) &&
+        Objects.equals(this.status, pollDetail.status) &&
+        Objects.equals(this.pollKey, pollDetail.pollKey) &&
+        Objects.equals(this.createTime, pollDetail.createTime) &&
+        Objects.equals(this.duration, pollDetail.duration) &&
+        Objects.equals(this.deadline, pollDetail.deadline) &&
+        Objects.equals(this.outerCircleTarget, pollDetail.outerCircleTarget) &&
+        Objects.equals(this.hashAlgorithm, pollDetail.hashAlgorithm) &&
+        Objects.equals(this.voteMargin, pollDetail.voteMargin) &&
+        Objects.equals(this.voteDeadline, pollDetail.voteDeadline) &&
+        Objects.equals(this.pollEnd, pollDetail.pollEnd) &&
+        Objects.equals(this.quorum, pollDetail.quorum) &&
+        Objects.equals(this.votedPeers, pollDetail.votedPeers) &&
+        Objects.equals(this.tally, pollDetail.tally) &&
+        Objects.equals(this.repairQueue, pollDetail.repairQueue);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(pollerId, pollKey, pollSpec, createTime, duration, pollDeadline, outerCircleTarget, hashAlgorithm, status, voteMargin, voteDeadline, pollEnd, quorum, votedPeers, tallyStatus, repairQueue);
+    return Objects.hash(pollDesc, pollerId, status, pollKey, createTime, duration, deadline, outerCircleTarget, hashAlgorithm, voteMargin, voteDeadline, pollEnd, quorum, votedPeers, tally, repairQueue);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class Poll {\n");
+    sb.append("class PollDetail {\n");
     
+    sb.append("    pollDesc: ").append(toIndentedString(pollDesc)).append("\n");
     sb.append("    pollerId: ").append(toIndentedString(pollerId)).append("\n");
+    sb.append("    status: ").append(toIndentedString(status)).append("\n");
     sb.append("    pollKey: ").append(toIndentedString(pollKey)).append("\n");
-    sb.append("    pollSpec: ").append(toIndentedString(pollSpec)).append("\n");
     sb.append("    createTime: ").append(toIndentedString(createTime)).append("\n");
     sb.append("    duration: ").append(toIndentedString(duration)).append("\n");
-    sb.append("    pollDeadline: ").append(toIndentedString(pollDeadline)).append("\n");
+    sb.append("    deadline: ").append(toIndentedString(deadline)).append("\n");
     sb.append("    outerCircleTarget: ").append(toIndentedString(outerCircleTarget)).append("\n");
     sb.append("    hashAlgorithm: ").append(toIndentedString(hashAlgorithm)).append("\n");
-    sb.append("    status: ").append(toIndentedString(status)).append("\n");
     sb.append("    voteMargin: ").append(toIndentedString(voteMargin)).append("\n");
     sb.append("    voteDeadline: ").append(toIndentedString(voteDeadline)).append("\n");
     sb.append("    pollEnd: ").append(toIndentedString(pollEnd)).append("\n");
     sb.append("    quorum: ").append(toIndentedString(quorum)).append("\n");
     sb.append("    votedPeers: ").append(toIndentedString(votedPeers)).append("\n");
-    sb.append("    tallyStatus: ").append(toIndentedString(tallyStatus)).append("\n");
+    sb.append("    tally: ").append(toIndentedString(tally)).append("\n");
     sb.append("    repairQueue: ").append(toIndentedString(repairQueue)).append("\n");
     sb.append("}");
     return sb.toString();

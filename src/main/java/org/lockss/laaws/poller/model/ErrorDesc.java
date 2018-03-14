@@ -15,7 +15,7 @@ import javax.validation.constraints.*;
 @ApiModel(description = "This general error structure is used throughout this API.")
 @Validated
 
-public class Error   {
+public class ErrorDesc   {
   @JsonProperty("code")
   private Integer code = null;
 
@@ -25,7 +25,7 @@ public class Error   {
   @JsonProperty("reasonPhrase")
   private String reasonPhrase = null;
 
-  public Error code(Integer code) {
+  public ErrorDesc code(Integer code) {
     this.code = code;
     return this;
   }
@@ -48,7 +48,7 @@ public class Error   {
     this.code = code;
   }
 
-  public Error description(String description) {
+  public ErrorDesc description(String description) {
     this.description = description;
     return this;
   }
@@ -68,7 +68,7 @@ public class Error   {
     this.description = description;
   }
 
-  public Error reasonPhrase(String reasonPhrase) {
+  public ErrorDesc reasonPhrase(String reasonPhrase) {
     this.reasonPhrase = reasonPhrase;
     return this;
   }
@@ -97,10 +97,10 @@ public class Error   {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    Error error = (Error) o;
-    return Objects.equals(this.code, error.code) &&
-        Objects.equals(this.description, error.description) &&
-        Objects.equals(this.reasonPhrase, error.reasonPhrase);
+    ErrorDesc errorDesc = (ErrorDesc) o;
+    return Objects.equals(this.code, errorDesc.code) &&
+        Objects.equals(this.description, errorDesc.description) &&
+        Objects.equals(this.reasonPhrase, errorDesc.reasonPhrase);
   }
 
   @Override
@@ -111,7 +111,7 @@ public class Error   {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class Error {\n");
+    sb.append("class ErrorDesc {\n");
     
     sb.append("    code: ").append(toIndentedString(code)).append("\n");
     sb.append("    description: ").append(toIndentedString(description)).append("\n");

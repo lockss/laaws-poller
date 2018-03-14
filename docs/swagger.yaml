@@ -1,0 +1,934 @@
+---
+swagger: "2.0"
+info:
+  description: "REST API for handling poller tasks\n"
+  version: "1.0.0"
+  title: "Poller Service API"
+  termsOfService: "http://www.lockss.org/terms/"
+  contact:
+    name: "LOCKSS Support"
+    url: "http://www.lockss.org"
+    email: "support@lockss.org"
+  license:
+    name: "Modified BSD License"
+    url: "https://www.lockss.org/support/open-source-license/"
+host: "laaws.lockss.org:443"
+basePath: "/v1"
+schemes:
+- "https"
+consumes:
+- "application/json"
+produces:
+- "application/json"
+security:
+- basicAuth: []
+paths:
+  /polls:
+    post:
+      tags:
+      - "service"
+      summary: "Send a request to call a poll to the poller"
+      description: "Use the information found in the descriptor object to initiate\
+        \ a  poll."
+      operationId: "callPoll"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "body"
+        in: "body"
+        required: true
+        schema:
+          type: "string"
+          description: "A poll service id."
+      responses:
+        202:
+          description: "The Poll request has been accepted and added to the queue."
+          schema:
+            type: "string"
+            description: "Return a poll service id."
+        401:
+          description: "The Request is unauthorized"
+          schema:
+            $ref: "#/definitions/ErrorDesc"
+        403:
+          description: "The Au is not eligible for polling"
+          schema:
+            $ref: "#/definitions/ErrorDesc"
+        404:
+          description: "The descriptor (au) can not be found."
+          schema:
+            $ref: "#/definitions/ErrorDesc"
+        500:
+          description: "Internal Server Error"
+          schema:
+            $ref: "#/definitions/ErrorDesc"
+  /polls/{psId}:
+    get:
+      tags:
+      - "service"
+      summary: "Get queued poll status"
+      description: "Get the status of a previously queued poll."
+      operationId: "getPollStatus"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "Poll info returned."
+          schema:
+            $ref: "#/definitions/PollerSummary"
+        401:
+          description: "Unauthorized request"
+          schema:
+            $ref: "#/definitions/ErrorDesc"
+        404:
+          description: "No such poll id."
+          schema:
+            $ref: "#/definitions/ErrorDesc"
+        500:
+          description: "Internal Server Error"
+          schema:
+            $ref: "#/definitions/ErrorDesc"
+    delete:
+      tags:
+      - "service"
+      summary: "Stop a poll and remove from queue."
+      description: "Stop a running poll and delete any schecduled polls for poll with\
+        \ the poll service id."
+      operationId: "cancelPoll"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "Poll successfully stopped"
+        401:
+          description: "Unauthorized request"
+          schema:
+            $ref: "#/definitions/ErrorDesc"
+        404:
+          description: "No poll found with that id"
+          schema:
+            $ref: "#/definitions/ErrorDesc"
+        500:
+          description: "Internal Server Error"
+          schema:
+            $ref: "#/definitions/ErrorDesc"
+    parameters:
+    - name: "psId"
+      in: "path"
+      required: true
+      type: "string"
+  /polls/{pollKey}/details:
+    get:
+      tags:
+      - "poll"
+      summary: "PollDetails"
+      operationId: "getPollDetails"
+      description: "Return the detailed information about a poll."
+      parameters: []
+      responses:
+        200:
+          description: "Detailed poll info returned."
+          schema:
+            $ref: "#/definitions/PollDetail"
+        401:
+          description: "Unauthorized request"
+          schema:
+            $ref: "#/definitions/ErrorDesc"
+        404:
+          description: "No such poll key."
+          schema:
+            $ref: "#/definitions/ErrorDesc"
+        500:
+          description: "Internal Server Error"
+          schema:
+            $ref: "#/definitions/ErrorDesc"
+    parameters:
+    - name: "pollKey"
+      in: "path"
+      required: true
+      type: "string"
+  /polls/{pollKey}/tallies:
+    get:
+      tags:
+      - "poll"
+      summary: "Page Tally"
+      operationId: "getTallyUrls"
+      parameters:
+      - name: "tally"
+        in: "query"
+        required: true
+        type: "string"
+        description: "The kind of tally element to return."
+        enum:
+        - "agree"
+        - "disagree"
+        - "error"
+        - "noQuorum"
+        - "tooClose"
+      - name: "page"
+        in: "query"
+        required: false
+        type: "integer"
+        description: "The page number."
+      - name: "size"
+        in: "query"
+        required: false
+        type: "integer"
+        description: "The size of the page."
+      responses:
+        200:
+          description: "A pagable list of urls for given tally type."
+          schema:
+            $ref: "#/definitions/UrlPager"
+          headers:
+            X-Page-Count:
+              type: "integer"
+              x-example: 1
+            X-Page-Number:
+              type: "integer"
+              x-example: 1
+            X-Page-Size:
+              type: "integer"
+              x-example: 25
+            X-Total-Count:
+              type: "integer"
+              x-example: 50
+        404:
+          description: "Poll Key not found."
+          schema:
+            $ref: "#/definitions/ErrorDesc"
+        500:
+          description: "Internal Server Error"
+          schema:
+            $ref: "#/definitions/ErrorDesc"
+    parameters:
+    - name: "pollKey"
+      in: "path"
+      required: true
+      type: "string"
+      description: "The pollKey as listed in the PollDetail object."
+  /polls/{pollKey}/repairs:
+    get:
+      tags:
+      - "poll"
+      summary: "Poll Repairs"
+      operationId: "getRepairQueueData"
+      parameters:
+      - name: "repair"
+        in: "query"
+        required: true
+        type: "string"
+        description: "The repair queue elements to return."
+        enum:
+        - "pending"
+        - "active"
+        - "completed"
+      - name: "page"
+        in: "query"
+        required: false
+        type: "integer"
+        description: "The page number."
+      - name: "size"
+        in: "query"
+        required: false
+        type: "integer"
+        description: "The size of the page."
+      responses:
+        200:
+          description: "A pagable list of repair queue elements."
+          schema:
+            $ref: "#/definitions/RepairPager"
+          headers:
+            X-Page-Count:
+              type: "integer"
+              x-example: 1
+            X-Page-Number:
+              type: "integer"
+              x-example: 1
+            X-Page-Size:
+              type: "integer"
+              x-example: 25
+            X-Total-Count:
+              type: "integer"
+              x-example: 50
+        404:
+          description: "Poll ID not found."
+          schema:
+            $ref: "#/definitions/ErrorDesc"
+        500:
+          description: "Internal Server Error"
+          schema:
+            $ref: "#/definitions/ErrorDesc"
+    parameters:
+    - name: "pollKey"
+      in: "path"
+      required: true
+      type: "string"
+      description: "The pollKey as listed in the PollDetail object."
+  /polls/{pollKey}/peer/{peerId}:
+    get:
+      tags:
+      - "poll"
+      summary: "Poll Peer Data"
+      operationId: "getPollPeerVoteUrls"
+      parameters:
+      - name: "urls"
+        in: "query"
+        required: true
+        type: "string"
+        description: "The voter urls to return."
+        enum:
+        - "agreed"
+        - "disagreed"
+        - "pollerOnly"
+        - "voterOnly"
+      - name: "page"
+        in: "query"
+        required: false
+        type: "integer"
+        description: "The page number"
+      - name: "size"
+        in: "query"
+        required: false
+        type: "integer"
+        description: "The page size"
+      responses:
+        200:
+          description: "A pagable list of voter urls with a given status."
+          schema:
+            $ref: "#/definitions/UrlPager"
+          headers:
+            X-Page-Count:
+              type: "integer"
+              x-example: 1
+            X-Page-Number:
+              type: "integer"
+              x-example: 1
+            X-Page-Size:
+              type: "integer"
+              x-example: 25
+            X-Total-Count:
+              type: "integer"
+              x-example: 50
+        404:
+          description: "Poll or Voter ID not found."
+          schema:
+            $ref: "#/definitions/ErrorDesc"
+        500:
+          description: "Internal Server Error"
+          schema:
+            $ref: "#/definitions/ErrorDesc"
+    parameters:
+    - name: "pollKey"
+      in: "path"
+      required: true
+      type: "string"
+      description: "The pollKey from the PollDetail"
+    - name: "peerId"
+      in: "path"
+      required: true
+      type: "string"
+      description: "The peerId from the Poll Detail.PeerData"
+  /polls/poller:
+    get:
+      tags:
+      - "poller"
+      summary: "Get the list of recent polls as poller."
+      description: "Get the list of recent polls as poller from the poll queue. if\
+        \ size and page are passed in use those arguments to limit return data."
+      operationId: "getPollsAsPoller"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "size"
+        in: "query"
+        required: false
+        type: "integer"
+        format: "int32"
+        description: "Size of the page to retrieve."
+        x-example: 10
+      - name: "page"
+        in: "query"
+        required: false
+        type: "integer"
+        format: "int32"
+        description: "Number of the page to retrieve."
+        x-example: 1
+      responses:
+        200:
+          description: "A pagable list has been returned."
+          schema:
+            $ref: "#/definitions/PollerPager"
+          headers:
+            X-Page-Count:
+              type: "integer"
+              x-example: 1
+            X-Page-Number:
+              type: "integer"
+              x-example: 1
+            X-Page-Size:
+              type: "integer"
+              x-example: 25
+            X-Total-Count:
+              type: "integer"
+              x-example: 50
+        401:
+          description: "Unauthorized request"
+          schema:
+            $ref: "#/definitions/ErrorDesc"
+        500:
+          description: "Internal Server Error"
+          schema:
+            $ref: "#/definitions/ErrorDesc"
+  /polls/voter:
+    get:
+      tags:
+      - "voter"
+      summary: "Get the list of recent voter only polls."
+      description: "Get the list of recent polls as voter from the poll queue. if\
+        \ size and page are passed in use those arguments to limit return data."
+      operationId: "getPollsAsVoter"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "size"
+        in: "query"
+        required: false
+        type: "integer"
+        format: "int32"
+        description: "Size of the page to retrieve."
+        x-example: 10
+      - name: "page"
+        in: "query"
+        required: false
+        type: "integer"
+        format: "int32"
+        description: "Number of the page to retrieve."
+        x-example: 1
+      responses:
+        200:
+          description: "A pagable list has been returned."
+          schema:
+            $ref: "#/definitions/VoterPager"
+          headers:
+            X-Page-Count:
+              type: "integer"
+              x-example: 1
+            X-Page-Number:
+              type: "integer"
+              x-example: 1
+            X-Page-Size:
+              type: "integer"
+              x-example: 25
+            X-Total-Count:
+              type: "integer"
+              x-example: 50
+        401:
+          description: "Unauthorized request"
+          schema:
+            $ref: "#/definitions/ErrorDesc"
+        500:
+          description: "Internal Server Error"
+          schema:
+            $ref: "#/definitions/ErrorDesc"
+securityDefinitions:
+  basicAuth:
+    description: "HTTP Basic Authentication. Works over `HTTP` and `HTTPS`"
+    type: "basic"
+definitions:
+  PollDetail:
+    type: "object"
+    required:
+    - "pollDesc"
+    - "pollerId"
+    - "status"
+    properties:
+      pollDesc:
+        $ref: "#/definitions/PollDesc"
+      pollerId:
+        type: "string"
+        description: "The id of the poller who called the poll"
+      status:
+        type: "string"
+        description: "The current status of the poll."
+      pollKey:
+        type: "string"
+        description: "Key generated by poll manager when poll is created."
+      createTime:
+        type: "integer"
+        format: "int64"
+        description: "The timestamp  at which the poll was created."
+      duration:
+        type: "integer"
+        format: "int64"
+        description: "The estimated duration for the poll."
+      deadline:
+        type: "integer"
+        format: "int64"
+        description: "The time by which the poll must have completed"
+      outerCircleTarget:
+        type: "integer"
+        format: "int32"
+        description: "The number of peers from the poller outer circle to taget."
+      hashAlgorithm:
+        type: "string"
+        description: "The algorithm used by the hasher for this poll."
+      voteMargin:
+        type: "integer"
+        format: "int32"
+        description: "The required agreement need to decide landslide agreement or\
+          \ disagreement."
+      voteDeadline:
+        type: "integer"
+        format: "int64"
+        description: "The  time by which all voters must have voted."
+      pollEnd:
+        type: "integer"
+        format: "int64"
+        description: "the time at which the poll ended or -1 if still running."
+      quorum:
+        type: "integer"
+        format: "int32"
+        description: "The minimum required for a quroum"
+      votedPeers:
+        type: "array"
+        description: "The data from peers whom voted."
+        items:
+          $ref: "#/definitions/PeerData"
+      tally:
+        $ref: "#/definitions/TallyData"
+      repairQueue:
+        $ref: "#/definitions/RepairQueue"
+    description: "The details of a poll being performed or queued by the Poller"
+  PeerData:
+    type: "object"
+    required:
+    - "peerId"
+    - "status"
+    properties:
+      peerId:
+        type: "string"
+        description: "the peer id for this participant"
+      status:
+        type: "string"
+        description: "the status of this peer"
+      agreement:
+        type: "number"
+        format: "float"
+        description: "the percentage of vote agreement."
+      numAgree:
+        type: "integer"
+        format: "int32"
+      agreeLink:
+        type: "string"
+        description: "the url to list of agreement urls."
+      numDisagree:
+        type: "integer"
+        format: "int32"
+      disagreeLink:
+        type: "string"
+        description: "the url to list disagreed urls."
+      numPollerOnly:
+        type: "integer"
+        format: "int32"
+      pollerOnlyLink:
+        type: "string"
+        description: "the url to list of poller only urls."
+      numVoterOnly:
+        type: "integer"
+        format: "int32"
+      voterOnlyLink:
+        type: "string"
+        description: "the url to list of voter only urls."
+      bytesHashed:
+        type: "integer"
+        format: "int64"
+        description: "the number of bytes hashed."
+      bytesRead:
+        type: "integer"
+        format: "int64"
+        description: "the number of bytes read."
+      wtAgreement:
+        type: "number"
+        format: "float"
+        description: "the weight of vote percentage agreement."
+      wtNumAgree:
+        type: "number"
+        format: "float"
+        description: "the weight of number agree votes."
+      wtNumDisagree:
+        type: "number"
+        format: "float"
+        description: "the weight of number of disagree votes."
+      wtNumPollerOnly:
+        type: "number"
+        format: "float"
+        description: "the weight of number of poller only votes."
+      wtNumVoterOnly:
+        type: "number"
+        format: "float"
+        description: "the weight of number of voter only votes."
+      state:
+        type: "string"
+        description: "the state machine state."
+      lastStateChange:
+        type: "integer"
+        format: "int64"
+        description: "the time of last state change."
+    description: "Detail for a single voter in a poll."
+  TallyData:
+    type: "object"
+    required:
+    - "agree"
+    - "disagree"
+    - "error"
+    - "noQuorum"
+    - "tooClose"
+    properties:
+      numAgree:
+        type: "integer"
+        format: "int32"
+      agreeLink:
+        type: "string"
+        description: "Link to urls with agreement."
+      numDisagree:
+        type: "integer"
+        format: "int32"
+      disagreeLink:
+        type: "string"
+        description: "Link to urls for which there is disagreement"
+      numTooClose:
+        type: "integer"
+        format: "int32"
+      tooCloseLink:
+        type: "string"
+        description: "Link to urls which are too close to call."
+      numNoQuorum:
+        type: "integer"
+        format: "int32"
+      noQuorumLink:
+        type: "string"
+        description: "Link to urls for which there is no quorum."
+      numError:
+        type: "integer"
+        format: "int32"
+      errorLink:
+        type: "string"
+        description: "Link to urls for which there are errors."
+      wtAgreed:
+        type: "number"
+        format: "float"
+        description: "The weighted sum agreed uris."
+        default: 0.0
+      wtDisagreed:
+        type: "number"
+        format: "float"
+        description: "The weighted sum of disagree uris."
+        default: 0.0
+      wtTooClose:
+        type: "number"
+        format: "float"
+        description: "The sum of the tooClose uris."
+        default: 0.0
+      wtNoQuorum:
+        type: "number"
+        format: "float"
+        description: "The weighted sum of NoQuorum uris."
+        default: 0.0
+    description: "The tally for the current poll."
+  RepairQueue:
+    type: "object"
+    required:
+    - "active"
+    - "completed"
+    - "pending"
+    properties:
+      numPending:
+        type: "integer"
+        format: "int32"
+        description: "The number of pending repairs"
+      pendingLink:
+        type: "string"
+        description: "A link to the pending repairs."
+      numActive:
+        type: "integer"
+        format: "int32"
+        description: "The number of active repairs"
+      activeLink:
+        type: "string"
+        description: "A link to the active repairs."
+      numCompleted:
+        type: "integer"
+        format: "int32"
+        description: "The number of completed repairs"
+      completedLink:
+        type: "string"
+        description: "A link to the  completed repairs."
+    description: "Description of the RepairQueue."
+  RepairData:
+    type: "object"
+    required:
+    - "repairFrom"
+    - "repairUrl"
+    properties:
+      repairUrl:
+        type: "string"
+        description: "The url to repair"
+      repairFrom:
+        type: "string"
+        description: "The peer to repair from"
+      status:
+        type: "string"
+        description: "The status of this repair"
+        enum:
+        - "active"
+        - "completed"
+        - "pending"
+    description: "structure used to define a repair source for url. if the source\
+      \ is null than repair from publisher"
+  RepairPager:
+    type: "object"
+    required:
+    - "pageDesc"
+    properties:
+      pageDesc:
+        $ref:  '#/definitions/PageDesc'
+      repairs:
+        type: "array"
+        description: "The list of repair data on this page or null."
+        items:
+          $ref: "#/definitions/RepairData"
+    description: "A Pager for a list of urls found in poll details."
+  UrlPager:
+    type: "object"
+    required:
+    - "pageDesc"
+    properties:
+      pageDesc:
+        $ref:  '#/definitions/PageDesc'
+      urls:
+        type: "array"
+        description: "The urls on this page."
+        items:
+          $ref:  '#/definitions/LinkDesc'
+    description: "A Pager for a list of urls found in poll details."
+  PollerPager:
+    type: "object"
+    required:
+    - "pageDesc"
+    - "polls"
+    properties:
+      pageDesc:
+        $ref:  '#/definitions/PageDesc'
+      polls:
+        type: "array"
+        description: "The list of polls for the current page."
+        items:
+          $ref: "#/definitions/PollerSummary"
+    description: "A page of poller poll summaries."
+  PollerSummary:
+    type: "object"
+    required:
+    - "auId"
+    - "deadline"
+    - "pollKey"
+    - "start"
+    - "status"
+    - "variant"
+    properties:
+      auId:
+        type: "string"
+        description: "The id for the au being polled."
+      variant:
+        type: "string"
+        description: "The V3 Poll variant."
+      status:
+        type: "string"
+        description: "The current status of the poll."
+      participants:
+        type: "integer"
+        format: "int32"
+      numTalliedUrls:
+        type: "integer"
+        format: "int32"
+      numHashErrors:
+        type: "integer"
+        format: "int32"
+      numCompletedRepairs:
+        type: "integer"
+        format: "int32"
+      numAgreeUrls:
+        type: "number"
+        format: "float"
+      start:
+        type: "integer"
+        format: "int64"
+        description: "The timestamp for when the poll started."
+      deadline:
+        type: "integer"
+        format: "int64"
+        description: "The deadline for voting in this poll."
+      pollEnd:
+        type: "integer"
+        format: "int64"
+        description: "The time at which the poll ended."
+      pollKey:
+        type: "string"
+        description: "Key generated by poll manager when poll was created."
+      detailLink:
+        type: "string"
+        description: "A link to the poll details."
+    description: "A summary of a poll in which we are the poller."
+  VoterSummary:
+    type: "object"
+    required:
+    - "auId"
+    - "caller"
+    - "deadline"
+    - "pollKey"
+    - "start"
+    properties:
+      auId:
+        type: "string"
+        description: "The id for the au being polled."
+      caller:
+        type: "string"
+        description: "The id of who called the poll."
+      start:
+        type: "integer"
+        format: "int64"
+        description: "The timestamp for when the poll started."
+      deadline:
+        type: "integer"
+        format: "int64"
+        description: "The deadline for voting in this poll."
+      pollKey:
+        type: "string"
+        description: "Key generated by poll manager when poll was created."
+      detailLink:
+        type: "string"
+        description: "A link to the poll details."
+    description: "A summary of a poll in which we are acting just as a voter."
+  VoterPager:
+    type: "object"
+    required:
+    - "pageDesc"
+    properties:
+      pageDesc:
+        $ref:  '#/definitions/PageDesc'
+      polls:
+        type: "array"
+        description: "The list of polls for the current page or null"
+        items:
+          $ref: "#/definitions/VoterSummary"
+    description: "A page of voter poll summary."
+  PollDesc:
+    type: "object"
+    required:
+    - "auId"
+    properties:
+      auId:
+        type: "string"
+        description: "The id which defines the poll"
+      cuSetSpec:
+        $ref: "#/definitions/CachedUriSetSpec"
+      pollType:
+        type: "integer"
+        description: "The type of poll to run. Only V3 is supported."
+        minimum: 3
+      protocol:
+        type: "integer"
+        description: "The version of polling protocol."
+      pluginPollVersion:
+        type: "string"
+        description: "The version of the polling features needed by the plugin."
+      variant:
+        type: "string"
+        description: "The V3 poll variation."
+        enum:
+        - "PoR"
+        - "PoP"
+        - "Local"
+        - "NoPoll"
+      modulus:
+        type: "integer"
+        description: "Poll on every 'n'th url."
+    description: "The Poller Services poll spec used to define a poll."
+  CachedUriSetSpec:
+    type: "object"
+    required:
+    - "urlPrefix"
+    properties:
+      urlPrefix:
+        type: "string"
+        description: "The base which roots the lower and upper bound"
+      lowerBound:
+        type: "string"
+        description: "lower bound of the prefix range, inclusive."
+      upperBound:
+        type: "string"
+        description: "upper bound of prefix range, inclusive."
+    description: "A set of urls bounded by  upper and lower restraints.  If lower\
+      \ = \".\" this is a singleContentNode. If lower is null then start at the root\
+      \ url, if upper is null end with the last."
+  ErrorDesc:
+    type: "object"
+    required:
+    - "code"
+    properties:
+      code:
+        type: "integer"
+        minimum: 400
+        maximum: 599
+      description:
+        type: "string"
+        example: "Bad query parameter [$size]: Invalid integer value [abc]"
+      reasonPhrase:
+        type: "string"
+        example: "Bad Request"
+    description: "This general error structure is used throughout this API."
+    example: "{\n  \"code\": 400,\n  \"description\": \"Bad query parameter [$size]:\
+      \ Invalid integer value [abc]\",\n  \"reasonPhrase\": \"Bad Request\"\n}"
+  PageDesc:
+    type: "object"
+    required:
+    - "page"
+    - "size"
+    - "total"
+    properties:
+      page:
+        type: "integer"
+        description: "The page number"
+        example: 10
+      size:
+        type: "integer"
+        description: "The size or number of elements on a page"
+        example: 5
+      total:
+        type: "integer"
+        description: "The total number of elements."
+        example: 150
+      prevPage:
+        type: "string"
+        description: "The url of the prev page of results or null"
+      nextPage:
+        type: "string"
+        description: "The url to the next page of results or null."
+    description: "The information needed to page in a long list of data"
+  LinkDesc:
+    type: "object"
+    required:
+    - "link"
+    properties:
+      link:
+        type: "string"
+        description: "The actual link suitable for a standard GET request"
+        example: "http:www.example.com/v1/element"
+      desc:
+        type: "string"
+        description: "A description of this link"
+        example: "pollerOnly"
