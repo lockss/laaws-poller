@@ -1,9 +1,13 @@
 package org.lockss.laaws.poller.api;
 
-import org.lockss.laaws.poller.model.Error;
-import org.lockss.laaws.poller.model.Poll;
-import org.lockss.laaws.poller.model.PollPageInfo;
-import org.lockss.laaws.poller.model.PollReq;
+import org.lockss.laaws.poller.model.ErrorDesc;
+import org.lockss.laaws.poller.model.PollDesc;
+import org.lockss.laaws.poller.model.PollDetail;
+import org.lockss.laaws.poller.model.PollerPager;
+import org.lockss.laaws.poller.model.PollerSummary;
+import org.lockss.laaws.poller.model.RepairPager;
+import org.lockss.laaws.poller.model.UrlPager;
+import org.lockss.laaws.poller.model.VoterPager;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.*;
 import org.slf4j.Logger;
@@ -39,13 +43,43 @@ public interface PollsApiDelegate {
     }
 
     /**
+     * @see PollsApi#callPoll
+     */
+    default ResponseEntity<String> callPoll( PollDesc  body) {
+        if(getObjectMapper().isPresent() && getAcceptHeader().isPresent()) {
+            if (getAcceptHeader().get().contains("application/json")) {
+                try {
+                    return new ResponseEntity<>(getObjectMapper().get().readValue("\"\"", String.class), HttpStatus.NOT_IMPLEMENTED);
+                } catch (IOException e) {
+                    log.error("Couldn't serialize response for content type application/json", e);
+                    return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+                }
+            }
+        } else {
+            log.warn("ObjectMapper or HttpServletRequest not configured in default PollsApi interface so no example is generated");
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+    }
+
+    /**
      * @see PollsApi#cancelPoll
      */
-    default ResponseEntity<Poll> cancelPoll(String pollId) {
+    default ResponseEntity<Void> cancelPoll( String  psId) {
+        if(getObjectMapper().isPresent() && getAcceptHeader().isPresent()) {
+        } else {
+            log.warn("ObjectMapper or HttpServletRequest not configured in default PollsApi interface so no example is generated");
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+    }
+
+    /**
+     * @see PollsApi#getPollDetails
+     */
+    default ResponseEntity<PollDetail> getPollDetails( String  pollKey) {
         if(getObjectMapper().isPresent() && getAcceptHeader().isPresent()) {
             if (getAcceptHeader().get().contains("application/json")) {
                 try {
-                    return new ResponseEntity<>(getObjectMapper().get().readValue("{  \"pollerId\" : \"pollerId\",  \"pollSpec\" : {    \"pollType\" : 0,    \"protocolVersion\" : 6,    \"pluginPollVersion\" : \"pluginPollVersion\",    \"modulus\" : 1,    \"cachedUriSet\" : {      \"auId\" : \"auId\",      \"spec\" : {        \"upperBound\" : \"upperBound\",        \"urlPrefix\" : \"urlPrefix\",        \"lowerBound\" : \"lowerBound\"      }    },    \"pollVariant\" : \"PoR\"  },  \"quorum\" : 4,  \"pollKey\" : \"pollKey\",  \"votedPeers\" : 7,  \"tallyStatus\" : {    \"weightedDisagreedSum\" : 1.0246457,    \"weightedTooCloseSum\" : 1.4894159,    \"weightedAgreedSum\" : 1.2315135,    \"agreedUrls\" : [ \"agreedUrls\", \"agreedUrls\" ],    \"disagreedUrls\" : [ \"disagreedUrls\", \"disagreedUrls\" ],    \"errorUrls\" : [ \"errorUrls\", \"errorUrls\" ],    \"tooCloseUrls\" : [ \"tooCloseUrls\", \"tooCloseUrls\" ],    \"weightedNoQuorumSum\" : 6.846853,    \"noQuorumUrls\" : [ \"noQuorumUrls\", \"noQuorumUrls\" ]  },  \"pollDeadline\" : 2,  \"voteMargin\" : 9,  \"duration\" : 5,  \"voteDeadline\" : 3,  \"repairQueue\" : {    \"pendingRepairs\" : [ {      \"uri\" : \"uri\",      \"repairFrom\" : \"repairFrom\"    }, {      \"uri\" : \"uri\",      \"repairFrom\" : \"repairFrom\"    } ],    \"activeRepairs\" : [ {      \"uri\" : \"uri\",      \"repairFrom\" : \"repairFrom\"    }, {      \"uri\" : \"uri\",      \"repairFrom\" : \"repairFrom\"    } ],    \"completedRepairs\" : [ {      \"uri\" : \"uri\",      \"repairFrom\" : \"repairFrom\"    }, {      \"uri\" : \"uri\",      \"repairFrom\" : \"repairFrom\"    } ]  },  \"createTime\" : 5,  \"outerCircleTarget\" : 7,  \"pollEnd\" : 2,  \"hashAlgorithm\" : \"hashAlgorithm\",  \"status\" : \"status\"}", Poll.class), HttpStatus.NOT_IMPLEMENTED);
+                    return new ResponseEntity<>(getObjectMapper().get().readValue("{  \"pollerId\" : \"pollerId\",  \"pollDesc\" : {    \"auId\" : \"auId\",    \"cuSetSpec\" : {      \"upperBound\" : \"upperBound\",      \"urlPrefix\" : \"urlPrefix\",      \"lowerBound\" : \"lowerBound\"    },    \"protocol\" : 6,    \"pollType\" : 3,    \"variant\" : \"PoR\",    \"pluginPollVersion\" : \"pluginPollVersion\",    \"modulus\" : 1  },  \"quorum\" : 9,  \"pollKey\" : \"pollKey\",  \"votedPeers\" : [ {    \"peerId\" : \"peerId\",    \"lastStateChange\" : 9,    \"agreement\" : 3.6160767,    \"pollerOnlyLink\" : \"pollerOnlyLink\",    \"bytesRead\" : 1,    \"bytesHashed\" : 1,    \"wtNumDisagree\" : 1.1730742,    \"voterOnlyLink\" : \"voterOnlyLink\",    \"wtNumVoterOnly\" : 5.025005,    \"disagreeLink\" : \"disagreeLink\",    \"numVoterOnly\" : 1,    \"numAgree\" : 2,    \"state\" : \"state\",    \"agreeLink\" : \"agreeLink\",    \"numPollerOnly\" : 7,    \"wtAgreement\" : 6.846853,    \"wtNumAgree\" : 7.4577446,    \"wtNumPollerOnly\" : 4.9652185,    \"status\" : \"status\",    \"numDisagree\" : 4  }, {    \"peerId\" : \"peerId\",    \"lastStateChange\" : 9,    \"agreement\" : 3.6160767,    \"pollerOnlyLink\" : \"pollerOnlyLink\",    \"bytesRead\" : 1,    \"bytesHashed\" : 1,    \"wtNumDisagree\" : 1.1730742,    \"voterOnlyLink\" : \"voterOnlyLink\",    \"wtNumVoterOnly\" : 5.025005,    \"disagreeLink\" : \"disagreeLink\",    \"numVoterOnly\" : 1,    \"numAgree\" : 2,    \"state\" : \"state\",    \"agreeLink\" : \"agreeLink\",    \"numPollerOnly\" : 7,    \"wtAgreement\" : 6.846853,    \"wtNumAgree\" : 7.4577446,    \"wtNumPollerOnly\" : 4.9652185,    \"status\" : \"status\",    \"numDisagree\" : 4  } ],  \"voteMargin\" : 5,  \"duration\" : 6,  \"voteDeadline\" : 2,  \"repairQueue\" : {    \"numActive\" : 6,    \"activeLink\" : \"activeLink\",    \"numCompleted\" : 5,    \"pendingLink\" : \"pendingLink\",    \"numPending\" : 6,    \"completedLink\" : \"completedLink\"  },  \"createTime\" : 0,  \"outerCircleTarget\" : 5,  \"pollEnd\" : 7,  \"deadline\" : 1,  \"tally\" : {    \"errorLink\" : \"errorLink\",    \"numNoQuorum\" : 9,    \"wtTooClose\" : 1.284659,    \"noQuorumLink\" : \"noQuorumLink\",    \"wtNoQuorum\" : 2.8841622,    \"disagreeLink\" : \"disagreeLink\",    \"tooCloseLink\" : \"tooCloseLink\",    \"numTooClose\" : 8,    \"numAgree\" : 9,    \"wtDisagreed\" : 6.965118,    \"agreeLink\" : \"agreeLink\",    \"numError\" : 6,    \"numDisagree\" : 6,    \"wtAgreed\" : 3.5571952  },  \"hashAlgorithm\" : \"hashAlgorithm\",  \"status\" : \"status\"}", PollDetail.class), HttpStatus.NOT_IMPLEMENTED);
                 } catch (IOException e) {
                     log.error("Couldn't serialize response for content type application/json", e);
                     return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -58,13 +92,17 @@ public interface PollsApiDelegate {
     }
 
     /**
-     * @see PollsApi#getPoll
+     * @see PollsApi#getPollPeerVoteUrls
      */
-    default ResponseEntity<Poll> getPoll(String pollId) {
+    default ResponseEntity<UrlPager> getPollPeerVoteUrls( String  pollKey,
+         String  peerId,
+         String  urls,
+         Integer  page,
+         Integer  size) {
         if(getObjectMapper().isPresent() && getAcceptHeader().isPresent()) {
             if (getAcceptHeader().get().contains("application/json")) {
                 try {
-                    return new ResponseEntity<>(getObjectMapper().get().readValue("{  \"pollerId\" : \"pollerId\",  \"pollSpec\" : {    \"pollType\" : 0,    \"protocolVersion\" : 6,    \"pluginPollVersion\" : \"pluginPollVersion\",    \"modulus\" : 1,    \"cachedUriSet\" : {      \"auId\" : \"auId\",      \"spec\" : {        \"upperBound\" : \"upperBound\",        \"urlPrefix\" : \"urlPrefix\",        \"lowerBound\" : \"lowerBound\"      }    },    \"pollVariant\" : \"PoR\"  },  \"quorum\" : 4,  \"pollKey\" : \"pollKey\",  \"votedPeers\" : 7,  \"tallyStatus\" : {    \"weightedDisagreedSum\" : 1.0246457,    \"weightedTooCloseSum\" : 1.4894159,    \"weightedAgreedSum\" : 1.2315135,    \"agreedUrls\" : [ \"agreedUrls\", \"agreedUrls\" ],    \"disagreedUrls\" : [ \"disagreedUrls\", \"disagreedUrls\" ],    \"errorUrls\" : [ \"errorUrls\", \"errorUrls\" ],    \"tooCloseUrls\" : [ \"tooCloseUrls\", \"tooCloseUrls\" ],    \"weightedNoQuorumSum\" : 6.846853,    \"noQuorumUrls\" : [ \"noQuorumUrls\", \"noQuorumUrls\" ]  },  \"pollDeadline\" : 2,  \"voteMargin\" : 9,  \"duration\" : 5,  \"voteDeadline\" : 3,  \"repairQueue\" : {    \"pendingRepairs\" : [ {      \"uri\" : \"uri\",      \"repairFrom\" : \"repairFrom\"    }, {      \"uri\" : \"uri\",      \"repairFrom\" : \"repairFrom\"    } ],    \"activeRepairs\" : [ {      \"uri\" : \"uri\",      \"repairFrom\" : \"repairFrom\"    }, {      \"uri\" : \"uri\",      \"repairFrom\" : \"repairFrom\"    } ],    \"completedRepairs\" : [ {      \"uri\" : \"uri\",      \"repairFrom\" : \"repairFrom\"    }, {      \"uri\" : \"uri\",      \"repairFrom\" : \"repairFrom\"    } ]  },  \"createTime\" : 5,  \"outerCircleTarget\" : 7,  \"pollEnd\" : 2,  \"hashAlgorithm\" : \"hashAlgorithm\",  \"status\" : \"status\"}", Poll.class), HttpStatus.NOT_IMPLEMENTED);
+                    return new ResponseEntity<>(getObjectMapper().get().readValue("{  \"pageDesc\" : {    \"total\" : 150,    \"size\" : 5,    \"nextPage\" : \"nextPage\",    \"prevPage\" : \"prevPage\",    \"page\" : 10  },  \"urls\" : [ {    \"link\" : \"http:www.example.com/v1/element\",    \"desc\" : \"pollerOnly\"  }, {    \"link\" : \"http:www.example.com/v1/element\",    \"desc\" : \"pollerOnly\"  } ]}", UrlPager.class), HttpStatus.NOT_IMPLEMENTED);
                 } catch (IOException e) {
                     log.error("Couldn't serialize response for content type application/json", e);
                     return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -77,14 +115,13 @@ public interface PollsApiDelegate {
     }
 
     /**
-     * @see PollsApi#getPolls
+     * @see PollsApi#getPollStatus
      */
-    default ResponseEntity<PollPageInfo> getPolls(Integer size,
-        Integer page) {
+    default ResponseEntity<PollerSummary> getPollStatus( String  psId) {
         if(getObjectMapper().isPresent() && getAcceptHeader().isPresent()) {
             if (getAcceptHeader().get().contains("application/json")) {
                 try {
-                    return new ResponseEntity<>(getObjectMapper().get().readValue("{  \"pageInfo\" : {    \"resultsPerPage\" : 20,    \"prevLink\" : \"prevLink\",    \"totalCount\" : 150,    \"currentPage\" : 2,    \"nextLink\" : \"nextLink\"  },  \"polls\" : [ {    \"pollerId\" : \"pollerId\",    \"pollSpec\" : {      \"pollType\" : 0,      \"protocolVersion\" : 6,      \"pluginPollVersion\" : \"pluginPollVersion\",      \"modulus\" : 1,      \"cachedUriSet\" : {        \"auId\" : \"auId\",        \"spec\" : {          \"upperBound\" : \"upperBound\",          \"urlPrefix\" : \"urlPrefix\",          \"lowerBound\" : \"lowerBound\"        }      },      \"pollVariant\" : \"PoR\"    },    \"quorum\" : 4,    \"pollKey\" : \"pollKey\",    \"votedPeers\" : 7,    \"tallyStatus\" : {      \"weightedDisagreedSum\" : 1.0246457,      \"weightedTooCloseSum\" : 1.4894159,      \"weightedAgreedSum\" : 1.2315135,      \"agreedUrls\" : [ \"agreedUrls\", \"agreedUrls\" ],      \"disagreedUrls\" : [ \"disagreedUrls\", \"disagreedUrls\" ],      \"errorUrls\" : [ \"errorUrls\", \"errorUrls\" ],      \"tooCloseUrls\" : [ \"tooCloseUrls\", \"tooCloseUrls\" ],      \"weightedNoQuorumSum\" : 6.846853,      \"noQuorumUrls\" : [ \"noQuorumUrls\", \"noQuorumUrls\" ]    },    \"pollDeadline\" : 2,    \"voteMargin\" : 9,    \"duration\" : 5,    \"voteDeadline\" : 3,    \"repairQueue\" : {      \"pendingRepairs\" : [ {        \"uri\" : \"uri\",        \"repairFrom\" : \"repairFrom\"      }, {        \"uri\" : \"uri\",        \"repairFrom\" : \"repairFrom\"      } ],      \"activeRepairs\" : [ {        \"uri\" : \"uri\",        \"repairFrom\" : \"repairFrom\"      }, {        \"uri\" : \"uri\",        \"repairFrom\" : \"repairFrom\"      } ],      \"completedRepairs\" : [ {        \"uri\" : \"uri\",        \"repairFrom\" : \"repairFrom\"      }, {        \"uri\" : \"uri\",        \"repairFrom\" : \"repairFrom\"      } ]    },    \"createTime\" : 5,    \"outerCircleTarget\" : 7,    \"pollEnd\" : 2,    \"hashAlgorithm\" : \"hashAlgorithm\",    \"status\" : \"status\"  }, {    \"pollerId\" : \"pollerId\",    \"pollSpec\" : {      \"pollType\" : 0,      \"protocolVersion\" : 6,      \"pluginPollVersion\" : \"pluginPollVersion\",      \"modulus\" : 1,      \"cachedUriSet\" : {        \"auId\" : \"auId\",        \"spec\" : {          \"upperBound\" : \"upperBound\",          \"urlPrefix\" : \"urlPrefix\",          \"lowerBound\" : \"lowerBound\"        }      },      \"pollVariant\" : \"PoR\"    },    \"quorum\" : 4,    \"pollKey\" : \"pollKey\",    \"votedPeers\" : 7,    \"tallyStatus\" : {      \"weightedDisagreedSum\" : 1.0246457,      \"weightedTooCloseSum\" : 1.4894159,      \"weightedAgreedSum\" : 1.2315135,      \"agreedUrls\" : [ \"agreedUrls\", \"agreedUrls\" ],      \"disagreedUrls\" : [ \"disagreedUrls\", \"disagreedUrls\" ],      \"errorUrls\" : [ \"errorUrls\", \"errorUrls\" ],      \"tooCloseUrls\" : [ \"tooCloseUrls\", \"tooCloseUrls\" ],      \"weightedNoQuorumSum\" : 6.846853,      \"noQuorumUrls\" : [ \"noQuorumUrls\", \"noQuorumUrls\" ]    },    \"pollDeadline\" : 2,    \"voteMargin\" : 9,    \"duration\" : 5,    \"voteDeadline\" : 3,    \"repairQueue\" : {      \"pendingRepairs\" : [ {        \"uri\" : \"uri\",        \"repairFrom\" : \"repairFrom\"      }, {        \"uri\" : \"uri\",        \"repairFrom\" : \"repairFrom\"      } ],      \"activeRepairs\" : [ {        \"uri\" : \"uri\",        \"repairFrom\" : \"repairFrom\"      }, {        \"uri\" : \"uri\",        \"repairFrom\" : \"repairFrom\"      } ],      \"completedRepairs\" : [ {        \"uri\" : \"uri\",        \"repairFrom\" : \"repairFrom\"      }, {        \"uri\" : \"uri\",        \"repairFrom\" : \"repairFrom\"      } ]    },    \"createTime\" : 5,    \"outerCircleTarget\" : 7,    \"pollEnd\" : 2,    \"hashAlgorithm\" : \"hashAlgorithm\",    \"status\" : \"status\"  } ]}", PollPageInfo.class), HttpStatus.NOT_IMPLEMENTED);
+                    return new ResponseEntity<>(getObjectMapper().get().readValue("{  \"numCompletedRepairs\" : 5,  \"auId\" : \"auId\",  \"numHashErrors\" : 1,  \"numTalliedUrls\" : 6,  \"start\" : 2,  \"pollKey\" : \"pollKey\",  \"variant\" : \"variant\",  \"numAgreeUrls\" : 5.637377,  \"pollEnd\" : 9,  \"deadline\" : 7,  \"detailLink\" : \"detailLink\",  \"status\" : \"status\",  \"participants\" : 0}", PollerSummary.class), HttpStatus.NOT_IMPLEMENTED);
                 } catch (IOException e) {
                     log.error("Couldn't serialize response for content type application/json", e);
                     return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -97,13 +134,78 @@ public interface PollsApiDelegate {
     }
 
     /**
-     * @see PollsApi#requestPoll
+     * @see PollsApi#getPollsAsPoller
      */
-    default ResponseEntity<String> requestPoll(PollReq body) {
+    default ResponseEntity<PollerPager> getPollsAsPoller( Integer  size,
+         Integer  page) {
         if(getObjectMapper().isPresent() && getAcceptHeader().isPresent()) {
             if (getAcceptHeader().get().contains("application/json")) {
                 try {
-                    return new ResponseEntity<>(getObjectMapper().get().readValue("\"A id for this poll.\"", String.class), HttpStatus.NOT_IMPLEMENTED);
+                    return new ResponseEntity<>(getObjectMapper().get().readValue("{  \"pageDesc\" : {    \"total\" : 150,    \"size\" : 5,    \"nextPage\" : \"nextPage\",    \"prevPage\" : \"prevPage\",    \"page\" : 10  },  \"polls\" : [ {    \"numCompletedRepairs\" : 5,    \"auId\" : \"auId\",    \"numHashErrors\" : 1,    \"numTalliedUrls\" : 6,    \"start\" : 2,    \"pollKey\" : \"pollKey\",    \"variant\" : \"variant\",    \"numAgreeUrls\" : 5.637377,    \"pollEnd\" : 9,    \"deadline\" : 7,    \"detailLink\" : \"detailLink\",    \"status\" : \"status\",    \"participants\" : 0  }, {    \"numCompletedRepairs\" : 5,    \"auId\" : \"auId\",    \"numHashErrors\" : 1,    \"numTalliedUrls\" : 6,    \"start\" : 2,    \"pollKey\" : \"pollKey\",    \"variant\" : \"variant\",    \"numAgreeUrls\" : 5.637377,    \"pollEnd\" : 9,    \"deadline\" : 7,    \"detailLink\" : \"detailLink\",    \"status\" : \"status\",    \"participants\" : 0  } ]}", PollerPager.class), HttpStatus.NOT_IMPLEMENTED);
+                } catch (IOException e) {
+                    log.error("Couldn't serialize response for content type application/json", e);
+                    return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+                }
+            }
+        } else {
+            log.warn("ObjectMapper or HttpServletRequest not configured in default PollsApi interface so no example is generated");
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+    }
+
+    /**
+     * @see PollsApi#getPollsAsVoter
+     */
+    default ResponseEntity<VoterPager> getPollsAsVoter( Integer  size,
+         Integer  page) {
+        if(getObjectMapper().isPresent() && getAcceptHeader().isPresent()) {
+            if (getAcceptHeader().get().contains("application/json")) {
+                try {
+                    return new ResponseEntity<>(getObjectMapper().get().readValue("{  \"pageDesc\" : {    \"total\" : 150,    \"size\" : 5,    \"nextPage\" : \"nextPage\",    \"prevPage\" : \"prevPage\",    \"page\" : 10  },  \"polls\" : [ {    \"auId\" : \"auId\",    \"caller\" : \"caller\",    \"start\" : 0,    \"pollKey\" : \"pollKey\",    \"deadline\" : 6,    \"detailLink\" : \"detailLink\"  }, {    \"auId\" : \"auId\",    \"caller\" : \"caller\",    \"start\" : 0,    \"pollKey\" : \"pollKey\",    \"deadline\" : 6,    \"detailLink\" : \"detailLink\"  } ]}", VoterPager.class), HttpStatus.NOT_IMPLEMENTED);
+                } catch (IOException e) {
+                    log.error("Couldn't serialize response for content type application/json", e);
+                    return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+                }
+            }
+        } else {
+            log.warn("ObjectMapper or HttpServletRequest not configured in default PollsApi interface so no example is generated");
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+    }
+
+    /**
+     * @see PollsApi#getRepairQueueData
+     */
+    default ResponseEntity<RepairPager> getRepairQueueData( String  pollKey,
+         String  repair,
+         Integer  page,
+         Integer  size) {
+        if(getObjectMapper().isPresent() && getAcceptHeader().isPresent()) {
+            if (getAcceptHeader().get().contains("application/json")) {
+                try {
+                    return new ResponseEntity<>(getObjectMapper().get().readValue("{  \"repairs\" : [ {    \"repairUrl\" : \"repairUrl\",    \"repairFrom\" : \"repairFrom\",    \"status\" : \"active\"  }, {    \"repairUrl\" : \"repairUrl\",    \"repairFrom\" : \"repairFrom\",    \"status\" : \"active\"  } ],  \"pageDesc\" : {    \"total\" : 150,    \"size\" : 5,    \"nextPage\" : \"nextPage\",    \"prevPage\" : \"prevPage\",    \"page\" : 10  }}", RepairPager.class), HttpStatus.NOT_IMPLEMENTED);
+                } catch (IOException e) {
+                    log.error("Couldn't serialize response for content type application/json", e);
+                    return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+                }
+            }
+        } else {
+            log.warn("ObjectMapper or HttpServletRequest not configured in default PollsApi interface so no example is generated");
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+    }
+
+    /**
+     * @see PollsApi#getTallyUrls
+     */
+    default ResponseEntity<UrlPager> getTallyUrls( String  pollKey,
+         String  tally,
+         Integer  page,
+         Integer  size) {
+        if(getObjectMapper().isPresent() && getAcceptHeader().isPresent()) {
+            if (getAcceptHeader().get().contains("application/json")) {
+                try {
+                    return new ResponseEntity<>(getObjectMapper().get().readValue("{  \"pageDesc\" : {    \"total\" : 150,    \"size\" : 5,    \"nextPage\" : \"nextPage\",    \"prevPage\" : \"prevPage\",    \"page\" : 10  },  \"urls\" : [ {    \"link\" : \"http:www.example.com/v1/element\",    \"desc\" : \"pollerOnly\"  }, {    \"link\" : \"http:www.example.com/v1/element\",    \"desc\" : \"pollerOnly\"  } ]}", UrlPager.class), HttpStatus.NOT_IMPLEMENTED);
                 } catch (IOException e) {
                     log.error("Couldn't serialize response for content type application/json", e);
                     return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);

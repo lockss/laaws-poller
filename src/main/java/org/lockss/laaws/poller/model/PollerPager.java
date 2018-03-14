@@ -29,86 +29,77 @@ package org.lockss.laaws.poller.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import org.springframework.validation.annotation.Validated;
 
 /**
- * A set of urls bounded by  upper and lower restraints.  If lower &#x3D; \&quot;.\&quot; this is a singleContentNode. If lower is null then start at the root url, if upper is null end with the last.
+ * A page of poller poll summaries.
  */
-@ApiModel(description = "A set of urls bounded by  upper and lower restraints.  If lower = \".\" this is a singleContentNode. If lower is null then start at the root url, if upper is null end with the last.")
+@ApiModel(description = "A page of poller poll summaries.")
 @Validated
 
-public class CachedUriSetSpec {
+public class PollerPager {
 
-  @JsonProperty("urlPrefix")
-  private String urlPrefix = null;
+  @JsonProperty("pageDesc")
+  private PageDesc pageDesc = null;
 
-  @JsonProperty("lowerBound")
-  private String lowerBound = null;
+  @JsonProperty("polls")
+  @Valid
+  private List<PollerSummary> polls = new ArrayList<>();
 
-  @JsonProperty("upperBound")
-  private String upperBound = null;
-
-  public CachedUriSetSpec urlPrefix(String urlPrefix) {
-    this.urlPrefix = urlPrefix;
+  public PollerPager pageDesc(PageDesc pageDesc) {
+    this.pageDesc = pageDesc;
     return this;
   }
 
   /**
-   * The base which roots the lower and upper bound
+   * Get pageDesc
    *
-   * @return urlPrefix
+   * @return pageDesc
    **/
-  @ApiModelProperty(required = true, value = "The base which roots the lower and upper bound")
+  @ApiModelProperty(required = true, value = "")
   @NotNull
 
-  public String getUrlPrefix() {
-    return urlPrefix;
+  @Valid
+
+  public PageDesc getPageDesc() {
+    return pageDesc;
   }
 
-  public void setUrlPrefix(String urlPrefix) {
-    this.urlPrefix = urlPrefix;
+  public void setPageDesc(PageDesc pageDesc) {
+    this.pageDesc = pageDesc;
   }
 
-  public CachedUriSetSpec lowerBound(String lowerBound) {
-    this.lowerBound = lowerBound;
+  public PollerPager polls(List<PollerSummary> polls) {
+    this.polls = polls;
+    return this;
+  }
+
+  public PollerPager addPollsItem(PollerSummary pollsItem) {
+    this.polls.add(pollsItem);
     return this;
   }
 
   /**
-   * lower bound of the prefix range, inclusive.
+   * The list of polls for the current page.
    *
-   * @return lowerBound
+   * @return polls
    **/
-  @ApiModelProperty(value = "lower bound of the prefix range, inclusive.")
+  @ApiModelProperty(required = true, value = "The list of polls for the current page.")
+  @NotNull
 
-  public String getLowerBound() {
-    return lowerBound;
+  @Valid
+
+  public List<PollerSummary> getPolls() {
+    return polls;
   }
 
-  public void setLowerBound(String lowerBound) {
-    this.lowerBound = lowerBound;
-  }
-
-  public CachedUriSetSpec upperBound(String upperBound) {
-    this.upperBound = upperBound;
-    return this;
-  }
-
-  /**
-   * upper bound of prefix range, inclusive.
-   *
-   * @return upperBound
-   **/
-  @ApiModelProperty(value = "upper bound of prefix range, inclusive.")
-
-  public String getUpperBound() {
-    return upperBound;
-  }
-
-  public void setUpperBound(String upperBound) {
-    this.upperBound = upperBound;
+  public void setPolls(List<PollerSummary> polls) {
+    this.polls = polls;
   }
 
 
@@ -120,25 +111,23 @@ public class CachedUriSetSpec {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    CachedUriSetSpec cachedUriSetSpec = (CachedUriSetSpec) o;
-    return Objects.equals(this.urlPrefix, cachedUriSetSpec.urlPrefix) &&
-        Objects.equals(this.lowerBound, cachedUriSetSpec.lowerBound) &&
-        Objects.equals(this.upperBound, cachedUriSetSpec.upperBound);
+    PollerPager pollerPager = (PollerPager) o;
+    return Objects.equals(this.pageDesc, pollerPager.pageDesc) &&
+        Objects.equals(this.polls, pollerPager.polls);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(urlPrefix, lowerBound, upperBound);
+    return Objects.hash(pageDesc, polls);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class CachedUriSetSpec {\n");
+    sb.append("class PollerPager {\n");
 
-    sb.append("    urlPrefix: ").append(toIndentedString(urlPrefix)).append("\n");
-    sb.append("    lowerBound: ").append(toIndentedString(lowerBound)).append("\n");
-    sb.append("    upperBound: ").append(toIndentedString(upperBound)).append("\n");
+    sb.append("    pageDesc: ").append(toIndentedString(pageDesc)).append("\n");
+    sb.append("    polls: ").append(toIndentedString(polls)).append("\n");
     sb.append("}");
     return sb.toString();
   }
