@@ -6,6 +6,7 @@
 package org.lockss.laaws.poller.api;
 
 import org.lockss.laaws.poller.model.ErrorDesc;
+import org.lockss.laaws.poller.model.PollDesc;
 import org.lockss.laaws.poller.model.PollDetail;
 import org.lockss.laaws.poller.model.PollerPager;
 import org.lockss.laaws.poller.model.PollerSummary;
@@ -46,7 +47,7 @@ public interface PollsApi {
         produces = { "application/json" }, 
         consumes = { "application/json" },
         method = RequestMethod.POST)
-    default ResponseEntity<String> callPoll(@ApiParam(value = "" ,required=true )  @Valid @RequestBody String body) {
+    default ResponseEntity<String> callPoll(@ApiParam(value = "" ,required=true )  @Valid @RequestBody PollDesc body) {
         return getDelegate().callPoll(body);
     }
 
