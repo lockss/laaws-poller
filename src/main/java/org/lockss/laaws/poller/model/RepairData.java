@@ -1,39 +1,14 @@
-/*
- * Copyright (c) 2018 Board of Trustees of Leland Stanford Jr. University,
- * all rights reserved.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- * STANFORD UNIVERSITY BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
- * IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
- * Except as contained in this notice, the name of Stanford University shall not
- * be used in advertising or otherwise to promote the sale, use or other dealings
- * in this Software without prior written authorization from Stanford University.
- */
-
 package org.lockss.laaws.poller.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
+import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import java.util.Objects;
-import javax.validation.constraints.NotNull;
 import org.springframework.validation.annotation.Validated;
+import javax.validation.Valid;
+import javax.validation.constraints.*;
 
 /**
  * structure used to define a repair source for url. if the source is null than repair from publisher
@@ -41,8 +16,7 @@ import org.springframework.validation.annotation.Validated;
 @ApiModel(description = "structure used to define a repair source for url. if the source is null than repair from publisher")
 @Validated
 
-public class RepairData {
-
+public class RepairData   {
   @JsonProperty("repairUrl")
   private String repairUrl = null;
 
@@ -52,16 +26,22 @@ public class RepairData {
   /**
    * The status of this repair
    */
-  public enum StatusEnum {
-    ACTIVE("active"),
-
-    COMPLETED("completed"),
-
-    PENDING("pending");
+  public enum ResultEnum {
+    NO_QUORUM("No Quorum"),
+    
+    TOO_CLOSE("Too Close"),
+    
+    LOST("Lost"),
+    
+    LOST_POLLER_ONLY_BLOCK("Lost - Poller-only Block"),
+    
+    LOST_VOTER_ONLY_BLOCK("Lost - Voter-only Block"),
+    
+    WON("Won");
 
     private String value;
 
-    StatusEnum(String value) {
+    ResultEnum(String value) {
       this.value = value;
     }
 
@@ -72,8 +52,8 @@ public class RepairData {
     }
 
     @JsonCreator
-    public static StatusEnum fromValue(String text) {
-      for (StatusEnum b : StatusEnum.values()) {
+    public static ResultEnum fromValue(String text) {
+      for (ResultEnum b : ResultEnum.values()) {
         if (String.valueOf(b.value).equals(text)) {
           return b;
         }
@@ -82,8 +62,8 @@ public class RepairData {
     }
   }
 
-  @JsonProperty("status")
-  private StatusEnum status = null;
+  @JsonProperty("result")
+  private ResultEnum result = null;
 
   public RepairData repairUrl(String repairUrl) {
     this.repairUrl = repairUrl;
@@ -92,11 +72,11 @@ public class RepairData {
 
   /**
    * The url to repair
-   *
    * @return repairUrl
-   **/
+  **/
   @ApiModelProperty(required = true, value = "The url to repair")
   @NotNull
+
 
   public String getRepairUrl() {
     return repairUrl;
@@ -113,11 +93,11 @@ public class RepairData {
 
   /**
    * The peer to repair from
-   *
    * @return repairFrom
-   **/
+  **/
   @ApiModelProperty(required = true, value = "The peer to repair from")
   @NotNull
+
 
   public String getRepairFrom() {
     return repairFrom;
@@ -127,24 +107,24 @@ public class RepairData {
     this.repairFrom = repairFrom;
   }
 
-  public RepairData status(StatusEnum status) {
-    this.status = status;
+  public RepairData result(ResultEnum result) {
+    this.result = result;
     return this;
   }
 
   /**
    * The status of this repair
-   *
-   * @return status
-   **/
+   * @return result
+  **/
   @ApiModelProperty(value = "The status of this repair")
 
-  public StatusEnum getStatus() {
-    return status;
+
+  public ResultEnum getResult() {
+    return result;
   }
 
-  public void setStatus(StatusEnum status) {
-    this.status = status;
+  public void setResult(ResultEnum result) {
+    this.result = result;
   }
 
 
@@ -159,22 +139,22 @@ public class RepairData {
     RepairData repairData = (RepairData) o;
     return Objects.equals(this.repairUrl, repairData.repairUrl) &&
         Objects.equals(this.repairFrom, repairData.repairFrom) &&
-        Objects.equals(this.status, repairData.status);
+        Objects.equals(this.result, repairData.result);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(repairUrl, repairFrom, status);
+    return Objects.hash(repairUrl, repairFrom, result);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class RepairData {\n");
-
+    
     sb.append("    repairUrl: ").append(toIndentedString(repairUrl)).append("\n");
     sb.append("    repairFrom: ").append(toIndentedString(repairFrom)).append("\n");
-    sb.append("    status: ").append(toIndentedString(status)).append("\n");
+    sb.append("    result: ").append(toIndentedString(result)).append("\n");
     sb.append("}");
     return sb.toString();
   }

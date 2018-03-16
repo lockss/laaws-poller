@@ -1,37 +1,14 @@
-/*
- * Copyright (c) 2018 Board of Trustees of Leland Stanford Jr. University,
- * all rights reserved.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- * STANFORD UNIVERSITY BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
- * IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
- * Except as contained in this notice, the name of Stanford University shall not
- * be used in advertising or otherwise to promote the sale, use or other dealings
- * in this Software without prior written authorization from Stanford University.
- */
-
 package org.lockss.laaws.poller.model;
 
+import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import java.util.Objects;
-import javax.validation.constraints.NotNull;
+import org.lockss.laaws.poller.model.LinkDesc;
 import org.springframework.validation.annotation.Validated;
+import javax.validation.Valid;
+import javax.validation.constraints.*;
 
 /**
  * A summary of a poll in which we are the poller.
@@ -39,8 +16,7 @@ import org.springframework.validation.annotation.Validated;
 @ApiModel(description = "A summary of a poll in which we are the poller.")
 @Validated
 
-public class PollerSummary {
-
+public class PollerSummary   {
   @JsonProperty("auId")
   private String auId = null;
 
@@ -63,7 +39,7 @@ public class PollerSummary {
   private Integer numCompletedRepairs = null;
 
   @JsonProperty("numAgreeUrls")
-  private Float numAgreeUrls = null;
+  private Integer numAgreeUrls = null;
 
   @JsonProperty("start")
   private Long start = null;
@@ -78,7 +54,7 @@ public class PollerSummary {
   private String pollKey = null;
 
   @JsonProperty("detailLink")
-  private String detailLink = null;
+  private LinkDesc detailLink = null;
 
   public PollerSummary auId(String auId) {
     this.auId = auId;
@@ -87,11 +63,11 @@ public class PollerSummary {
 
   /**
    * The id for the au being polled.
-   *
    * @return auId
-   **/
+  **/
   @ApiModelProperty(required = true, value = "The id for the au being polled.")
   @NotNull
+
 
   public String getAuId() {
     return auId;
@@ -108,11 +84,11 @@ public class PollerSummary {
 
   /**
    * The V3 Poll variant.
-   *
    * @return variant
-   **/
+  **/
   @ApiModelProperty(required = true, value = "The V3 Poll variant.")
   @NotNull
+
 
   public String getVariant() {
     return variant;
@@ -129,11 +105,11 @@ public class PollerSummary {
 
   /**
    * The current status of the poll.
-   *
    * @return status
-   **/
+  **/
   @ApiModelProperty(required = true, value = "The current status of the poll.")
   @NotNull
+
 
   public String getStatus() {
     return status;
@@ -150,10 +126,10 @@ public class PollerSummary {
 
   /**
    * Get participants
-   *
    * @return participants
-   **/
+  **/
   @ApiModelProperty(value = "")
+
 
   public Integer getParticipants() {
     return participants;
@@ -170,10 +146,10 @@ public class PollerSummary {
 
   /**
    * Get numTalliedUrls
-   *
    * @return numTalliedUrls
-   **/
+  **/
   @ApiModelProperty(value = "")
+
 
   public Integer getNumTalliedUrls() {
     return numTalliedUrls;
@@ -190,10 +166,10 @@ public class PollerSummary {
 
   /**
    * Get numHashErrors
-   *
    * @return numHashErrors
-   **/
+  **/
   @ApiModelProperty(value = "")
+
 
   public Integer getNumHashErrors() {
     return numHashErrors;
@@ -210,10 +186,10 @@ public class PollerSummary {
 
   /**
    * Get numCompletedRepairs
-   *
    * @return numCompletedRepairs
-   **/
+  **/
   @ApiModelProperty(value = "")
+
 
   public Integer getNumCompletedRepairs() {
     return numCompletedRepairs;
@@ -223,23 +199,23 @@ public class PollerSummary {
     this.numCompletedRepairs = numCompletedRepairs;
   }
 
-  public PollerSummary numAgreeUrls(Float numAgreeUrls) {
+  public PollerSummary numAgreeUrls(Integer numAgreeUrls) {
     this.numAgreeUrls = numAgreeUrls;
     return this;
   }
 
   /**
    * Get numAgreeUrls
-   *
    * @return numAgreeUrls
-   **/
+  **/
   @ApiModelProperty(value = "")
 
-  public Float getNumAgreeUrls() {
+
+  public Integer getNumAgreeUrls() {
     return numAgreeUrls;
   }
 
-  public void setNumAgreeUrls(Float numAgreeUrls) {
+  public void setNumAgreeUrls(Integer numAgreeUrls) {
     this.numAgreeUrls = numAgreeUrls;
   }
 
@@ -250,11 +226,11 @@ public class PollerSummary {
 
   /**
    * The timestamp for when the poll started.
-   *
    * @return start
-   **/
+  **/
   @ApiModelProperty(required = true, value = "The timestamp for when the poll started.")
   @NotNull
+
 
   public Long getStart() {
     return start;
@@ -271,11 +247,11 @@ public class PollerSummary {
 
   /**
    * The deadline for voting in this poll.
-   *
    * @return deadline
-   **/
+  **/
   @ApiModelProperty(required = true, value = "The deadline for voting in this poll.")
   @NotNull
+
 
   public Long getDeadline() {
     return deadline;
@@ -292,10 +268,10 @@ public class PollerSummary {
 
   /**
    * The time at which the poll ended.
-   *
    * @return pollEnd
-   **/
+  **/
   @ApiModelProperty(value = "The time at which the poll ended.")
+
 
   public Long getPollEnd() {
     return pollEnd;
@@ -312,11 +288,11 @@ public class PollerSummary {
 
   /**
    * Key generated by poll manager when poll was created.
-   *
    * @return pollKey
-   **/
+  **/
   @ApiModelProperty(required = true, value = "Key generated by poll manager when poll was created.")
   @NotNull
+
 
   public String getPollKey() {
     return pollKey;
@@ -326,23 +302,24 @@ public class PollerSummary {
     this.pollKey = pollKey;
   }
 
-  public PollerSummary detailLink(String detailLink) {
+  public PollerSummary detailLink(LinkDesc detailLink) {
     this.detailLink = detailLink;
     return this;
   }
 
   /**
-   * A link to the poll details.
-   *
+   * Get detailLink
    * @return detailLink
-   **/
-  @ApiModelProperty(value = "A link to the poll details.")
+  **/
+  @ApiModelProperty(value = "")
 
-  public String getDetailLink() {
+  @Valid
+
+  public LinkDesc getDetailLink() {
     return detailLink;
   }
 
-  public void setDetailLink(String detailLink) {
+  public void setDetailLink(LinkDesc detailLink) {
     this.detailLink = detailLink;
   }
 
@@ -373,23 +350,21 @@ public class PollerSummary {
 
   @Override
   public int hashCode() {
-    return Objects.hash(auId, variant, status, participants, numTalliedUrls, numHashErrors,
-        numCompletedRepairs, numAgreeUrls, start, deadline, pollEnd, pollKey, detailLink);
+    return Objects.hash(auId, variant, status, participants, numTalliedUrls, numHashErrors, numCompletedRepairs, numAgreeUrls, start, deadline, pollEnd, pollKey, detailLink);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class PollerSummary {\n");
-
+    
     sb.append("    auId: ").append(toIndentedString(auId)).append("\n");
     sb.append("    variant: ").append(toIndentedString(variant)).append("\n");
     sb.append("    status: ").append(toIndentedString(status)).append("\n");
     sb.append("    participants: ").append(toIndentedString(participants)).append("\n");
     sb.append("    numTalliedUrls: ").append(toIndentedString(numTalliedUrls)).append("\n");
     sb.append("    numHashErrors: ").append(toIndentedString(numHashErrors)).append("\n");
-    sb.append("    numCompletedRepairs: ").append(toIndentedString(numCompletedRepairs))
-        .append("\n");
+    sb.append("    numCompletedRepairs: ").append(toIndentedString(numCompletedRepairs)).append("\n");
     sb.append("    numAgreeUrls: ").append(toIndentedString(numAgreeUrls)).append("\n");
     sb.append("    start: ").append(toIndentedString(start)).append("\n");
     sb.append("    deadline: ").append(toIndentedString(deadline)).append("\n");

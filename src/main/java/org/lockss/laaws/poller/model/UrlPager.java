@@ -1,40 +1,16 @@
-/*
- * Copyright (c) 2018 Board of Trustees of Leland Stanford Jr. University,
- * all rights reserved.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- * STANFORD UNIVERSITY BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
- * IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
- * Except as contained in this notice, the name of Stanford University shall not
- * be used in advertising or otherwise to promote the sale, use or other dealings
- * in this Software without prior written authorization from Stanford University.
- */
-
 package org.lockss.laaws.poller.model;
 
+import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+import org.lockss.laaws.poller.model.PageDesc;
 import org.springframework.validation.annotation.Validated;
+import javax.validation.Valid;
+import javax.validation.constraints.*;
 
 /**
  * A Pager for a list of urls found in poll details.
@@ -42,14 +18,13 @@ import org.springframework.validation.annotation.Validated;
 @ApiModel(description = "A Pager for a list of urls found in poll details.")
 @Validated
 
-public class UrlPager {
-
+public class UrlPager   {
   @JsonProperty("pageDesc")
   private PageDesc pageDesc = null;
 
   @JsonProperty("urls")
   @Valid
-  private List<LinkDesc> urls = null;
+  private List<String> urls = null;
 
   public UrlPager pageDesc(PageDesc pageDesc) {
     this.pageDesc = pageDesc;
@@ -58,9 +33,8 @@ public class UrlPager {
 
   /**
    * Get pageDesc
-   *
    * @return pageDesc
-   **/
+  **/
   @ApiModelProperty(required = true, value = "")
   @NotNull
 
@@ -74,12 +48,12 @@ public class UrlPager {
     this.pageDesc = pageDesc;
   }
 
-  public UrlPager urls(List<LinkDesc> urls) {
+  public UrlPager urls(List<String> urls) {
     this.urls = urls;
     return this;
   }
 
-  public UrlPager addUrlsItem(LinkDesc urlsItem) {
+  public UrlPager addUrlsItem(String urlsItem) {
     if (this.urls == null) {
       this.urls = new ArrayList<>();
     }
@@ -89,18 +63,16 @@ public class UrlPager {
 
   /**
    * The urls on this page.
-   *
    * @return urls
-   **/
+  **/
   @ApiModelProperty(value = "The urls on this page.")
 
-  @Valid
 
-  public List<LinkDesc> getUrls() {
+  public List<String> getUrls() {
     return urls;
   }
 
-  public void setUrls(List<LinkDesc> urls) {
+  public void setUrls(List<String> urls) {
     this.urls = urls;
   }
 
@@ -127,7 +99,7 @@ public class UrlPager {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class UrlPager {\n");
-
+    
     sb.append("    pageDesc: ").append(toIndentedString(pageDesc)).append("\n");
     sb.append("    urls: ").append(toIndentedString(urls)).append("\n");
     sb.append("}");

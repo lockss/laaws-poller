@@ -1,41 +1,15 @@
-/*
- * Copyright (c) 2018 Board of Trustees of Leland Stanford Jr. University,
- * all rights reserved.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- * STANFORD UNIVERSITY BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
- * IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
- * Except as contained in this notice, the name of Stanford University shall not
- * be used in advertising or otherwise to promote the sale, use or other dealings
- * in this Software without prior written authorization from Stanford University.
- */
-
 package org.lockss.laaws.poller.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
+import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import java.util.Objects;
-import javax.validation.Valid;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
+import org.lockss.laaws.poller.model.CachedUriSetSpec;
 import org.springframework.validation.annotation.Validated;
+import javax.validation.Valid;
+import javax.validation.constraints.*;
 
 /**
  * The Poller Services poll spec used to define a poll.
@@ -43,8 +17,7 @@ import org.springframework.validation.annotation.Validated;
 @ApiModel(description = "The Poller Services poll spec used to define a poll.")
 @Validated
 
-public class PollDesc {
-
+public class PollDesc   {
   @JsonProperty("auId")
   private String auId = null;
 
@@ -65,11 +38,11 @@ public class PollDesc {
    */
   public enum VariantEnum {
     POR("PoR"),
-
+    
     POP("PoP"),
-
+    
     LOCAL("Local"),
-
+    
     NOPOLL("NoPoll");
 
     private String value;
@@ -108,11 +81,11 @@ public class PollDesc {
 
   /**
    * The id which defines the poll
-   *
    * @return auId
-   **/
+  **/
   @ApiModelProperty(required = true, value = "The id which defines the poll")
   @NotNull
+
 
   public String getAuId() {
     return auId;
@@ -129,9 +102,8 @@ public class PollDesc {
 
   /**
    * Get cuSetSpec
-   *
    * @return cuSetSpec
-   **/
+  **/
   @ApiModelProperty(value = "")
 
   @Valid
@@ -152,12 +124,11 @@ public class PollDesc {
   /**
    * The type of poll to run. Only V3 is supported.
    * minimum: 3
-   *
    * @return pollType
-   **/
+  **/
   @ApiModelProperty(value = "The type of poll to run. Only V3 is supported.")
 
-  @Min(3)
+@Min(3)
   public Integer getPollType() {
     return pollType;
   }
@@ -173,10 +144,10 @@ public class PollDesc {
 
   /**
    * The version of polling protocol.
-   *
    * @return protocol
-   **/
+  **/
   @ApiModelProperty(value = "The version of polling protocol.")
+
 
   public Integer getProtocol() {
     return protocol;
@@ -193,10 +164,10 @@ public class PollDesc {
 
   /**
    * The version of the polling features needed by the plugin.
-   *
    * @return pluginPollVersion
-   **/
+  **/
   @ApiModelProperty(value = "The version of the polling features needed by the plugin.")
+
 
   public String getPluginPollVersion() {
     return pluginPollVersion;
@@ -213,10 +184,10 @@ public class PollDesc {
 
   /**
    * The V3 poll variation.
-   *
    * @return variant
-   **/
+  **/
   @ApiModelProperty(value = "The V3 poll variation.")
+
 
   public VariantEnum getVariant() {
     return variant;
@@ -233,10 +204,10 @@ public class PollDesc {
 
   /**
    * Poll on every 'n'th url.
-   *
    * @return modulus
-   **/
+  **/
   @ApiModelProperty(value = "Poll on every 'n'th url.")
+
 
   public Integer getModulus() {
     return modulus;
@@ -274,7 +245,7 @@ public class PollDesc {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class PollDesc {\n");
-
+    
     sb.append("    auId: ").append(toIndentedString(auId)).append("\n");
     sb.append("    cuSetSpec: ").append(toIndentedString(cuSetSpec)).append("\n");
     sb.append("    pollType: ").append(toIndentedString(pollType)).append("\n");

@@ -1,36 +1,14 @@
-/*
- * Copyright (c) 2018 Board of Trustees of Leland Stanford Jr. University,
- * all rights reserved.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- * STANFORD UNIVERSITY BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
- * IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
- * Except as contained in this notice, the name of Stanford University shall not
- * be used in advertising or otherwise to promote the sale, use or other dealings
- * in this Software without prior written authorization from Stanford University.
- */
-
 package org.lockss.laaws.poller.model;
 
+import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import java.util.Objects;
+import org.lockss.laaws.poller.model.LinkDesc;
 import org.springframework.validation.annotation.Validated;
+import javax.validation.Valid;
+import javax.validation.constraints.*;
 
 /**
  * The tally for the current poll.
@@ -38,37 +16,36 @@ import org.springframework.validation.annotation.Validated;
 @ApiModel(description = "The tally for the current poll.")
 @Validated
 
-public class TallyData {
-
+public class TallyData   {
   @JsonProperty("numAgree")
   private Integer numAgree = null;
 
   @JsonProperty("agreeLink")
-  private String agreeLink = null;
+  private LinkDesc agreeLink = null;
 
   @JsonProperty("numDisagree")
   private Integer numDisagree = null;
 
   @JsonProperty("disagreeLink")
-  private String disagreeLink = null;
+  private LinkDesc disagreeLink = null;
 
   @JsonProperty("numTooClose")
   private Integer numTooClose = null;
 
   @JsonProperty("tooCloseLink")
-  private String tooCloseLink = null;
+  private LinkDesc tooCloseLink = null;
 
   @JsonProperty("numNoQuorum")
   private Integer numNoQuorum = null;
 
   @JsonProperty("noQuorumLink")
-  private String noQuorumLink = null;
+  private LinkDesc noQuorumLink = null;
 
   @JsonProperty("numError")
   private Integer numError = null;
 
   @JsonProperty("errorLink")
-  private String errorLink = null;
+  private LinkDesc errorLink = null;
 
   @JsonProperty("wtAgreed")
   private Float wtAgreed = 0.0f;
@@ -89,10 +66,10 @@ public class TallyData {
 
   /**
    * Get numAgree
-   *
    * @return numAgree
-   **/
+  **/
   @ApiModelProperty(value = "")
+
 
   public Integer getNumAgree() {
     return numAgree;
@@ -102,23 +79,24 @@ public class TallyData {
     this.numAgree = numAgree;
   }
 
-  public TallyData agreeLink(String agreeLink) {
+  public TallyData agreeLink(LinkDesc agreeLink) {
     this.agreeLink = agreeLink;
     return this;
   }
 
   /**
-   * Link to urls with agreement.
-   *
+   * Get agreeLink
    * @return agreeLink
-   **/
-  @ApiModelProperty(value = "Link to urls with agreement.")
+  **/
+  @ApiModelProperty(value = "")
 
-  public String getAgreeLink() {
+  @Valid
+
+  public LinkDesc getAgreeLink() {
     return agreeLink;
   }
 
-  public void setAgreeLink(String agreeLink) {
+  public void setAgreeLink(LinkDesc agreeLink) {
     this.agreeLink = agreeLink;
   }
 
@@ -129,10 +107,10 @@ public class TallyData {
 
   /**
    * Get numDisagree
-   *
    * @return numDisagree
-   **/
+  **/
   @ApiModelProperty(value = "")
+
 
   public Integer getNumDisagree() {
     return numDisagree;
@@ -142,23 +120,24 @@ public class TallyData {
     this.numDisagree = numDisagree;
   }
 
-  public TallyData disagreeLink(String disagreeLink) {
+  public TallyData disagreeLink(LinkDesc disagreeLink) {
     this.disagreeLink = disagreeLink;
     return this;
   }
 
   /**
-   * Link to urls for which there is disagreement
-   *
+   * Get disagreeLink
    * @return disagreeLink
-   **/
-  @ApiModelProperty(value = "Link to urls for which there is disagreement")
+  **/
+  @ApiModelProperty(value = "")
 
-  public String getDisagreeLink() {
+  @Valid
+
+  public LinkDesc getDisagreeLink() {
     return disagreeLink;
   }
 
-  public void setDisagreeLink(String disagreeLink) {
+  public void setDisagreeLink(LinkDesc disagreeLink) {
     this.disagreeLink = disagreeLink;
   }
 
@@ -169,10 +148,10 @@ public class TallyData {
 
   /**
    * Get numTooClose
-   *
    * @return numTooClose
-   **/
+  **/
   @ApiModelProperty(value = "")
+
 
   public Integer getNumTooClose() {
     return numTooClose;
@@ -182,23 +161,24 @@ public class TallyData {
     this.numTooClose = numTooClose;
   }
 
-  public TallyData tooCloseLink(String tooCloseLink) {
+  public TallyData tooCloseLink(LinkDesc tooCloseLink) {
     this.tooCloseLink = tooCloseLink;
     return this;
   }
 
   /**
-   * Link to urls which are too close to call.
-   *
+   * Get tooCloseLink
    * @return tooCloseLink
-   **/
-  @ApiModelProperty(value = "Link to urls which are too close to call.")
+  **/
+  @ApiModelProperty(value = "")
 
-  public String getTooCloseLink() {
+  @Valid
+
+  public LinkDesc getTooCloseLink() {
     return tooCloseLink;
   }
 
-  public void setTooCloseLink(String tooCloseLink) {
+  public void setTooCloseLink(LinkDesc tooCloseLink) {
     this.tooCloseLink = tooCloseLink;
   }
 
@@ -209,10 +189,10 @@ public class TallyData {
 
   /**
    * Get numNoQuorum
-   *
    * @return numNoQuorum
-   **/
+  **/
   @ApiModelProperty(value = "")
+
 
   public Integer getNumNoQuorum() {
     return numNoQuorum;
@@ -222,23 +202,24 @@ public class TallyData {
     this.numNoQuorum = numNoQuorum;
   }
 
-  public TallyData noQuorumLink(String noQuorumLink) {
+  public TallyData noQuorumLink(LinkDesc noQuorumLink) {
     this.noQuorumLink = noQuorumLink;
     return this;
   }
 
   /**
-   * Link to urls for which there is no quorum.
-   *
+   * Get noQuorumLink
    * @return noQuorumLink
-   **/
-  @ApiModelProperty(value = "Link to urls for which there is no quorum.")
+  **/
+  @ApiModelProperty(value = "")
 
-  public String getNoQuorumLink() {
+  @Valid
+
+  public LinkDesc getNoQuorumLink() {
     return noQuorumLink;
   }
 
-  public void setNoQuorumLink(String noQuorumLink) {
+  public void setNoQuorumLink(LinkDesc noQuorumLink) {
     this.noQuorumLink = noQuorumLink;
   }
 
@@ -249,10 +230,10 @@ public class TallyData {
 
   /**
    * Get numError
-   *
    * @return numError
-   **/
+  **/
   @ApiModelProperty(value = "")
+
 
   public Integer getNumError() {
     return numError;
@@ -262,23 +243,24 @@ public class TallyData {
     this.numError = numError;
   }
 
-  public TallyData errorLink(String errorLink) {
+  public TallyData errorLink(LinkDesc errorLink) {
     this.errorLink = errorLink;
     return this;
   }
 
   /**
-   * Link to urls for which there are errors.
-   *
+   * Get errorLink
    * @return errorLink
-   **/
-  @ApiModelProperty(value = "Link to urls for which there are errors.")
+  **/
+  @ApiModelProperty(value = "")
 
-  public String getErrorLink() {
+  @Valid
+
+  public LinkDesc getErrorLink() {
     return errorLink;
   }
 
-  public void setErrorLink(String errorLink) {
+  public void setErrorLink(LinkDesc errorLink) {
     this.errorLink = errorLink;
   }
 
@@ -289,10 +271,10 @@ public class TallyData {
 
   /**
    * The weighted sum agreed uris.
-   *
    * @return wtAgreed
-   **/
+  **/
   @ApiModelProperty(value = "The weighted sum agreed uris.")
+
 
   public Float getWtAgreed() {
     return wtAgreed;
@@ -309,10 +291,10 @@ public class TallyData {
 
   /**
    * The weighted sum of disagree uris.
-   *
    * @return wtDisagreed
-   **/
+  **/
   @ApiModelProperty(value = "The weighted sum of disagree uris.")
+
 
   public Float getWtDisagreed() {
     return wtDisagreed;
@@ -329,10 +311,10 @@ public class TallyData {
 
   /**
    * The sum of the tooClose uris.
-   *
    * @return wtTooClose
-   **/
+  **/
   @ApiModelProperty(value = "The sum of the tooClose uris.")
+
 
   public Float getWtTooClose() {
     return wtTooClose;
@@ -349,10 +331,10 @@ public class TallyData {
 
   /**
    * The weighted sum of NoQuorum uris.
-   *
    * @return wtNoQuorum
-   **/
+  **/
   @ApiModelProperty(value = "The weighted sum of NoQuorum uris.")
+
 
   public Float getWtNoQuorum() {
     return wtNoQuorum;
@@ -390,16 +372,14 @@ public class TallyData {
 
   @Override
   public int hashCode() {
-    return Objects.hash(numAgree, agreeLink, numDisagree, disagreeLink, numTooClose, tooCloseLink,
-        numNoQuorum, noQuorumLink, numError, errorLink, wtAgreed, wtDisagreed, wtTooClose,
-        wtNoQuorum);
+    return Objects.hash(numAgree, agreeLink, numDisagree, disagreeLink, numTooClose, tooCloseLink, numNoQuorum, noQuorumLink, numError, errorLink, wtAgreed, wtDisagreed, wtTooClose, wtNoQuorum);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class TallyData {\n");
-
+    
     sb.append("    numAgree: ").append(toIndentedString(numAgree)).append("\n");
     sb.append("    agreeLink: ").append(toIndentedString(agreeLink)).append("\n");
     sb.append("    numDisagree: ").append(toIndentedString(numDisagree)).append("\n");

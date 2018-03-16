@@ -1,37 +1,14 @@
-/*
- * Copyright (c) 2018 Board of Trustees of Leland Stanford Jr. University,
- * all rights reserved.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- * STANFORD UNIVERSITY BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
- * IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
- * Except as contained in this notice, the name of Stanford University shall not
- * be used in advertising or otherwise to promote the sale, use or other dealings
- * in this Software without prior written authorization from Stanford University.
- */
-
 package org.lockss.laaws.poller.model;
 
+import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import java.util.Objects;
-import javax.validation.constraints.NotNull;
+import org.lockss.laaws.poller.model.LinkDesc;
 import org.springframework.validation.annotation.Validated;
+import javax.validation.Valid;
+import javax.validation.constraints.*;
 
 /**
  * Detail for a single voter in a poll.
@@ -39,8 +16,7 @@ import org.springframework.validation.annotation.Validated;
 @ApiModel(description = "Detail for a single voter in a poll.")
 @Validated
 
-public class PeerData {
-
+public class PeerData   {
   @JsonProperty("peerId")
   private String peerId = null;
 
@@ -51,28 +27,28 @@ public class PeerData {
   private Float agreement = null;
 
   @JsonProperty("numAgree")
-  private Integer numAgree = null;
+  private Long numAgree = null;
 
   @JsonProperty("agreeLink")
-  private String agreeLink = null;
+  private LinkDesc agreeLink = null;
 
   @JsonProperty("numDisagree")
-  private Integer numDisagree = null;
+  private Long numDisagree = null;
 
   @JsonProperty("disagreeLink")
-  private String disagreeLink = null;
+  private LinkDesc disagreeLink = null;
 
   @JsonProperty("numPollerOnly")
-  private Integer numPollerOnly = null;
+  private Long numPollerOnly = null;
 
   @JsonProperty("pollerOnlyLink")
-  private String pollerOnlyLink = null;
+  private LinkDesc pollerOnlyLink = null;
 
   @JsonProperty("numVoterOnly")
-  private Integer numVoterOnly = null;
+  private Long numVoterOnly = null;
 
   @JsonProperty("voterOnlyLink")
-  private String voterOnlyLink = null;
+  private LinkDesc voterOnlyLink = null;
 
   @JsonProperty("bytesHashed")
   private Long bytesHashed = null;
@@ -108,11 +84,11 @@ public class PeerData {
 
   /**
    * the peer id for this participant
-   *
    * @return peerId
-   **/
+  **/
   @ApiModelProperty(required = true, value = "the peer id for this participant")
   @NotNull
+
 
   public String getPeerId() {
     return peerId;
@@ -129,11 +105,11 @@ public class PeerData {
 
   /**
    * the status of this peer
-   *
    * @return status
-   **/
+  **/
   @ApiModelProperty(required = true, value = "the status of this peer")
   @NotNull
+
 
   public String getStatus() {
     return status;
@@ -150,10 +126,10 @@ public class PeerData {
 
   /**
    * the percentage of vote agreement.
-   *
    * @return agreement
-   **/
+  **/
   @ApiModelProperty(value = "the percentage of vote agreement.")
+
 
   public Float getAgreement() {
     return agreement;
@@ -163,163 +139,167 @@ public class PeerData {
     this.agreement = agreement;
   }
 
-  public PeerData numAgree(Integer numAgree) {
+  public PeerData numAgree(Long numAgree) {
     this.numAgree = numAgree;
     return this;
   }
 
   /**
    * Get numAgree
-   *
    * @return numAgree
-   **/
+  **/
   @ApiModelProperty(value = "")
 
-  public Integer getNumAgree() {
+
+  public Long getNumAgree() {
     return numAgree;
   }
 
-  public void setNumAgree(Integer numAgree) {
+  public void setNumAgree(Long numAgree) {
     this.numAgree = numAgree;
   }
 
-  public PeerData agreeLink(String agreeLink) {
+  public PeerData agreeLink(LinkDesc agreeLink) {
     this.agreeLink = agreeLink;
     return this;
   }
 
   /**
-   * the url to list of agreement urls.
-   *
+   * Get agreeLink
    * @return agreeLink
-   **/
-  @ApiModelProperty(value = "the url to list of agreement urls.")
+  **/
+  @ApiModelProperty(value = "")
 
-  public String getAgreeLink() {
+  @Valid
+
+  public LinkDesc getAgreeLink() {
     return agreeLink;
   }
 
-  public void setAgreeLink(String agreeLink) {
+  public void setAgreeLink(LinkDesc agreeLink) {
     this.agreeLink = agreeLink;
   }
 
-  public PeerData numDisagree(Integer numDisagree) {
+  public PeerData numDisagree(Long numDisagree) {
     this.numDisagree = numDisagree;
     return this;
   }
 
   /**
    * Get numDisagree
-   *
    * @return numDisagree
-   **/
+  **/
   @ApiModelProperty(value = "")
 
-  public Integer getNumDisagree() {
+
+  public Long getNumDisagree() {
     return numDisagree;
   }
 
-  public void setNumDisagree(Integer numDisagree) {
+  public void setNumDisagree(Long numDisagree) {
     this.numDisagree = numDisagree;
   }
 
-  public PeerData disagreeLink(String disagreeLink) {
+  public PeerData disagreeLink(LinkDesc disagreeLink) {
     this.disagreeLink = disagreeLink;
     return this;
   }
 
   /**
-   * the url to list disagreed urls.
-   *
+   * Get disagreeLink
    * @return disagreeLink
-   **/
-  @ApiModelProperty(value = "the url to list disagreed urls.")
+  **/
+  @ApiModelProperty(value = "")
 
-  public String getDisagreeLink() {
+  @Valid
+
+  public LinkDesc getDisagreeLink() {
     return disagreeLink;
   }
 
-  public void setDisagreeLink(String disagreeLink) {
+  public void setDisagreeLink(LinkDesc disagreeLink) {
     this.disagreeLink = disagreeLink;
   }
 
-  public PeerData numPollerOnly(Integer numPollerOnly) {
+  public PeerData numPollerOnly(Long numPollerOnly) {
     this.numPollerOnly = numPollerOnly;
     return this;
   }
 
   /**
    * Get numPollerOnly
-   *
    * @return numPollerOnly
-   **/
+  **/
   @ApiModelProperty(value = "")
 
-  public Integer getNumPollerOnly() {
+
+  public Long getNumPollerOnly() {
     return numPollerOnly;
   }
 
-  public void setNumPollerOnly(Integer numPollerOnly) {
+  public void setNumPollerOnly(Long numPollerOnly) {
     this.numPollerOnly = numPollerOnly;
   }
 
-  public PeerData pollerOnlyLink(String pollerOnlyLink) {
+  public PeerData pollerOnlyLink(LinkDesc pollerOnlyLink) {
     this.pollerOnlyLink = pollerOnlyLink;
     return this;
   }
 
   /**
-   * the url to list of poller only urls.
-   *
+   * Get pollerOnlyLink
    * @return pollerOnlyLink
-   **/
-  @ApiModelProperty(value = "the url to list of poller only urls.")
+  **/
+  @ApiModelProperty(value = "")
 
-  public String getPollerOnlyLink() {
+  @Valid
+
+  public LinkDesc getPollerOnlyLink() {
     return pollerOnlyLink;
   }
 
-  public void setPollerOnlyLink(String pollerOnlyLink) {
+  public void setPollerOnlyLink(LinkDesc pollerOnlyLink) {
     this.pollerOnlyLink = pollerOnlyLink;
   }
 
-  public PeerData numVoterOnly(Integer numVoterOnly) {
+  public PeerData numVoterOnly(Long numVoterOnly) {
     this.numVoterOnly = numVoterOnly;
     return this;
   }
 
   /**
    * Get numVoterOnly
-   *
    * @return numVoterOnly
-   **/
+  **/
   @ApiModelProperty(value = "")
 
-  public Integer getNumVoterOnly() {
+
+  public Long getNumVoterOnly() {
     return numVoterOnly;
   }
 
-  public void setNumVoterOnly(Integer numVoterOnly) {
+  public void setNumVoterOnly(Long numVoterOnly) {
     this.numVoterOnly = numVoterOnly;
   }
 
-  public PeerData voterOnlyLink(String voterOnlyLink) {
+  public PeerData voterOnlyLink(LinkDesc voterOnlyLink) {
     this.voterOnlyLink = voterOnlyLink;
     return this;
   }
 
   /**
-   * the url to list of voter only urls.
-   *
+   * Get voterOnlyLink
    * @return voterOnlyLink
-   **/
-  @ApiModelProperty(value = "the url to list of voter only urls.")
+  **/
+  @ApiModelProperty(value = "")
 
-  public String getVoterOnlyLink() {
+  @Valid
+
+  public LinkDesc getVoterOnlyLink() {
     return voterOnlyLink;
   }
 
-  public void setVoterOnlyLink(String voterOnlyLink) {
+  public void setVoterOnlyLink(LinkDesc voterOnlyLink) {
     this.voterOnlyLink = voterOnlyLink;
   }
 
@@ -330,10 +310,10 @@ public class PeerData {
 
   /**
    * the number of bytes hashed.
-   *
    * @return bytesHashed
-   **/
+  **/
   @ApiModelProperty(value = "the number of bytes hashed.")
+
 
   public Long getBytesHashed() {
     return bytesHashed;
@@ -350,10 +330,10 @@ public class PeerData {
 
   /**
    * the number of bytes read.
-   *
    * @return bytesRead
-   **/
+  **/
   @ApiModelProperty(value = "the number of bytes read.")
+
 
   public Long getBytesRead() {
     return bytesRead;
@@ -370,10 +350,10 @@ public class PeerData {
 
   /**
    * the weight of vote percentage agreement.
-   *
    * @return wtAgreement
-   **/
+  **/
   @ApiModelProperty(value = "the weight of vote percentage agreement.")
+
 
   public Float getWtAgreement() {
     return wtAgreement;
@@ -390,10 +370,10 @@ public class PeerData {
 
   /**
    * the weight of number agree votes.
-   *
    * @return wtNumAgree
-   **/
+  **/
   @ApiModelProperty(value = "the weight of number agree votes.")
+
 
   public Float getWtNumAgree() {
     return wtNumAgree;
@@ -410,10 +390,10 @@ public class PeerData {
 
   /**
    * the weight of number of disagree votes.
-   *
    * @return wtNumDisagree
-   **/
+  **/
   @ApiModelProperty(value = "the weight of number of disagree votes.")
+
 
   public Float getWtNumDisagree() {
     return wtNumDisagree;
@@ -430,10 +410,10 @@ public class PeerData {
 
   /**
    * the weight of number of poller only votes.
-   *
    * @return wtNumPollerOnly
-   **/
+  **/
   @ApiModelProperty(value = "the weight of number of poller only votes.")
+
 
   public Float getWtNumPollerOnly() {
     return wtNumPollerOnly;
@@ -450,10 +430,10 @@ public class PeerData {
 
   /**
    * the weight of number of voter only votes.
-   *
    * @return wtNumVoterOnly
-   **/
+  **/
   @ApiModelProperty(value = "the weight of number of voter only votes.")
+
 
   public Float getWtNumVoterOnly() {
     return wtNumVoterOnly;
@@ -470,10 +450,10 @@ public class PeerData {
 
   /**
    * the state machine state.
-   *
    * @return state
-   **/
+  **/
   @ApiModelProperty(value = "the state machine state.")
+
 
   public String getState() {
     return state;
@@ -490,10 +470,10 @@ public class PeerData {
 
   /**
    * the time of last state change.
-   *
    * @return lastStateChange
-   **/
+  **/
   @ApiModelProperty(value = "the time of last state change.")
+
 
   public Long getLastStateChange() {
     return lastStateChange;
@@ -537,17 +517,14 @@ public class PeerData {
 
   @Override
   public int hashCode() {
-    return Objects.hash(peerId, status, agreement, numAgree, agreeLink, numDisagree, disagreeLink,
-        numPollerOnly, pollerOnlyLink, numVoterOnly, voterOnlyLink, bytesHashed, bytesRead,
-        wtAgreement, wtNumAgree, wtNumDisagree, wtNumPollerOnly, wtNumVoterOnly, state,
-        lastStateChange);
+    return Objects.hash(peerId, status, agreement, numAgree, agreeLink, numDisagree, disagreeLink, numPollerOnly, pollerOnlyLink, numVoterOnly, voterOnlyLink, bytesHashed, bytesRead, wtAgreement, wtNumAgree, wtNumDisagree, wtNumPollerOnly, wtNumVoterOnly, state, lastStateChange);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class PeerData {\n");
-
+    
     sb.append("    peerId: ").append(toIndentedString(peerId)).append("\n");
     sb.append("    status: ").append(toIndentedString(status)).append("\n");
     sb.append("    agreement: ").append(toIndentedString(agreement)).append("\n");

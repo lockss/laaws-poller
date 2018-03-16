@@ -1,36 +1,14 @@
-/*
- * Copyright (c) 2018 Board of Trustees of Leland Stanford Jr. University,
- * all rights reserved.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- * STANFORD UNIVERSITY BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
- * IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
- * Except as contained in this notice, the name of Stanford University shall not
- * be used in advertising or otherwise to promote the sale, use or other dealings
- * in this Software without prior written authorization from Stanford University.
- */
-
 package org.lockss.laaws.poller.model;
 
+import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import java.util.Objects;
+import org.lockss.laaws.poller.model.LinkDesc;
 import org.springframework.validation.annotation.Validated;
+import javax.validation.Valid;
+import javax.validation.constraints.*;
 
 /**
  * Description of the RepairQueue.
@@ -38,25 +16,24 @@ import org.springframework.validation.annotation.Validated;
 @ApiModel(description = "Description of the RepairQueue.")
 @Validated
 
-public class RepairQueue {
-
+public class RepairQueue   {
   @JsonProperty("numPending")
   private Integer numPending = null;
 
   @JsonProperty("pendingLink")
-  private String pendingLink = null;
+  private LinkDesc pendingLink = null;
 
   @JsonProperty("numActive")
   private Integer numActive = null;
 
   @JsonProperty("activeLink")
-  private String activeLink = null;
+  private LinkDesc activeLink = null;
 
   @JsonProperty("numCompleted")
   private Integer numCompleted = null;
 
   @JsonProperty("completedLink")
-  private String completedLink = null;
+  private LinkDesc completedLink = null;
 
   public RepairQueue numPending(Integer numPending) {
     this.numPending = numPending;
@@ -65,10 +42,10 @@ public class RepairQueue {
 
   /**
    * The number of pending repairs
-   *
    * @return numPending
-   **/
+  **/
   @ApiModelProperty(value = "The number of pending repairs")
+
 
   public Integer getNumPending() {
     return numPending;
@@ -78,23 +55,24 @@ public class RepairQueue {
     this.numPending = numPending;
   }
 
-  public RepairQueue pendingLink(String pendingLink) {
+  public RepairQueue pendingLink(LinkDesc pendingLink) {
     this.pendingLink = pendingLink;
     return this;
   }
 
   /**
-   * A link to the pending repairs.
-   *
+   * Get pendingLink
    * @return pendingLink
-   **/
-  @ApiModelProperty(value = "A link to the pending repairs.")
+  **/
+  @ApiModelProperty(value = "")
 
-  public String getPendingLink() {
+  @Valid
+
+  public LinkDesc getPendingLink() {
     return pendingLink;
   }
 
-  public void setPendingLink(String pendingLink) {
+  public void setPendingLink(LinkDesc pendingLink) {
     this.pendingLink = pendingLink;
   }
 
@@ -105,10 +83,10 @@ public class RepairQueue {
 
   /**
    * The number of active repairs
-   *
    * @return numActive
-   **/
+  **/
   @ApiModelProperty(value = "The number of active repairs")
+
 
   public Integer getNumActive() {
     return numActive;
@@ -118,23 +96,24 @@ public class RepairQueue {
     this.numActive = numActive;
   }
 
-  public RepairQueue activeLink(String activeLink) {
+  public RepairQueue activeLink(LinkDesc activeLink) {
     this.activeLink = activeLink;
     return this;
   }
 
   /**
-   * A link to the active repairs.
-   *
+   * Get activeLink
    * @return activeLink
-   **/
-  @ApiModelProperty(value = "A link to the active repairs.")
+  **/
+  @ApiModelProperty(value = "")
 
-  public String getActiveLink() {
+  @Valid
+
+  public LinkDesc getActiveLink() {
     return activeLink;
   }
 
-  public void setActiveLink(String activeLink) {
+  public void setActiveLink(LinkDesc activeLink) {
     this.activeLink = activeLink;
   }
 
@@ -145,10 +124,10 @@ public class RepairQueue {
 
   /**
    * The number of completed repairs
-   *
    * @return numCompleted
-   **/
+  **/
   @ApiModelProperty(value = "The number of completed repairs")
+
 
   public Integer getNumCompleted() {
     return numCompleted;
@@ -158,23 +137,24 @@ public class RepairQueue {
     this.numCompleted = numCompleted;
   }
 
-  public RepairQueue completedLink(String completedLink) {
+  public RepairQueue completedLink(LinkDesc completedLink) {
     this.completedLink = completedLink;
     return this;
   }
 
   /**
-   * A link to the  completed repairs.
-   *
+   * Get completedLink
    * @return completedLink
-   **/
-  @ApiModelProperty(value = "A link to the  completed repairs.")
+  **/
+  @ApiModelProperty(value = "")
 
-  public String getCompletedLink() {
+  @Valid
+
+  public LinkDesc getCompletedLink() {
     return completedLink;
   }
 
-  public void setCompletedLink(String completedLink) {
+  public void setCompletedLink(LinkDesc completedLink) {
     this.completedLink = completedLink;
   }
 
@@ -198,15 +178,14 @@ public class RepairQueue {
 
   @Override
   public int hashCode() {
-    return Objects
-        .hash(numPending, pendingLink, numActive, activeLink, numCompleted, completedLink);
+    return Objects.hash(numPending, pendingLink, numActive, activeLink, numCompleted, completedLink);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class RepairQueue {\n");
-
+    
     sb.append("    numPending: ").append(toIndentedString(numPending)).append("\n");
     sb.append("    pendingLink: ").append(toIndentedString(pendingLink)).append("\n");
     sb.append("    numActive: ").append(toIndentedString(numActive)).append("\n");

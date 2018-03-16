@@ -1,37 +1,13 @@
-/*
- * Copyright (c) 2018 Board of Trustees of Leland Stanford Jr. University,
- * all rights reserved.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- * STANFORD UNIVERSITY BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
- * IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
- * Except as contained in this notice, the name of Stanford University shall not
- * be used in advertising or otherwise to promote the sale, use or other dealings
- * in this Software without prior written authorization from Stanford University.
- */
-
 package org.lockss.laaws.poller.model;
 
+import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import java.util.Objects;
-import javax.validation.constraints.NotNull;
 import org.springframework.validation.annotation.Validated;
+import javax.validation.Valid;
+import javax.validation.constraints.*;
 
 /**
  * The information needed to page in a long list of data
@@ -39,8 +15,7 @@ import org.springframework.validation.annotation.Validated;
 @ApiModel(description = "The information needed to page in a long list of data")
 @Validated
 
-public class PageDesc {
-
+public class PageDesc   {
   @JsonProperty("page")
   private Integer page = null;
 
@@ -63,11 +38,11 @@ public class PageDesc {
 
   /**
    * The page number
-   *
    * @return page
-   **/
+  **/
   @ApiModelProperty(example = "10", required = true, value = "The page number")
   @NotNull
+
 
   public Integer getPage() {
     return page;
@@ -84,11 +59,11 @@ public class PageDesc {
 
   /**
    * The size or number of elements on a page
-   *
    * @return size
-   **/
+  **/
   @ApiModelProperty(example = "5", required = true, value = "The size or number of elements on a page")
   @NotNull
+
 
   public Integer getSize() {
     return size;
@@ -105,11 +80,11 @@ public class PageDesc {
 
   /**
    * The total number of elements.
-   *
    * @return total
-   **/
+  **/
   @ApiModelProperty(example = "150", required = true, value = "The total number of elements.")
   @NotNull
+
 
   public Integer getTotal() {
     return total;
@@ -126,10 +101,10 @@ public class PageDesc {
 
   /**
    * The url of the prev page of results or null
-   *
    * @return prevPage
-   **/
+  **/
   @ApiModelProperty(value = "The url of the prev page of results or null")
+
 
   public String getPrevPage() {
     return prevPage;
@@ -146,10 +121,10 @@ public class PageDesc {
 
   /**
    * The url to the next page of results or null.
-   *
    * @return nextPage
-   **/
+  **/
   @ApiModelProperty(value = "The url to the next page of results or null.")
+
 
   public String getNextPage() {
     return nextPage;
@@ -185,7 +160,7 @@ public class PageDesc {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class PageDesc {\n");
-
+    
     sb.append("    page: ").append(toIndentedString(page)).append("\n");
     sb.append("    size: ").append(toIndentedString(size)).append("\n");
     sb.append("    total: ").append(toIndentedString(total)).append("\n");
