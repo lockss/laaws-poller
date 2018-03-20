@@ -1,3 +1,4 @@
+
 # Copyright (c) 2017 Board of Trustees of Leland Stanford Jr. University,
 # all rights reserved.
 #
@@ -28,6 +29,8 @@ org.lockss.log.default.level=debug
 
 org.lockss.ui.access.ip.logForbidden=true
 org.lockss.proxy.access.ip.logForbidden=true
+
+org.lockss.platform.diskSpacePaths=./cache
 
 org.lockss.config.reloadInterval = 5m
 org.lockss.ui.allowPluginConfig=true
@@ -68,7 +71,7 @@ org.lockss.blockHasher.ignoreFilesOutsideCrawlSpec=true
 org.lockss.baseau.minFetchDelay=3000
 org.lockss.plugin.restartAusWithNewPlugin=true
 
-# Disable crawler, poller and voter
+# Disable crawler,
 org.lockss.crawler.enabled=false
 org.lockss.poll.v3.enableV3Poller=true
 org.lockss.poll.v3.enableV3Voter=true
@@ -79,4 +82,10 @@ org.lockss.ws.enabled=false
 # No Repository Manager.
 org.lockss.plugin.auContentFromWs=true
 
-org.lockss.ui.port=54421
+org.lockss.ui.port=49521
+
+# The database manager used to store the Archival Unit metadata.
+#
+# Using Derby.
+org.lockss.metadataDbManager.datasource.className=org.apache.derby.jdbc.ClientDataSource
+org.lockss.metadataDbManager.datasource.password=goodPassword

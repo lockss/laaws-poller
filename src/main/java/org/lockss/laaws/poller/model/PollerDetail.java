@@ -1,19 +1,40 @@
+/*
+ * Copyright (c) 2018 Board of Trustees of Leland Stanford Jr. University,
+ * all rights reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+ * STANFORD UNIVERSITY BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+ * IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Except as contained in this notice, the name of Stanford University shall not
+ * be used in advertising or otherwise to promote the sale, use or other dealings
+ * in this Software without prior written authorization from Stanford University.
+ */
+
 package org.lockss.laaws.poller.model;
 
-import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
 import java.util.List;
-import org.lockss.laaws.poller.model.PeerData;
-import org.lockss.laaws.poller.model.PollDesc;
-import org.lockss.laaws.poller.model.RepairQueue;
-import org.lockss.laaws.poller.model.TallyData;
-import org.springframework.validation.annotation.Validated;
+import java.util.Objects;
 import javax.validation.Valid;
-import javax.validation.constraints.*;
+import javax.validation.constraints.NotNull;
+import org.springframework.validation.annotation.Validated;
 
 /**
  * The details of a poll being performed or queued by the Poller
@@ -21,7 +42,7 @@ import javax.validation.constraints.*;
 @ApiModel(description = "The details of a poll being performed or queued by the Poller")
 @Validated
 
-public class PollDetail   {
+public class PollerDetail   {
   @JsonProperty("pollDesc")
   private PollDesc pollDesc = null;
 
@@ -81,7 +102,7 @@ public class PollDetail   {
   @JsonProperty("repairQueue")
   private RepairQueue repairQueue = null;
 
-  public PollDetail pollDesc(PollDesc pollDesc) {
+  public PollerDetail pollDesc(PollDesc pollDesc) {
     this.pollDesc = pollDesc;
     return this;
   }
@@ -103,7 +124,7 @@ public class PollDetail   {
     this.pollDesc = pollDesc;
   }
 
-  public PollDetail pollerId(String pollerId) {
+  public PollerDetail pollerId(String pollerId) {
     this.pollerId = pollerId;
     return this;
   }
@@ -124,7 +145,7 @@ public class PollDetail   {
     this.pollerId = pollerId;
   }
 
-  public PollDetail status(String status) {
+  public PollerDetail status(String status) {
     this.status = status;
     return this;
   }
@@ -145,7 +166,7 @@ public class PollDetail   {
     this.status = status;
   }
 
-  public PollDetail pollKey(String pollKey) {
+  public PollerDetail pollKey(String pollKey) {
     this.pollKey = pollKey;
     return this;
   }
@@ -165,7 +186,7 @@ public class PollDetail   {
     this.pollKey = pollKey;
   }
 
-  public PollDetail createTime(Long createTime) {
+  public PollerDetail createTime(Long createTime) {
     this.createTime = createTime;
     return this;
   }
@@ -185,7 +206,7 @@ public class PollDetail   {
     this.createTime = createTime;
   }
 
-  public PollDetail duration(Long duration) {
+  public PollerDetail duration(Long duration) {
     this.duration = duration;
     return this;
   }
@@ -205,7 +226,7 @@ public class PollDetail   {
     this.duration = duration;
   }
 
-  public PollDetail deadline(Long deadline) {
+  public PollerDetail deadline(Long deadline) {
     this.deadline = deadline;
     return this;
   }
@@ -225,7 +246,7 @@ public class PollDetail   {
     this.deadline = deadline;
   }
 
-  public PollDetail outerCircleTarget(Integer outerCircleTarget) {
+  public PollerDetail outerCircleTarget(Integer outerCircleTarget) {
     this.outerCircleTarget = outerCircleTarget;
     return this;
   }
@@ -245,7 +266,7 @@ public class PollDetail   {
     this.outerCircleTarget = outerCircleTarget;
   }
 
-  public PollDetail hashAlgorithm(String hashAlgorithm) {
+  public PollerDetail hashAlgorithm(String hashAlgorithm) {
     this.hashAlgorithm = hashAlgorithm;
     return this;
   }
@@ -265,7 +286,7 @@ public class PollDetail   {
     this.hashAlgorithm = hashAlgorithm;
   }
 
-  public PollDetail voteMargin(Integer voteMargin) {
+  public PollerDetail voteMargin(Integer voteMargin) {
     this.voteMargin = voteMargin;
     return this;
   }
@@ -285,7 +306,7 @@ public class PollDetail   {
     this.voteMargin = voteMargin;
   }
 
-  public PollDetail voteDeadline(Long voteDeadline) {
+  public PollerDetail voteDeadline(Long voteDeadline) {
     this.voteDeadline = voteDeadline;
     return this;
   }
@@ -305,7 +326,7 @@ public class PollDetail   {
     this.voteDeadline = voteDeadline;
   }
 
-  public PollDetail voteDuration(Long voteDuration) {
+  public PollerDetail voteDuration(Long voteDuration) {
     this.voteDuration = voteDuration;
     return this;
   }
@@ -325,7 +346,7 @@ public class PollDetail   {
     this.voteDuration = voteDuration;
   }
 
-  public PollDetail pollEnd(Long pollEnd) {
+  public PollerDetail pollEnd(Long pollEnd) {
     this.pollEnd = pollEnd;
     return this;
   }
@@ -345,7 +366,7 @@ public class PollDetail   {
     this.pollEnd = pollEnd;
   }
 
-  public PollDetail quorum(Integer quorum) {
+  public PollerDetail quorum(Integer quorum) {
     this.quorum = quorum;
     return this;
   }
@@ -365,7 +386,7 @@ public class PollDetail   {
     this.quorum = quorum;
   }
 
-  public PollDetail errorDetails(String errorDetails) {
+  public PollerDetail errorDetails(String errorDetails) {
     this.errorDetails = errorDetails;
     return this;
   }
@@ -385,12 +406,12 @@ public class PollDetail   {
     this.errorDetails = errorDetails;
   }
 
-  public PollDetail votedPeers(List<PeerData> votedPeers) {
+  public PollerDetail votedPeers(List<PeerData> votedPeers) {
     this.votedPeers = votedPeers;
     return this;
   }
 
-  public PollDetail addVotedPeersItem(PeerData votedPeersItem) {
+  public PollerDetail addVotedPeersItem(PeerData votedPeersItem) {
     if (this.votedPeers == null) {
       this.votedPeers = new ArrayList<>();
     }
@@ -414,12 +435,12 @@ public class PollDetail   {
     this.votedPeers = votedPeers;
   }
 
-  public PollDetail noAuPeers(List<String> noAuPeers) {
+  public PollerDetail noAuPeers(List<String> noAuPeers) {
     this.noAuPeers = noAuPeers;
     return this;
   }
 
-  public PollDetail addNoAuPeersItem(String noAuPeersItem) {
+  public PollerDetail addNoAuPeersItem(String noAuPeersItem) {
     if (this.noAuPeers == null) {
       this.noAuPeers = new ArrayList<>();
     }
@@ -442,7 +463,7 @@ public class PollDetail   {
     this.noAuPeers = noAuPeers;
   }
 
-  public PollDetail tally(TallyData tally) {
+  public PollerDetail tally(TallyData tally) {
     this.tally = tally;
     return this;
   }
@@ -463,7 +484,7 @@ public class PollDetail   {
     this.tally = tally;
   }
 
-  public PollDetail repairQueue(RepairQueue repairQueue) {
+  public PollerDetail repairQueue(RepairQueue repairQueue) {
     this.repairQueue = repairQueue;
     return this;
   }
@@ -493,26 +514,26 @@ public class PollDetail   {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    PollDetail pollDetail = (PollDetail) o;
-    return Objects.equals(this.pollDesc, pollDetail.pollDesc) &&
-        Objects.equals(this.pollerId, pollDetail.pollerId) &&
-        Objects.equals(this.status, pollDetail.status) &&
-        Objects.equals(this.pollKey, pollDetail.pollKey) &&
-        Objects.equals(this.createTime, pollDetail.createTime) &&
-        Objects.equals(this.duration, pollDetail.duration) &&
-        Objects.equals(this.deadline, pollDetail.deadline) &&
-        Objects.equals(this.outerCircleTarget, pollDetail.outerCircleTarget) &&
-        Objects.equals(this.hashAlgorithm, pollDetail.hashAlgorithm) &&
-        Objects.equals(this.voteMargin, pollDetail.voteMargin) &&
-        Objects.equals(this.voteDeadline, pollDetail.voteDeadline) &&
-        Objects.equals(this.voteDuration, pollDetail.voteDuration) &&
-        Objects.equals(this.pollEnd, pollDetail.pollEnd) &&
-        Objects.equals(this.quorum, pollDetail.quorum) &&
-        Objects.equals(this.errorDetails, pollDetail.errorDetails) &&
-        Objects.equals(this.votedPeers, pollDetail.votedPeers) &&
-        Objects.equals(this.noAuPeers, pollDetail.noAuPeers) &&
-        Objects.equals(this.tally, pollDetail.tally) &&
-        Objects.equals(this.repairQueue, pollDetail.repairQueue);
+    PollerDetail pollerDetail = (PollerDetail) o;
+    return Objects.equals(this.pollDesc, pollerDetail.pollDesc) &&
+        Objects.equals(this.pollerId, pollerDetail.pollerId) &&
+        Objects.equals(this.status, pollerDetail.status) &&
+        Objects.equals(this.pollKey, pollerDetail.pollKey) &&
+        Objects.equals(this.createTime, pollerDetail.createTime) &&
+        Objects.equals(this.duration, pollerDetail.duration) &&
+        Objects.equals(this.deadline, pollerDetail.deadline) &&
+        Objects.equals(this.outerCircleTarget, pollerDetail.outerCircleTarget) &&
+        Objects.equals(this.hashAlgorithm, pollerDetail.hashAlgorithm) &&
+        Objects.equals(this.voteMargin, pollerDetail.voteMargin) &&
+        Objects.equals(this.voteDeadline, pollerDetail.voteDeadline) &&
+        Objects.equals(this.voteDuration, pollerDetail.voteDuration) &&
+        Objects.equals(this.pollEnd, pollerDetail.pollEnd) &&
+        Objects.equals(this.quorum, pollerDetail.quorum) &&
+        Objects.equals(this.errorDetails, pollerDetail.errorDetails) &&
+        Objects.equals(this.votedPeers, pollerDetail.votedPeers) &&
+        Objects.equals(this.noAuPeers, pollerDetail.noAuPeers) &&
+        Objects.equals(this.tally, pollerDetail.tally) &&
+        Objects.equals(this.repairQueue, pollerDetail.repairQueue);
   }
 
   @Override
@@ -523,7 +544,7 @@ public class PollDetail   {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class PollDetail {\n");
+    sb.append("class PollerDetail {\n");
     
     sb.append("    pollDesc: ").append(toIndentedString(pollDesc)).append("\n");
     sb.append("    pollerId: ").append(toIndentedString(pollerId)).append("\n");

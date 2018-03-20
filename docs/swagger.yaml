@@ -48,20 +48,12 @@ paths:
             description: Return a poll service id.
         '401':
           description: The Request is unauthorized
-          schema:
-            $ref: '#/definitions/ErrorDesc'
         '403':
           description: The Au is not eligible for polling
-          schema:
-            $ref: '#/definitions/ErrorDesc'
         '404':
           description: The descriptor (au) can not be found.
-          schema:
-            $ref: '#/definitions/ErrorDesc'
         '500':
           description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ErrorDesc'
   '/polls/{psId}':
     get:
       tags:
@@ -79,16 +71,10 @@ paths:
             $ref: '#/definitions/PollerSummary'
         '401':
           description: Unauthorized request
-          schema:
-            $ref: '#/definitions/ErrorDesc'
         '404':
-          description: No such poll id.
-          schema:
-            $ref: '#/definitions/ErrorDesc'
+          description: No such poll service id.
         '500':
           description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ErrorDesc'
     delete:
       tags:
         - service
@@ -105,51 +91,35 @@ paths:
           description: Poll successfully stopped
         '401':
           description: Unauthorized request
-          schema:
-            $ref: '#/definitions/ErrorDesc'
         '404':
           description: No poll found with that id
-          schema:
-            $ref: '#/definitions/ErrorDesc'
         '500':
           description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ErrorDesc'
     parameters:
       - name: psId
         in: path
         required: true
         type: string
-  '/polls/{pollKey}/details':
+  /status:
     get:
       tags:
-        - poll
-      summary: PollDetails
-      operationId: getPollDetails
-      description: Return the detailed information about a poll.
-      parameters: []
+      - "status"
+      summary: "Get the status of the service"
+      description: "Get the status of the service"
+      operationId: "getStatus"
+      produces:
+      - "application/json"
       responses:
-        '200':
-          description: Detailed poll info returned.
+        200:
+          description: "The status of the service"
           schema:
-            $ref: '#/definitions/PollDetail'
-        '401':
-          description: Unauthorized request
-          schema:
-            $ref: '#/definitions/ErrorDesc'
-        '404':
-          description: No such poll key.
-          schema:
-            $ref: '#/definitions/ErrorDesc'
-        '500':
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ErrorDesc'
-    parameters:
-      - name: pollKey
-        in: path
-        required: true
-        type: string
+            $ref: "#/definitions/apiStatus"
+        401:
+          description: "Unauthorized request"
+        500:
+          description: "Internal server error"
+        503:
+          description: "Some or all of the system is not available"
   '/polls/{pollKey}/tallies':
     get:
       tags:
@@ -198,12 +168,8 @@ paths:
               x-example: 50
         '404':
           description: Poll Key not found.
-          schema:
-            $ref: '#/definitions/ErrorDesc'
         '500':
           description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ErrorDesc'
     parameters:
       - name: pollKey
         in: path
@@ -256,12 +222,8 @@ paths:
               x-example: 50
         '404':
           description: Poll ID not found.
-          schema:
-            $ref: '#/definitions/ErrorDesc'
         '500':
           description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ErrorDesc'
     parameters:
       - name: pollKey
         in: path
@@ -315,12 +277,8 @@ paths:
               x-example: 50
         '404':
           description: Poll or Voter ID not found.
-          schema:
-            $ref: '#/definitions/ErrorDesc'
         '500':
           description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ErrorDesc'
     parameters:
       - name: pollKey
         in: path
@@ -378,12 +336,32 @@ paths:
               x-example: 50
         '401':
           description: Unauthorized request
-          schema:
-            $ref: '#/definitions/ErrorDesc'
         '500':
           description: Internal Server Error
+  '/polls/poller/{pollKey}':
+    get:
+      tags:
+        - poller
+      summary: PollerDetails
+      operationId: getPollerPollDetails
+      description: Return the detailed information about a poll.
+      parameters: []
+      responses:
+        '200':
+          description: Detailed poll info returned.
           schema:
-            $ref: '#/definitions/ErrorDesc'
+            $ref: '#/definitions/PollerDetail'
+        '401':
+          description: Unauthorized request.
+        '404':
+          description: Poll Key not found.
+        '500':
+          description: Internal Server Error
+    parameters:
+      - name: pollKey
+        in: path
+        required: true
+        type: string
   /polls/voter:
     get:
       tags:
@@ -430,18 +408,38 @@ paths:
               x-example: 50
         '401':
           description: Unauthorized request
-          schema:
-            $ref: '#/definitions/ErrorDesc'
         '500':
           description: Internal Server Error
+  '/polls/voter/{pollKey}':
+    get:
+      tags:
+        - voter
+      summary: VoterDetails
+      operationId: getVoterPollDetails
+      description: Return the detailed information about a poll.
+      parameters: []
+      responses:
+        '200':
+          description: Detailed poll info returned.
           schema:
-            $ref: '#/definitions/ErrorDesc'
+            $ref: '#/definitions/VoterDetail'
+        '401':
+          description: Unauthorized request
+        '404':
+          description: No such poll key.
+        '500':
+          description: Internal Server Error
+    parameters:
+      - name: pollKey
+        in: path
+        required: true
+        type: string
 securityDefinitions:
   basicAuth:
     description: HTTP Basic Authentication. Works over `HTTP` and `HTTPS`
     type: basic
 definitions:
-  PollDetail:
+  PollerDetail:
     type: object
     required:
       - pollDesc
@@ -518,6 +516,87 @@ definitions:
       repairQueue:
         $ref: '#/definitions/RepairQueue'
     description: The details of a poll being performed or queued by the Poller
+  VoterDetail:
+    type: object
+    required:
+      - pollDesc
+      - pollerId
+      - status
+    properties:
+      pollDesc:
+        $ref: '#/definitions/PollDesc'
+      pollerId:
+        type: string
+        description: The id of the voter in the poll
+      callerId:
+         type: string
+         description: The id of the poller who called the poll
+      status:
+        type: string
+        description: The current status of the poll.
+      pollKey:
+        type: string
+        description: Key generated by poll manager when poll is created.
+      createTime:
+        type: integer
+        format: int64
+        description: The timestamp  at which the poll was created.
+      duration:
+        type: integer
+        format: int64
+        description: The estimated duration for the poll.
+      deadline:
+        type: integer
+        format: int64
+        description: The time by which the poll must have completed
+      hashAlgorithm:
+        type: string
+        description: The algorithm used by the hasher for this poll.
+      agreement:
+        type: number
+        format: double
+        description: The percentage agreement.
+      wtAgreement:
+        type: number
+        format: double
+        description: The weighted percentage agreement.
+      symmetricAgreement:
+        type: number
+        format: double
+        description: The percentage of symmetric agreement.
+      wtSymmetricAgreement:
+        type: number
+        format: double
+        description: The weighted percentage of symmetric agreement.
+      pollerNonce:
+        type: string
+        description: the poller nonce
+      voterNonce:
+        type: string
+        description: the voter nonce
+      voter2Nonce:
+        type: string
+        description: the voter2 nonce
+      voteDeadline:
+        type: integer
+        format: int64
+        description: The  time by which all voters must have voted.
+      numAgree:
+        type: integer
+        format: int32
+      numDisagree:
+        type: integer
+        format: int32
+      numPollerOnly:
+        type: integer
+        format: int32
+      numVoterOnly:
+        type: integer
+        format: int32
+      errorDetails:
+        type: string
+        description: The error which caused the poll to fail.
+    description: The details of a poll being performed or queued as the Voter.
   PeerData:
     type: object
     required:
@@ -884,28 +963,6 @@ definitions:
       A set of urls bounded by  upper and lower restraints.  If lower = "." this
       is a singleContentNode. If lower is null then start at the root url, if
       upper is null end with the last.
-  ErrorDesc:
-    type: object
-    required:
-      - code
-    properties:
-      code:
-        type: integer
-        minimum: 400
-        maximum: 599
-      description:
-        type: string
-        example: 'Bad query parameter [$size]: Invalid integer value [abc]'
-      reasonPhrase:
-        type: string
-        example: Bad Request
-    description: This general error structure is used throughout this API.
-    example: |-
-      {
-        "code": 400,
-        "description": "Bad query parameter [$size]: Invalid integer value [abc]",
-        "reasonPhrase": "Bad Request"
-      }
   PageDesc:
     type: object
     required:
@@ -945,3 +1002,16 @@ definitions:
         type: string
         description: A description of this link
         example: pollerOnly
+  apiStatus:
+    type: "object"
+    required:
+    - "version"
+    - "ready"
+    properties:
+      version:
+        type: "string"
+        description: "The version of the service"
+      ready:
+        type: "boolean"
+        description: "The indication of whether the service is available"
+    description: "The status information of the service"

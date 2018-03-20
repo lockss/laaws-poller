@@ -32,23 +32,18 @@ import java.util.Collections;
 import java.util.List;
 import org.springframework.http.HttpHeaders;
 
-public class Page<T> {
+public class Page {
 
-  public static final int DEFAULT_OFFSET = 1;
-  public static final int MIN_OFFSET = 1;
-  public static final int DEFAULT_LIMIT = 20;
-  public static final int MAX_LIMIT = 100;
-
-  protected int pageNum = 1;
-  protected int pageSize;
-  protected int lastPage = 1;
+  protected Integer pageNum = 1;
+  protected Integer pageSize;
+  protected Integer lastPage = 1;
 
   protected int offset = 0;
   protected int total = 0;
 
-  private final List<T> content = new ArrayList<>();
+  private final List content = new ArrayList<>();
 
-  public Page(Collection<T> content, int page, int size) {
+  public Page(Collection content, int page, int size) {
     if (null == content) {
       throw new IllegalArgumentException("Content must not be null!");
     }
@@ -65,7 +60,7 @@ public class Page<T> {
       offset = 0;
     } else {
       // we need to calculate pageNum and LastPage
-      lastPage = total / size + (total % size > 0 ? 1 : 0) + 1;
+      lastPage = total / size + (total % size > 0 ? 1 : 0);
       pageNum = page > 0 ? page : 1;
       pageNum = pageNum > lastPage ? lastPage : pageNum;
       offset = (pageNum - 1) * size;
@@ -92,7 +87,7 @@ public class Page<T> {
     return total;
   }
 
-  public List<T> getPageContent() {
+  public List getPageContent() {
     return Collections.unmodifiableList(this.content);
   }
 
@@ -118,7 +113,7 @@ public class Page<T> {
   }
 
   public String getFirstLink(String baseUri) {
-    return baseUri + "?page=" + 1 + "&size=" + pageSize;
+    return baseUri +"?page=" + 1 + "&size=" + pageSize;
   }
 
   public String getLastLink(String baseUri) {

@@ -16,4 +16,5 @@ public class PollsApiController implements PollsApi {
     public PollsApiDelegate getDelegate() {
         return delegate;
     }
+
 }

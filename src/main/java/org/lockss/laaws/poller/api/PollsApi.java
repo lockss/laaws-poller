@@ -5,32 +5,18 @@
  */
 package org.lockss.laaws.poller.api;
 
-import org.lockss.laaws.poller.model.ErrorDesc;
-import org.lockss.laaws.poller.model.PollDesc;
-import org.lockss.laaws.poller.model.PollDetail;
-import org.lockss.laaws.poller.model.PollerPager;
-import org.lockss.laaws.poller.model.PollerSummary;
-import org.lockss.laaws.poller.model.RepairPager;
-import org.lockss.laaws.poller.model.UrlPager;
-import org.lockss.laaws.poller.model.VoterPager;
 import io.swagger.annotations.*;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.multipart.MultipartFile;
-
 import javax.validation.Valid;
-import javax.validation.constraints.*;
-import java.util.List;
+import javax.validation.constraints.NotNull;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import org.lockss.laaws.poller.model.*;
+import org.lockss.rs.status.ApiStatus;
+import org.lockss.rs.status.SpringLockssBaseApi;
 
 @Api(value = "polls", description = "the polls API")
-public interface PollsApi {
+public interface PollsApi extends SpringLockssBaseApi {
 
     PollsApiDelegate getDelegate();
 
@@ -39,10 +25,10 @@ public interface PollsApi {
     }, tags={ "service", })
     @ApiResponses(value = { 
         @ApiResponse(code = 202, message = "The Poll request has been accepted and added to the queue.", response = String.class),
-        @ApiResponse(code = 401, message = "The Request is unauthorized", response = ErrorDesc.class),
-        @ApiResponse(code = 403, message = "The Au is not eligible for polling", response = ErrorDesc.class),
-        @ApiResponse(code = 404, message = "The descriptor (au) can not be found.", response = ErrorDesc.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorDesc.class) })
+        @ApiResponse(code = 401, message = "The Request is unauthorized"),
+        @ApiResponse(code = 403, message = "The Au is not eligible for polling"),
+        @ApiResponse(code = 404, message = "The descriptor (au) can not be found."),
+        @ApiResponse(code = 500, message = "Internal Server Error") })
     @RequestMapping(value = "/polls",
         produces = { "application/json" }, 
         consumes = { "application/json" },
@@ -57,9 +43,9 @@ public interface PollsApi {
     }, tags={ "service", })
     @ApiResponses(value = { 
         @ApiResponse(code = 200, message = "Poll successfully stopped"),
-        @ApiResponse(code = 401, message = "Unauthorized request", response = ErrorDesc.class),
-        @ApiResponse(code = 404, message = "No poll found with that id", response = ErrorDesc.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorDesc.class) })
+        @ApiResponse(code = 401, message = "Unauthorized request"),
+        @ApiResponse(code = 404, message = "No poll found with that id"),
+        @ApiResponse(code = 500, message = "Internal Server Error") })
     @RequestMapping(value = "/polls/{psId}",
         produces = { "application/json" }, 
         consumes = { "application/json" },
@@ -69,30 +55,13 @@ public interface PollsApi {
     }
 
 
-    @ApiOperation(value = "PollDetails", nickname = "getPollDetails", notes = "Return the detailed information about a poll.", response = PollDetail.class, authorizations = {
-        @Authorization(value = "basicAuth")
-    }, tags={ "poll", })
-    @ApiResponses(value = { 
-        @ApiResponse(code = 200, message = "Detailed poll info returned.", response = PollDetail.class),
-        @ApiResponse(code = 401, message = "Unauthorized request", response = ErrorDesc.class),
-        @ApiResponse(code = 404, message = "No such poll key.", response = ErrorDesc.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorDesc.class) })
-    @RequestMapping(value = "/polls/{pollKey}/details",
-        produces = { "application/json" }, 
-        consumes = { "application/json" },
-        method = RequestMethod.GET)
-    default ResponseEntity<PollDetail> getPollDetails(@ApiParam(value = "",required=true) @PathVariable("pollKey") String pollKey) {
-        return getDelegate().getPollDetails(pollKey);
-    }
-
-
     @ApiOperation(value = "Poll Peer Data", nickname = "getPollPeerVoteUrls", notes = "", response = UrlPager.class, authorizations = {
         @Authorization(value = "basicAuth")
     }, tags={ "poll", })
     @ApiResponses(value = { 
         @ApiResponse(code = 200, message = "A pagable list of voter urls with a given status.", response = UrlPager.class),
-        @ApiResponse(code = 404, message = "Poll or Voter ID not found.", response = ErrorDesc.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorDesc.class) })
+        @ApiResponse(code = 404, message = "Poll or Voter ID not found."),
+        @ApiResponse(code = 500, message = "Internal Server Error") })
     @RequestMapping(value = "/polls/{pollKey}/peer/{peerId}",
         produces = { "application/json" }, 
         consumes = { "application/json" },
@@ -107,9 +76,9 @@ public interface PollsApi {
     }, tags={ "service", })
     @ApiResponses(value = { 
         @ApiResponse(code = 200, message = "Poll info returned.", response = PollerSummary.class),
-        @ApiResponse(code = 401, message = "Unauthorized request", response = ErrorDesc.class),
-        @ApiResponse(code = 404, message = "No such poll id.", response = ErrorDesc.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorDesc.class) })
+        @ApiResponse(code = 401, message = "Unauthorized request"),
+        @ApiResponse(code = 404, message = "No such poll service id."),
+        @ApiResponse(code = 500, message = "Internal Server Error") })
     @RequestMapping(value = "/polls/{psId}",
         produces = { "application/json" }, 
         consumes = { "application/json" },
@@ -119,13 +88,30 @@ public interface PollsApi {
     }
 
 
+    @ApiOperation(value = "PollerDetails", nickname = "getPollerPollDetails", notes = "Return the detailed information about a poll.", response = PollerDetail.class, authorizations = {
+        @Authorization(value = "basicAuth")
+    }, tags={ "poller", })
+    @ApiResponses(value = { 
+        @ApiResponse(code = 200, message = "Detailed poll info returned.", response = PollerDetail.class),
+        @ApiResponse(code = 401, message = "Unauthorized request."),
+        @ApiResponse(code = 404, message = "Poll Key not found."),
+        @ApiResponse(code = 500, message = "Internal Server Error") })
+    @RequestMapping(value = "/polls/poller/{pollKey}",
+        produces = { "application/json" }, 
+        consumes = { "application/json" },
+        method = RequestMethod.GET)
+    default ResponseEntity<PollerDetail> getPollerPollDetails(@ApiParam(value = "",required=true) @PathVariable("pollKey") String pollKey) {
+        return getDelegate().getPollerPollDetails(pollKey);
+    }
+
+
     @ApiOperation(value = "Get the list of recent polls as poller.", nickname = "getPollsAsPoller", notes = "Get the list of recent polls as poller from the poll queue. if size and page are passed in use those arguments to limit return data.", response = PollerPager.class, authorizations = {
         @Authorization(value = "basicAuth")
     }, tags={ "poller", })
     @ApiResponses(value = { 
         @ApiResponse(code = 200, message = "A pagable list has been returned.", response = PollerPager.class),
-        @ApiResponse(code = 401, message = "Unauthorized request", response = ErrorDesc.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorDesc.class) })
+        @ApiResponse(code = 401, message = "Unauthorized request"),
+        @ApiResponse(code = 500, message = "Internal Server Error") })
     @RequestMapping(value = "/polls/poller",
         produces = { "application/json" }, 
         consumes = { "application/json" },
@@ -140,8 +126,8 @@ public interface PollsApi {
     }, tags={ "voter", })
     @ApiResponses(value = { 
         @ApiResponse(code = 200, message = "A pagable list has been returned.", response = VoterPager.class),
-        @ApiResponse(code = 401, message = "Unauthorized request", response = ErrorDesc.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorDesc.class) })
+        @ApiResponse(code = 401, message = "Unauthorized request"),
+        @ApiResponse(code = 500, message = "Internal Server Error") })
     @RequestMapping(value = "/polls/voter",
         produces = { "application/json" }, 
         consumes = { "application/json" },
@@ -156,8 +142,8 @@ public interface PollsApi {
     }, tags={ "poll", })
     @ApiResponses(value = { 
         @ApiResponse(code = 200, message = "A pagable list of repair queue elements.", response = RepairPager.class),
-        @ApiResponse(code = 404, message = "Poll ID not found.", response = ErrorDesc.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorDesc.class) })
+        @ApiResponse(code = 404, message = "Poll ID not found."),
+        @ApiResponse(code = 500, message = "Internal Server Error") })
     @RequestMapping(value = "/polls/{pollKey}/repairs",
         produces = { "application/json" }, 
         consumes = { "application/json" },
@@ -172,14 +158,36 @@ public interface PollsApi {
     }, tags={ "poll", })
     @ApiResponses(value = { 
         @ApiResponse(code = 200, message = "A pagable list of urls for given tally type.", response = UrlPager.class),
-        @ApiResponse(code = 404, message = "Poll Key not found.", response = ErrorDesc.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorDesc.class) })
+        @ApiResponse(code = 404, message = "Poll Key not found."),
+        @ApiResponse(code = 500, message = "Internal Server Error") })
     @RequestMapping(value = "/polls/{pollKey}/tallies",
         produces = { "application/json" }, 
         consumes = { "application/json" },
         method = RequestMethod.GET)
     default ResponseEntity<UrlPager> getTallyUrls(@ApiParam(value = "The pollKey as listed in the PollDetail object.",required=true) @PathVariable("pollKey") String pollKey,@NotNull @ApiParam(value = "The kind of tally element to return.", required = true, allowableValues = "agree, disagree, error, noQuorum, tooClose") @Valid @RequestParam(value = "tally", required = true) String tally,@ApiParam(value = "The page number.") @Valid @RequestParam(value = "page", required = false) Integer page,@ApiParam(value = "The size of the page.") @Valid @RequestParam(value = "size", required = false) Integer size) {
         return getDelegate().getTallyUrls(pollKey, tally, page, size);
+    }
+
+
+    @ApiOperation(value = "VoterDetails", nickname = "getVoterPollDetails", notes = "Return the detailed information about a poll.", response = VoterDetail.class, authorizations = {
+        @Authorization(value = "basicAuth")
+    }, tags={ "voter", })
+    @ApiResponses(value = { 
+        @ApiResponse(code = 200, message = "Detailed poll info returned.", response = VoterDetail.class),
+        @ApiResponse(code = 401, message = "Unauthorized request"),
+        @ApiResponse(code = 404, message = "No such poll key."),
+        @ApiResponse(code = 500, message = "Internal Server Error") })
+    @RequestMapping(value = "/polls/voter/{pollKey}",
+        produces = { "application/json" }, 
+        consumes = { "application/json" },
+        method = RequestMethod.GET)
+    default ResponseEntity<VoterDetail> getVoterPollDetails(@ApiParam(value = "",required=true) @PathVariable("pollKey") String pollKey) {
+        return getDelegate().getVoterPollDetails(pollKey);
+    }
+
+    @Override
+    default ResponseEntity<ApiStatus> getStatus() {
+        return getDelegate().getStatus();
     }
 
 }
