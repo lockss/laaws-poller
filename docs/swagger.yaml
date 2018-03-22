@@ -968,7 +968,7 @@ definitions:
     required:
       - page
       - size
-      - total
+      - mTotal
     properties:
       page:
         type: integer
@@ -980,7 +980,7 @@ definitions:
         example: 5
       total:
         type: integer
-        description: The total number of elements.
+        description: The mTotal number of elements.
         example: 150
       prevPage:
         type: string

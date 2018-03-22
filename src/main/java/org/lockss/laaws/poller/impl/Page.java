@@ -28,104 +28,119 @@ package org.lockss.laaws.poller.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import org.springframework.http.HttpHeaders;
 
-public class Page {
+public class Page<T> {
 
-  protected Integer pageNum = 1;
-  protected Integer pageSize;
-  protected Integer lastPage = 1;
+  private Integer mPageNum = 1;
+  private Integer mLastPage = 1;
+  private Integer mPageSize = 0;
 
-  protected int offset = 0;
-  protected int total = 0;
+  private int mFirstItem = 0;
+  private int mLastItem = 0;
+  private int mTotal = 0;
+  private String mLinkBase;
 
-  private final List content = new ArrayList<>();
+  private static final String LINK_TEMPLATE = "%s?page=%d&size=%d";
+  private final List<T> mContent = new ArrayList<>();
 
-  public Page(Collection content, int page, int size) {
+  public Page(Collection<T> content, int page, int size, String linkBase) {
     if (null == content) {
       throw new IllegalArgumentException("Content must not be null!");
     }
-    this.content.addAll(content);
-
-    pageNum = page;
-    pageSize = size;
-    total = content.size();
-    if (total == 0 || size <= 0 || size >= total) {
+    this.mContent.addAll(content);
+    mLinkBase = linkBase;
+    mPageSize = size;
+    mTotal = content.size();
+    if (mTotal == 0 || size <= 0 || size >= mTotal) {
       // we return everything (or nothing)
-      pageNum = 1;
-      lastPage = 1;
-      pageSize = total;
-      offset = 0;
-    } else {
-      // we need to calculate pageNum and LastPage
-      lastPage = total / size + (total % size > 0 ? 1 : 0);
-      pageNum = page > 0 ? page : 1;
-      pageNum = pageNum > lastPage ? lastPage : pageNum;
-      offset = (pageNum - 1) * size;
+      mPageNum = 1;
+      mLastPage = 1;
+      mFirstItem = 0;
+      mLastItem = mTotal;
+      mPageSize = mTotal;
+    }
+    else {
+      // we need to calculate
+      mPageNum = page > 0 ? page : 1;
+      mLastPage = mTotal / size + (mTotal % size > 0 ? 1 : 0);
+      mPageNum = mPageNum > mLastPage ? mLastPage : mPageNum;
+      mFirstItem = (mPageNum - 1) * size;
+      mLastItem = mFirstItem + size;
+      if(mLastItem > mTotal) {
+        mLastItem = mTotal;
+      }
     }
   }
 
   public int getPageNum() {
-    return pageNum;
+    return mPageNum;
   }
 
   public int getPageSize() {
-    return pageSize;
+    return mPageSize;
   }
 
   public int getLastPage() {
-    return lastPage;
+    return mLastPage;
   }
 
-  public int getOffset() {
-    return offset;
+  public int getFirstItem() {
+    return mFirstItem;
+  }
+
+  public int getLastItem() {
+    return mLastItem;
   }
 
   public int getTotal() {
-    return total;
+    return mTotal;
   }
 
-  public List getPageContent() {
-    return Collections.unmodifiableList(this.content);
+  public List<T> getPageContent() {
+
+    if(mFirstItem != 0 && mLastItem != mTotal) {
+      return mContent.subList(mFirstItem, mLastItem);
+    }
+    return mContent;
   }
 
   public boolean hasContent() {
-    return !content.isEmpty();
+    return !mContent.isEmpty();
   }
 
 
-  public String getNextLink(String baseUri) {
+  public String getNextLink() {
     String nextPage = null;
-    if (pageNum < lastPage) {
-      nextPage = baseUri + "?page=" + (pageNum + 1) + "&size=" + pageSize;
+    if (mPageNum < mLastPage) {
+      nextPage = String.format(LINK_TEMPLATE, mLinkBase, mPageNum+1, mPageSize);
     }
     return nextPage;
   }
 
-  public String getPrevLink(String baseUri) {
+  public String getPrevLink() {
     String prevPage = null;
-    if (pageNum > 1) {
-      prevPage = baseUri + "?page=" + (pageNum - 1) + "&size=" + pageSize;
+    if (mPageNum > 1) {
+      prevPage = String.format(LINK_TEMPLATE, mLinkBase, mPageNum-1, mPageSize);
     }
     return prevPage;
   }
 
-  public String getFirstLink(String baseUri) {
-    return baseUri +"?page=" + 1 + "&size=" + pageSize;
+  public String getFirstLink() {
+    return String.format(LINK_TEMPLATE, mLinkBase, 1, mPageSize);
   }
 
-  public String getLastLink(String baseUri) {
-    return baseUri + "?page=" + lastPage + "&size=" + pageSize;
+  public String getLastLink() {
+    return String.format(LINK_TEMPLATE, mLinkBase, mLastPage, mPageSize);
   }
 
   public HttpHeaders getPageHeaders() {
     HttpHeaders headers = new HttpHeaders();
-    headers.add("X-Page-Count", "" + lastPage);
-    headers.add("X-Page-Number", "" + pageNum);
-    headers.add("X-Page-Size", "" + pageSize);
-    headers.add("X-Total-Count", "" + total);
+    headers.add("X-Page-Count", "" + mLastPage);
+    headers.add("X-Page-Number", "" + mPageNum);
+    headers.add("X-Page-Size", "" + mPageSize);
+    headers.add("X-Total-Count", "" + mTotal);
     return headers;
   }
 }

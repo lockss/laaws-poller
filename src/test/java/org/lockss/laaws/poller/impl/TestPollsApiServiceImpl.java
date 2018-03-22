@@ -26,7 +26,13 @@
 
 package org.lockss.laaws.poller.impl;
 
+import static org.mockito.Mockito.when;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,15 +40,18 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import org.lockss.laaws.poller.PollerApplication;
 import org.lockss.laaws.poller.model.*;
 import org.lockss.plugin.PluginManager;
 import org.lockss.poller.PollManager;
 import org.lockss.poller.PollSpec;
 import org.lockss.rs.status.ApiStatus;
+import org.lockss.test.SpringLockssTestCase;
 
-class TestPollsApiServiceImpl {
+class TestPollsApiServiceImpl extends SpringLockssTestCase {
 
   @Mock
   PollManager pollManager;
@@ -55,74 +64,120 @@ class TestPollsApiServiceImpl {
   @InjectMocks
   PollsApiServiceImpl pollsApiServiceImpl;
 
+  /* The identifier of an AU that exists in the test system. */
+  String goodAuid = "org|lockss|plugin|pensoft|oai|PensoftOaiPlugin"
+      + "&au_oai_date~2014&au_oai_set~biorisk"
+      + "&base_url~http%3A%2F%2Fbiorisk%2Epensoft%2Enet%2F";
+
+  /* The name of an AU that exists in the test system. */
+  String goodAuName = "BioRisk Volume 2014";
 
   @BeforeEach
-  void setUp() {
+  void  initAll() {
     MockitoAnnotations.initMocks(this);
+
+    initDirs();
+    initDaemon();
+    when(request.getRequestURI()).thenReturn("http://localhost:49520");
   }
 
   @Test
   void testGetApiStatus() {
-    ApiStatus expected = new ApiStatus();
-    expected.setReady(false);
-    expected.setVersion("1.0.0");
     ApiStatus result = pollsApiServiceImpl.getApiStatus();
-
-    Assertions.assertEquals(expected, result);
+    Assertions.assertTrue(result.isReady());
+    Assertions.assertEquals("1.0.0", result.getVersion());
   }
 
-  @Test
-  void testCallPoll() {
-    ResponseEntity<String> result = pollsApiServiceImpl.callPoll(new PollDesc());
-    Assertions.assertEquals(null, result);
+  void testCallQueryCancelPoll() {
+    PollDesc desc = new PollDesc();
+    // straight forward request to start a poll.
+    desc.setAuId(goodAuid);
+    CachedUriSetSpec spec = new CachedUriSetSpec();
+    spec.setUrlPrefix("http://biorisk.pensoft.net/");
+    desc.setCuSetSpec(spec);
+    ResponseEntity<String> result = pollsApiServiceImpl.callPoll(desc);
+    Assertions.assertEquals(goodAuid, result.getBody());
+    Assertions.assertEquals(HttpStatus.ACCEPTED, result.getStatusCode());
+
+    // check the status of the poll.
+    ResponseEntity<PollerSummary> summaryResponse = pollsApiServiceImpl.getPollStatus(goodAuid);
+    PollerSummary summary = summaryResponse.getBody();
+    Assertions.assertNotNull(summary);
+
+    // now cancel it.
+    pollsApiServiceImpl.cancelPoll(goodAuid);
+    // check the status of the poll.
+    summaryResponse = pollsApiServiceImpl.getPollStatus(goodAuid);
+    Assertions.assertEquals(HttpStatus.NOT_FOUND, summaryResponse.getStatusCode());
   }
 
-  @Test
-  void testCancelPoll() {
-    ResponseEntity<Void> result = pollsApiServiceImpl.cancelPoll("psId");
-    Assertions.assertEquals(null, result);
-  }
-
-  @Test
-  void testGetPollStatus() {
-    ResponseEntity<PollerSummary> result = pollsApiServiceImpl.getPollStatus("psId");
-    Assertions.assertEquals(null, result);
-  }
-
-
-  @Test
-  void testGetPollPeerVoteUrls() {
-    ResponseEntity<UrlPager> result = pollsApiServiceImpl
-        .getPollPeerVoteUrls("pollKey", "peerId", "urls", Integer.valueOf(0), Integer.valueOf(0));
-    Assertions.assertEquals(null, result);
-  }
-
-  @Test
-  void testGetRepairQueueData() {
-    ResponseEntity<RepairPager> result = pollsApiServiceImpl
-        .getRepairQueueData("pollKey", "repair", Integer.valueOf(0), Integer.valueOf(0));
-    Assertions.assertEquals(null, result);
-  }
-
-  @Test
-  void testGetTallyUrls() {
-    ResponseEntity<UrlPager> result = pollsApiServiceImpl
-        .getTallyUrls("pollKey", "tally", Integer.valueOf(0), Integer.valueOf(0));
-    Assertions.assertEquals(null, result);
+  @Test void testGetPollAndDetails() {
+    // no  poll
+    // get details of the non-existent poll.
+    ResponseEntity<UrlPager> peersVoteUrls = pollsApiServiceImpl
+        .getPollPeerVoteUrls("pollKey", "peerId", "urls", 1, 20);
+    Assertions.assertEquals(HttpStatus.NOT_FOUND, peersVoteUrls.getStatusCode());
+    ResponseEntity<RepairPager> repairData = pollsApiServiceImpl
+        .getRepairQueueData("pollKey", "repair", 1, 20);
+    Assertions.assertEquals(HttpStatus.NOT_FOUND, repairData.getStatusCode());
+    ResponseEntity<UrlPager> tallyUrls = pollsApiServiceImpl
+        .getTallyUrls("pollKey", "tally", 1, 20);
+    Assertions.assertEquals(HttpStatus.NOT_FOUND, repairData.getStatusCode());
   }
 
   @Test
   void testGetPollsAsPoller() {
     ResponseEntity<PollerPager> result = pollsApiServiceImpl
-        .getPollsAsPoller(Integer.valueOf(0), Integer.valueOf(0));
-    Assertions.assertEquals(null, result);
+        .getPollsAsPoller(20, 1);
+    PollerPager pager = result.getBody();
+    Assertions.assertEquals(0, pager.getPolls().size());
+    Assertions.assertEquals(HttpStatus.OK, result.getStatusCode());
   }
 
   @Test
   void testGetPollsAsVoter() {
     ResponseEntity<VoterPager> result = pollsApiServiceImpl
-        .getPollsAsVoter(Integer.valueOf(0), Integer.valueOf(0));
-    Assertions.assertEquals(null, result);
+        .getPollsAsVoter(20, 1);
+    VoterPager pager = result.getBody();
+    Assertions.assertEquals(null, pager.getPolls());
+    Assertions.assertEquals(HttpStatus.OK, result.getStatusCode());
   }
+
+
+
+  private void initDaemon() {
+      // Specify the command line parameters to be used for the tests.
+    List<String> cmdLineArgs = new ArrayList<String>();
+    cmdLineArgs.add("-p");
+    cmdLineArgs.add("config/common.xml");
+    cmdLineArgs.add("-p");
+    cmdLineArgs.add("config/lockss.txt");
+    cmdLineArgs.add("-p");
+    cmdLineArgs.add("test/config/lockss.txt");
+    cmdLineArgs.add("-p");
+    cmdLineArgs.add("test/config/lockss.opt");
+    cmdLineArgs.add("-b");
+    cmdLineArgs.add(getPlatformDiskSpaceConfigPath());
+    cmdLineArgs.add("-p");
+    cmdLineArgs.add("test/config/pollerApiControllerTestAuthOn.opt");
+    PollerApplication app = new PollerApplication();
+    app.run(cmdLineArgs.toArray(new String[cmdLineArgs.size()]));
+   }
+
+   private void initDirs() {
+     // Set up the temporary directory where the test data will reside.
+
+     try {
+       setUpTempDirectory(PollsApiServiceImpl.class.getCanonicalName());
+       // Copy the necessary files to the test temporary directory.
+       File srcTree = new File(new File("test"), "cache");
+       copyToTempDir(srcTree);
+       srcTree = new File(new File("test"), "tdbxml");
+       copyToTempDir(srcTree);
+     } catch (IOException e) {
+       e.printStackTrace();
+     }
+
+   }
 }
 

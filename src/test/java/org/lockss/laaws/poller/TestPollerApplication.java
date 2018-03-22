@@ -84,7 +84,7 @@ public class TestPollerApplication extends SpringLockssTestCase {
    *           if there are problems.
    */
   @Test public void testGetSwaggerDocs() throws Exception {
-    if (logger.isDebugEnabled()) logger.debug("Invoked.");
+    if (logger.isDebugEnabled()) logger.debug("Get Swagger Docs....");
     ResponseEntity<String> successResponse = new TestRestTemplate().exchange(
         getTestUrlTemplate("/v2/api-docs"),
         HttpMethod.GET, null, String.class);
@@ -106,7 +106,7 @@ public class TestPollerApplication extends SpringLockssTestCase {
    */
 
   @Test public void testGetStatus() throws Exception {
-    if (logger.isDebugEnabled()) logger.debug("Invoked.");
+    if (logger.isDebugEnabled()) logger.debug("Get Status...");
 
     ResponseEntity<String> successResponse = new TestRestTemplate().exchange(
         getTestUrlTemplate("/status"), HttpMethod.GET, null, String.class);
@@ -119,7 +119,6 @@ public class TestPollerApplication extends SpringLockssTestCase {
     JSONAssert.assertEquals(expectedBody, successResponse.getBody(), false);
     if (logger.isDebugEnabled()) logger.debug("Done.");
   }
-
 
   private void runUnauthenticated () throws Exception {
     // Specify the command line parameters to be used for the tests.
@@ -168,7 +167,6 @@ public class TestPollerApplication extends SpringLockssTestCase {
     cmdLineArgs.add("test/config/lockss.opt");
     cmdLineArgs.add("-b");
     cmdLineArgs.add(getPlatformDiskSpaceConfigPath());
-
     return cmdLineArgs;
   }
 

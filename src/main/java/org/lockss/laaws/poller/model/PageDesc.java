@@ -46,7 +46,7 @@ public class PageDesc   {
   @JsonProperty("size")
   private Integer size = null;
 
-  @JsonProperty("total")
+  @JsonProperty("mTotal")
   private Integer total = null;
 
   @JsonProperty("prevPage")
@@ -103,10 +103,10 @@ public class PageDesc   {
   }
 
   /**
-   * The total number of elements.
-   * @return total
+   * The mTotal number of elements.
+   * @return mTotal
   **/
-  @ApiModelProperty(example = "150", required = true, value = "The total number of elements.")
+  @ApiModelProperty(example = "150", required = true, value = "The mTotal number of elements.")
   @NotNull
 
 
@@ -187,7 +187,7 @@ public class PageDesc   {
     
     sb.append("    page: ").append(toIndentedString(page)).append("\n");
     sb.append("    size: ").append(toIndentedString(size)).append("\n");
-    sb.append("    total: ").append(toIndentedString(total)).append("\n");
+    sb.append("    mTotal: ").append(toIndentedString(total)).append("\n");
     sb.append("    prevPage: ").append(toIndentedString(prevPage)).append("\n");
     sb.append("    nextPage: ").append(toIndentedString(nextPage)).append("\n");
     sb.append("}");

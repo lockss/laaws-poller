@@ -43,6 +43,7 @@ import org.lockss.laaws.poller.model.RepairData.ResultEnum;
 import org.lockss.app.LockssApp;
 import org.lockss.app.LockssDaemon;
 import org.lockss.plugin.ArchivalUnit;
+import org.lockss.plugin.CachedUrlSet;
 import org.lockss.plugin.PluginManager;
 import org.lockss.poller.Poll;
 import org.lockss.poller.PollManager;
@@ -105,6 +106,10 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
   @Override
   public ResponseEntity<String> callPoll(PollDesc  body) {
     String auId = body.getAuId();
+    CachedUriSetSpec spec = body.getCuSetSpec();
+    if(auId == null || auId.isEmpty() || spec == null) {
+      return new ResponseEntity<>("Invalid Request", HttpStatus.BAD_REQUEST);
+    }
     if (logger.isDebugEnabled()) {
       logger.debug("request to start a poll for au: " + auId);
     }
@@ -206,7 +211,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
       if (logger.isDebugEnabled()) {
         logger.debug("Details for poll " + pollKey + " not found.");
       }
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+      return new ResponseEntity<>(new PollerDetail(), HttpStatus.NOT_FOUND);
     }
     PollerDetail detail = detailPoll(poll);
     return new ResponseEntity<>(detail, HttpStatus.OK);
@@ -229,7 +234,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
       if (logger.isDebugEnabled()) {
         logger.debug("Details for poll " + pollKey + " not found.");
       }
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+      return new ResponseEntity<>(new VoterDetail(),HttpStatus.NOT_FOUND);
     }
     VoterDetail detail = detailVoterPoll(poll);
     return new ResponseEntity<>(detail, HttpStatus.OK);
@@ -257,7 +262,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
       if (userData != null) {
         VoteCounts voteCounts = userData.getVoteCounts();
         if (voteCounts.hasPeerUrlLists() && userData.hasVoted()) {
-          Collection counts;
+          Collection<String> counts;
           switch (urls) {
             case "agreed":
               counts = voteCounts.getAgreedUrls();
@@ -274,13 +279,13 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
             default:
               counts = Collections.emptyList();
           }
-          if(counts != null && !counts.isEmpty()) {
+          if(counts != null) {
             return getUrlPagerResponseEntity(page, size, baseLink, counts);
           }
         }
       }
     }
-    return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    return new ResponseEntity<>(new UrlPager(), HttpStatus.NOT_FOUND);
   }
 
   /**
@@ -289,23 +294,20 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
    * @param size the size of the current page
    * @param baseLink the url to use for base
    * @param strings the collection of strings to page in.
-   * @return
+   * @return a UrlPager with the requested page's urls.
    */
   private ResponseEntity<UrlPager> getUrlPagerResponseEntity(Integer page, Integer size,
       String baseLink, Collection<String> strings) {
-    Page urlpage = new Page(strings, page, size);
+    Page<String> urlpage = new Page<>(strings, page, size, baseLink);
     // The page description.
-    PageDesc desc = getPageDesc(baseLink, urlpage);
+    PageDesc desc = getPageDesc(urlpage);
     UrlPager pager = new UrlPager();
     pager.setPageDesc(desc);
     // The page content.
     if (urlpage.hasContent()) {
-      int offset = urlpage.getOffset();
-      int last = offset + urlpage.getPageSize();
-      last = last > urlpage.getTotal() ? last : urlpage.getTotal();
-      List urlList = urlpage.getPageContent();
-      for(int idx = offset; idx < last; idx++ ) {
-        pager.addUrlsItem((String)urlList.get(idx));
+      List<String> urlList = urlpage.getPageContent();
+      for(String url : urlList) {
+        pager.addUrlsItem(url);
       }
     }
     return new ResponseEntity<>(pager,urlpage.getPageHeaders(),HttpStatus.OK);
@@ -342,32 +344,28 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
         default:
           repairList = new ArrayList<>();
       }
-      if(repairList != null && repairList.size() > 0) {
-        Page r_page = new Page(repairList, page, size);
+      if(repairList != null) {
+        Page<Repair> rpage = new Page(repairList, page, size, baseLink);
         // The page description.
-        PageDesc desc = getPageDesc(baseLink, r_page);
+        PageDesc desc = getPageDesc(rpage);
         RepairPager pager = new RepairPager();
         pager.setPageDesc(desc);
         // The page content.
-        if (r_page.hasContent()) {
-          int offset = r_page.getOffset();
-          int last = offset + r_page.getPageSize();
-          last = last > r_page.getTotal() ? last : r_page.getTotal();
-          List r_list = r_page.getPageContent();
-          for(int idx = offset; idx < last; idx++ ) {
-            RepairData repair_d = new RepairData();
-            Repair rep = (Repair)r_list.get(idx);
-            repair_d.setRepairUrl(rep.getUrl());
-            repair_d.setRepairFrom(rep.getRepairFrom().getIdString());
+        if (rpage.hasContent()) {
+          List<Repair> rlist = rpage.getPageContent();
+          for(Repair rep : rlist) {
+            RepairData rdata = new RepairData();
+            rdata.setRepairUrl(rep.getUrl());
+            rdata.setRepairFrom(rep.getRepairFrom().getIdString());
             if("completed".equals(repair))
-              repair_d.setResult(ResultEnum.fromValue(rep.getTallyResult().toString()));
-            pager.addRepairsItem(repair_d);
+              rdata.setResult(ResultEnum.fromValue(rep.getTallyResult().toString()));
+            pager.addRepairsItem(rdata);
           }
         }
-        return new ResponseEntity<>(pager,r_page.getPageHeaders(),HttpStatus.OK);
+        return new ResponseEntity<>(pager,rpage.getPageHeaders(),HttpStatus.OK);
       }
     }
-    return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    return new ResponseEntity<>(new RepairPager(),HttpStatus.NOT_FOUND);
   }
 
   /**
@@ -385,8 +383,8 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
     Poll poll = pm.getPoll(pollKey);
     String baseLink = request.getRequestURI();
     if (poll instanceof V3Poller) {
-      final TallyStatus tallyStatus = ((V3Poller) poll).getPollerStateBean().getTallyStatus();
-      Set tallySet = null;
+      final PollerStateBean.TallyStatus tallyStatus = ((V3Poller) poll).getPollerStateBean().getTallyStatus();
+      Set tallySet;
       switch (tally) {
         case "agree":
           tallySet = tallyStatus.getAgreedUrls();
@@ -406,13 +404,12 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
         default:
           tallySet = new HashSet<String>();
       }
-      if(tallySet != null && tallySet.isEmpty()) {
+      if(tallySet != null) {
         return getUrlPagerResponseEntity(page, size, baseLink, tallySet);
       }
      }
-    return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    return new ResponseEntity<>(new UrlPager(), HttpStatus.NOT_FOUND);
   }
-
   /*  -------------------Poller methods. --------------------------- */
 
   /**
@@ -429,22 +426,19 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
     PollManager pm = getPollManager();
     Collection<V3Poller> pollers = pm.getV3Pollers();
     String baseLink = request.getRequestURI();
-    Page ppage = new Page(pollers, size, page);
+    Page<V3Poller> ppage = new Page<>(pollers, size, page,baseLink);
     PollerPager pager = new PollerPager();
     // The page description.
-    PageDesc desc = getPageDesc(baseLink, ppage);
+    PageDesc desc = getPageDesc(ppage);
     pager.setPageDesc(desc);
     // The page content.
     if (ppage.hasContent()) {
-      int offset = ppage.getOffset();
-      int last = offset + ppage.getPageSize();
-      last = last > ppage.getTotal() ? last : ppage.getTotal();
       List<V3Poller> pollerList = ppage.getPageContent();
-      for(int idx = offset; idx < last; idx++ ) {
-        pager.addPollsItem(summarizePollerPoll(pollerList.get(idx)));
+      for( V3Poller poll: pollerList){
+        pager.addPollsItem(summarizePollerPoll(poll));
       }
     }
-    return new ResponseEntity<>(pager, HttpStatus.OK);
+    return new ResponseEntity<>(pager, ppage.getPageHeaders(),HttpStatus.OK);
   }
 
 
@@ -464,24 +458,21 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
     PollManager pm = getPollManager();
     Collection<V3Voter> voters = pm.getV3Voters();
     String baseLink = request.getRequestURI();
-    Page vpage = new Page(voters, size, page);
+    Page<V3Voter> vpage = new Page<>(voters, size, page,baseLink);
     VoterPager pager = new VoterPager();
     // The page description.
     PageDesc desc = new PageDesc();
     desc.setTotal(vpage.getTotal());
     desc.setSize(vpage.getPageSize());
     desc.setPage(vpage.getPageNum());
-    desc.setNextPage(vpage.getNextLink(baseLink));
-    desc.setPrevPage(vpage.getPrevLink(baseLink));
+    desc.setNextPage(vpage.getNextLink());
+    desc.setPrevPage(vpage.getPrevLink());
     pager.setPageDesc(desc);
     // The page content.
     if (vpage.hasContent()) {
-      int offset = vpage.getOffset();
-      int last = offset + vpage.getPageSize();
-      last = last > vpage.getTotal() ? last : vpage.getTotal();
-      List voterList = vpage.getPageContent();
-      for(int idx = offset; idx < last; idx++ ) {
-        pager.addPollsItem(summarizeVoterPoll((V3Voter)voterList.get(idx)));
+      List<V3Voter> pollerList = vpage.getPageContent();
+      for(V3Voter poll : pollerList) {
+        pager.addPollsItem(summarizeVoterPoll((poll)));
       }
     }
     return new ResponseEntity<>(pager, HttpStatus.OK);
@@ -495,12 +486,17 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
    * @return a PollSpec.
    */
   private PollSpec pollSpecFromDesc(PollDesc pollDesc) {
-    return new PollSpec(
-        pollDesc.getAuId(),
-        pollDesc.getCuSetSpec().getUrlPrefix(),
-        pollDesc.getCuSetSpec().getLowerBound(),
-        pollDesc.getCuSetSpec().getUpperBound(),
-        org.lockss.poller.Poll.V3_POLL);
+    String auId = pollDesc.getAuId();
+    CachedUriSetSpec spec = pollDesc.getCuSetSpec();
+
+    if(spec == null) {
+      CachedUrlSet cus = getPluginManager().getAuFromId(auId).getAuCachedUrlSet();
+      return new PollSpec(cus,org.lockss.poller.Poll.V3_POLL);
+    }
+    else {
+      return new PollSpec(auId, spec.getUrlPrefix(), spec.getLowerBound(),
+          spec.getUpperBound(), org.lockss.poller.Poll.V3_POLL);
+    }
   }
 
   /**
@@ -616,17 +612,16 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
 
   /**
    * Given a link and a page number return a page description
-   * @param baseLink the url to use for building links
    * @param page the current page
    * @return a PageDesc.
    */
-  private PageDesc getPageDesc(String baseLink, Page page) {
+  private PageDesc getPageDesc(Page page) {
     PageDesc desc = new PageDesc();
     desc.setTotal(page.getTotal());
     desc.setSize(page.getPageSize());
     desc.setPage(page.getPageNum());
-    desc.setNextPage(page.getNextLink(baseLink));
-    desc.setPrevPage(page.getPrevLink(baseLink));
+    desc.setNextPage(page.getNextLink());
+    desc.setPrevPage(page.getPrevLink());
     return desc;
   }
 
@@ -815,7 +810,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
    */
   private LinkDesc makeRepairQLink(String pollKey, String repairType)  {
     try {
-      // /polls/{pollKey}/repairs?repair=type
+      //  build a path element: /polls/{pollKey}/repairs?repair=type
       String prefix = UrlUtil.getUrlPrefix(request.getRequestURI());
       LinkDesc ldesc = new LinkDesc();
       ldesc.setLink(prefix + "/polls/" + pollKey + "/repairs?repair="+ repairType);
@@ -843,7 +838,6 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
       return ldesc;
     } catch (MalformedURLException e) {
       logger.error(DETAIL_UNAVAILABLE);
-      // throw and ErrorDesc.
     }
     return null;
   }

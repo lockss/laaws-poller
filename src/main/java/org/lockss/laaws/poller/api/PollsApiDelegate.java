@@ -74,7 +74,7 @@ public interface PollsApiDelegate {
         if(getObjectMapper().isPresent() && getAcceptHeader().isPresent()) {
             if (getAcceptHeader().get().contains("application/json")) {
                 try {
-                    return new ResponseEntity<>(getObjectMapper().get().readValue("{  \"pageDesc\" : {    \"total\" : 150,    \"size\" : 5,    \"nextPage\" : \"nextPage\",    \"prevPage\" : \"prevPage\",    \"page\" : 10  },  \"urls\" : [ \"urls\", \"urls\" ]}", UrlPager.class), HttpStatus.NOT_IMPLEMENTED);
+                    return new ResponseEntity<>(getObjectMapper().get().readValue("{  \"pageDesc\" : {    \"mTotal\" : 150,    \"size\" : 5,    \"nextPage\" : \"nextPage\",    \"prevPage\" : \"prevPage\",    \"page\" : 10  },  \"urls\" : [ \"urls\", \"urls\" ]}", UrlPager.class), HttpStatus.NOT_IMPLEMENTED);
                 } catch (IOException e) {
                     log.error("Couldn't serialize response for content type application/json", e);
                     return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -132,7 +132,7 @@ public interface PollsApiDelegate {
         if(getObjectMapper().isPresent() && getAcceptHeader().isPresent()) {
             if (getAcceptHeader().get().contains("application/json")) {
                 try {
-                    return new ResponseEntity<>(getObjectMapper().get().readValue("{  \"pageDesc\" : {    \"total\" : 150,    \"size\" : 5,    \"nextPage\" : \"nextPage\",    \"prevPage\" : \"prevPage\",    \"page\" : 10  },  \"polls\" : [ {    \"numCompletedRepairs\" : 5,    \"auId\" : \"auId\",    \"numHashErrors\" : 1,    \"numTalliedUrls\" : 6,    \"start\" : 2,    \"pollKey\" : \"pollKey\",    \"variant\" : \"variant\",    \"numAgreeUrls\" : 5,    \"pollEnd\" : 9,    \"deadline\" : 7,    \"detailLink\" : {      \"link\" : \"http:www.example.com/v1/element\",      \"desc\" : \"pollerOnly\"    },    \"status\" : \"status\",    \"participants\" : 0  }, {    \"numCompletedRepairs\" : 5,    \"auId\" : \"auId\",    \"numHashErrors\" : 1,    \"numTalliedUrls\" : 6,    \"start\" : 2,    \"pollKey\" : \"pollKey\",    \"variant\" : \"variant\",    \"numAgreeUrls\" : 5,    \"pollEnd\" : 9,    \"deadline\" : 7,    \"detailLink\" : {      \"link\" : \"http:www.example.com/v1/element\",      \"desc\" : \"pollerOnly\"    },    \"status\" : \"status\",    \"participants\" : 0  } ]}", PollerPager.class), HttpStatus.NOT_IMPLEMENTED);
+                    return new ResponseEntity<>(getObjectMapper().get().readValue("{  \"pageDesc\" : {    \"mTotal\" : 150,    \"size\" : 5,    \"nextPage\" : \"nextPage\",    \"prevPage\" : \"prevPage\",    \"page\" : 10  },  \"polls\" : [ {    \"numCompletedRepairs\" : 5,    \"auId\" : \"auId\",    \"numHashErrors\" : 1,    \"numTalliedUrls\" : 6,    \"start\" : 2,    \"pollKey\" : \"pollKey\",    \"variant\" : \"variant\",    \"numAgreeUrls\" : 5,    \"pollEnd\" : 9,    \"deadline\" : 7,    \"detailLink\" : {      \"link\" : \"http:www.example.com/v1/element\",      \"desc\" : \"pollerOnly\"    },    \"status\" : \"status\",    \"participants\" : 0  }, {    \"numCompletedRepairs\" : 5,    \"auId\" : \"auId\",    \"numHashErrors\" : 1,    \"numTalliedUrls\" : 6,    \"start\" : 2,    \"pollKey\" : \"pollKey\",    \"variant\" : \"variant\",    \"numAgreeUrls\" : 5,    \"pollEnd\" : 9,    \"deadline\" : 7,    \"detailLink\" : {      \"link\" : \"http:www.example.com/v1/element\",      \"desc\" : \"pollerOnly\"    },    \"status\" : \"status\",    \"participants\" : 0  } ]}", PollerPager.class), HttpStatus.NOT_IMPLEMENTED);
                 } catch (IOException e) {
                     log.error("Couldn't serialize response for content type application/json", e);
                     return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -152,7 +152,7 @@ public interface PollsApiDelegate {
         if(getObjectMapper().isPresent() && getAcceptHeader().isPresent()) {
             if (getAcceptHeader().get().contains("application/json")) {
                 try {
-                    return new ResponseEntity<>(getObjectMapper().get().readValue("{  \"pageDesc\" : {    \"total\" : 150,    \"size\" : 5,    \"nextPage\" : \"nextPage\",    \"prevPage\" : \"prevPage\",    \"page\" : 10  },  \"polls\" : [ {    \"auId\" : \"auId\",    \"caller\" : \"caller\",    \"start\" : 0,    \"pollKey\" : \"pollKey\",    \"deadline\" : 6,    \"detailLink\" : {      \"link\" : \"http:www.example.com/v1/element\",      \"desc\" : \"pollerOnly\"    },    \"status\" : \"status\"  }, {    \"auId\" : \"auId\",    \"caller\" : \"caller\",    \"start\" : 0,    \"pollKey\" : \"pollKey\",    \"deadline\" : 6,    \"detailLink\" : {      \"link\" : \"http:www.example.com/v1/element\",      \"desc\" : \"pollerOnly\"    },    \"status\" : \"status\"  } ]}", VoterPager.class), HttpStatus.NOT_IMPLEMENTED);
+                    return new ResponseEntity<>(getObjectMapper().get().readValue("{  \"pageDesc\" : {    \"mTotal\" : 150,    \"size\" : 5,    \"nextPage\" : \"nextPage\",    \"prevPage\" : \"prevPage\",    \"page\" : 10  },  \"polls\" : [ {    \"auId\" : \"auId\",    \"caller\" : \"caller\",    \"start\" : 0,    \"pollKey\" : \"pollKey\",    \"deadline\" : 6,    \"detailLink\" : {      \"link\" : \"http:www.example.com/v1/element\",      \"desc\" : \"pollerOnly\"    },    \"status\" : \"status\"  }, {    \"auId\" : \"auId\",    \"caller\" : \"caller\",    \"start\" : 0,    \"pollKey\" : \"pollKey\",    \"deadline\" : 6,    \"detailLink\" : {      \"link\" : \"http:www.example.com/v1/element\",      \"desc\" : \"pollerOnly\"    },    \"status\" : \"status\"  } ]}", VoterPager.class), HttpStatus.NOT_IMPLEMENTED);
                 } catch (IOException e) {
                     log.error("Couldn't serialize response for content type application/json", e);
                     return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -174,7 +174,7 @@ public interface PollsApiDelegate {
         if(getObjectMapper().isPresent() && getAcceptHeader().isPresent()) {
             if (getAcceptHeader().get().contains("application/json")) {
                 try {
-                    return new ResponseEntity<>(getObjectMapper().get().readValue("{  \"repairs\" : [ {    \"result\" : \"No Quorum\",    \"repairUrl\" : \"repairUrl\",    \"repairFrom\" : \"repairFrom\"  }, {    \"result\" : \"No Quorum\",    \"repairUrl\" : \"repairUrl\",    \"repairFrom\" : \"repairFrom\"  } ],  \"pageDesc\" : {    \"total\" : 150,    \"size\" : 5,    \"nextPage\" : \"nextPage\",    \"prevPage\" : \"prevPage\",    \"page\" : 10  }}", RepairPager.class), HttpStatus.NOT_IMPLEMENTED);
+                    return new ResponseEntity<>(getObjectMapper().get().readValue("{  \"repairs\" : [ {    \"result\" : \"No Quorum\",    \"repairUrl\" : \"repairUrl\",    \"repairFrom\" : \"repairFrom\"  }, {    \"result\" : \"No Quorum\",    \"repairUrl\" : \"repairUrl\",    \"repairFrom\" : \"repairFrom\"  } ],  \"pageDesc\" : {    \"mTotal\" : 150,    \"size\" : 5,    \"nextPage\" : \"nextPage\",    \"prevPage\" : \"prevPage\",    \"page\" : 10  }}", RepairPager.class), HttpStatus.NOT_IMPLEMENTED);
                 } catch (IOException e) {
                     log.error("Couldn't serialize response for content type application/json", e);
                     return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -196,7 +196,7 @@ public interface PollsApiDelegate {
         if(getObjectMapper().isPresent() && getAcceptHeader().isPresent()) {
             if (getAcceptHeader().get().contains("application/json")) {
                 try {
-                    return new ResponseEntity<>(getObjectMapper().get().readValue("{  \"pageDesc\" : {    \"total\" : 150,    \"size\" : 5,    \"nextPage\" : \"nextPage\",    \"prevPage\" : \"prevPage\",    \"page\" : 10  },  \"urls\" : [ \"urls\", \"urls\" ]}", UrlPager.class), HttpStatus.NOT_IMPLEMENTED);
+                    return new ResponseEntity<>(getObjectMapper().get().readValue("{  \"pageDesc\" : {    \"mTotal\" : 150,    \"size\" : 5,    \"nextPage\" : \"nextPage\",    \"prevPage\" : \"prevPage\",    \"page\" : 10  },  \"urls\" : [ \"urls\", \"urls\" ]}", UrlPager.class), HttpStatus.NOT_IMPLEMENTED);
                 } catch (IOException e) {
                     log.error("Couldn't serialize response for content type application/json", e);
                     return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
