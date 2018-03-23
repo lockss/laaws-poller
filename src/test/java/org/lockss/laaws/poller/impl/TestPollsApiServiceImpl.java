@@ -40,6 +40,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -53,9 +54,9 @@ import org.lockss.test.SpringLockssTestCase;
 
 class TestPollsApiServiceImpl extends SpringLockssTestCase {
 
-  @Mock
+  @Spy
   PollManager pollManager;
-  @Mock
+  @Spy
   PluginManager pluginManager;
   @Mock
   HashMap<String, PollSpec> requestMap;
@@ -73,11 +74,12 @@ class TestPollsApiServiceImpl extends SpringLockssTestCase {
   String goodAuName = "BioRisk Volume 2014";
 
   @BeforeEach
-  void  initAll() {
+  void initAll() {
     MockitoAnnotations.initMocks(this);
 
     initDirs();
     initDaemon();
+    // set up the mock Request object to return the configured host:port.
     when(request.getRequestURI()).thenReturn("http://localhost:49520");
   }
 
@@ -88,13 +90,11 @@ class TestPollsApiServiceImpl extends SpringLockssTestCase {
     Assertions.assertEquals("1.0.0", result.getVersion());
   }
 
+  @Test
   void testCallQueryCancelPoll() {
     PollDesc desc = new PollDesc();
     // straight forward request to start a poll.
     desc.setAuId(goodAuid);
-    CachedUriSetSpec spec = new CachedUriSetSpec();
-    spec.setUrlPrefix("http://biorisk.pensoft.net/");
-    desc.setCuSetSpec(spec);
     ResponseEntity<String> result = pollsApiServiceImpl.callPoll(desc);
     Assertions.assertEquals(goodAuid, result.getBody());
     Assertions.assertEquals(HttpStatus.ACCEPTED, result.getStatusCode());
@@ -111,7 +111,8 @@ class TestPollsApiServiceImpl extends SpringLockssTestCase {
     Assertions.assertEquals(HttpStatus.NOT_FOUND, summaryResponse.getStatusCode());
   }
 
-  @Test void testGetPollAndDetails() {
+  @Test
+  void testGetPollAndDetails() {
     // no  poll
     // get details of the non-existent poll.
     ResponseEntity<UrlPager> peersVoteUrls = pollsApiServiceImpl
@@ -144,9 +145,8 @@ class TestPollsApiServiceImpl extends SpringLockssTestCase {
   }
 
 
-
   private void initDaemon() {
-      // Specify the command line parameters to be used for the tests.
+    // Specify the command line parameters to be used for the tests.
     List<String> cmdLineArgs = new ArrayList<String>();
     cmdLineArgs.add("-p");
     cmdLineArgs.add("config/common.xml");
@@ -162,22 +162,22 @@ class TestPollsApiServiceImpl extends SpringLockssTestCase {
     cmdLineArgs.add("test/config/pollerApiControllerTestAuthOn.opt");
     PollerApplication app = new PollerApplication();
     app.run(cmdLineArgs.toArray(new String[cmdLineArgs.size()]));
-   }
+  }
 
-   private void initDirs() {
-     // Set up the temporary directory where the test data will reside.
+  private void initDirs() {
+    // Set up the temporary directory where the test data will reside.
 
-     try {
-       setUpTempDirectory(PollsApiServiceImpl.class.getCanonicalName());
-       // Copy the necessary files to the test temporary directory.
-       File srcTree = new File(new File("test"), "cache");
-       copyToTempDir(srcTree);
-       srcTree = new File(new File("test"), "tdbxml");
-       copyToTempDir(srcTree);
-     } catch (IOException e) {
-       e.printStackTrace();
-     }
+    try {
+      setUpTempDirectory(PollsApiServiceImpl.class.getCanonicalName());
+      // Copy the necessary files to the test temporary directory.
+      File srcTree = new File(new File("test"), "cache");
+      copyToTempDir(srcTree);
+      srcTree = new File(new File("test"), "tdbxml");
+      copyToTempDir(srcTree);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
 
-   }
+  }
 }
 

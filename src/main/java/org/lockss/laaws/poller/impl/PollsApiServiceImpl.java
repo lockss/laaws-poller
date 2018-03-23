@@ -25,6 +25,7 @@
  */
 package org.lockss.laaws.poller.impl;
 
+import com.sun.jimi.core.util.P;
 import java.net.MalformedURLException;
 import java.util.*;
 import javax.servlet.http.HttpServletRequest;
@@ -99,15 +100,16 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
 
   /**
    * Call a new poll
-    * @param body a description of the poll to call
+   *
+   * @param body a description of the poll to call
    * @return the identifier for this poll.
    * @see PollsApi#callPoll
    */
   @Override
-  public ResponseEntity<String> callPoll(PollDesc  body) {
+  public ResponseEntity<String> callPoll(PollDesc body) {
     String auId = body.getAuId();
     CachedUriSetSpec spec = body.getCuSetSpec();
-    if(auId == null || auId.isEmpty() || spec == null) {
+    if (auId == null || auId.isEmpty()) {
       return new ResponseEntity<>("Invalid Request", HttpStatus.BAD_REQUEST);
     }
     if (logger.isDebugEnabled()) {
@@ -119,7 +121,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
       pm.requestPoll(ps);
     } catch (NotEligibleException e) {
       logger.error(e.getMessage());
-      return new ResponseEntity<>(e.getMessage(),HttpStatus.FORBIDDEN);
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
     }
     auId = ps.getAuId();
     requestMap.put(auId, ps);
@@ -129,6 +131,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
 
   /**
    * Cancel Poll a previously called poll
+   *
    * @param psId the poll service id of the called poll
    * @return Void.
    * @see PollsApi#cancelPoll
@@ -141,17 +144,16 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
     PollManager pm = getPollManager();
     ArchivalUnit au;
     PollSpec spec = requestMap.remove(psId);
-    if(spec != null) {
+    if (spec != null) {
       au = spec.getCachedUrlSet().getArchivalUnit();
-    }
-    else {
+    } else {
       au = getPluginManager().getAuFromId(psId);
     }
     Poll poll = pm.stopPoll(au);
-    if(poll != null) {
+    if (poll != null) {
       return new ResponseEntity<>(HttpStatus.OK);
     }
-    if(logger.isDebugEnabled()) {
+    if (logger.isDebugEnabled()) {
       logger.debug("unable to locate poll with id " + psId);
     }
     return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -159,6 +161,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
 
   /**
    * Return the current status of a poll.
+   *
    * @param psId The poll service id of the called poll
    * @return A summary of the current Polls status.
    * @see PollsApi#getPollStatus
@@ -170,13 +173,12 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
     }
     PollSpec spec = requestMap.get(psId);
     ArchivalUnit au;
-    if(spec != null) {
+    if (spec != null) {
       au = spec.getCachedUrlSet().getArchivalUnit();
-    }
-    else {
+    } else {
       au = getPluginManager().getAuFromId(psId);
     }
-    if(au != null) {
+    if (au != null) {
       PollManager pm = getPollManager();
       Poll poll = pm.getPoll(au.getAuId());
       if (poll != null) {
@@ -184,7 +186,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
         return new ResponseEntity<>(summary, HttpStatus.OK);
       }
     }
-    if(logger.isDebugEnabled()) {
+    if (logger.isDebugEnabled()) {
       logger.debug("unable to locate poll with id " + psId);
     }
     return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -196,6 +198,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
 
   /**
    * Get the detailed description of a Poller poll.
+   *
    * @param pollKey the PollKey assigned by the Poll Manager
    * @return A PollerPoll detail.
    * @see PollsApi#getPollerPollDetails
@@ -207,7 +210,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
     }
     PollManager pm = getPollManager();
     Poll poll = pm.getPoll(pollKey);
-    if(poll == null) {
+    if (poll == null) {
       if (logger.isDebugEnabled()) {
         logger.debug("Details for poll " + pollKey + " not found.");
       }
@@ -219,6 +222,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
 
   /**
    * Get the detailed description of a Poller poll.
+   *
    * @param pollKey the PollKey assigned by the Poll Manager
    * @return A VoterPoll detail.
    * @see PollsApi#getVoterPollDetails
@@ -230,11 +234,11 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
     }
     PollManager pm = getPollManager();
     Poll poll = pm.getPoll(pollKey);
-    if(poll == null) {
+    if (poll == null) {
       if (logger.isDebugEnabled()) {
         logger.debug("Details for poll " + pollKey + " not found.");
       }
-      return new ResponseEntity<>(new VoterDetail(),HttpStatus.NOT_FOUND);
+      return new ResponseEntity<>(new VoterDetail(), HttpStatus.NOT_FOUND);
     }
     VoterDetail detail = detailVoterPoll(poll);
     return new ResponseEntity<>(detail, HttpStatus.OK);
@@ -242,6 +246,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
 
   /**
    * Get a Participant peers's urls for a Poller
+   *
    * @param pollKey the PollKey assigned by the Poll Manager
    * @param peerId the id of the peer
    * @param urls the type of urls to return
@@ -279,7 +284,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
             default:
               counts = Collections.emptyList();
           }
-          if(counts != null) {
+          if (counts != null) {
             return getUrlPagerResponseEntity(page, size, baseLink, counts);
           }
         }
@@ -290,6 +295,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
 
   /**
    * Return a UrlPager with headers
+   *
    * @param page current page.
    * @param size the size of the current page
    * @param baseLink the url to use for base
@@ -303,19 +309,14 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
     PageDesc desc = getPageDesc(urlpage);
     UrlPager pager = new UrlPager();
     pager.setPageDesc(desc);
-    // The page content.
-    if (urlpage.hasContent()) {
-      List<String> urlList = urlpage.getPageContent();
-      for(String url : urlList) {
-        pager.addUrlsItem(url);
-      }
-    }
-    return new ResponseEntity<>(pager,urlpage.getPageHeaders(),HttpStatus.OK);
+    pager.setUrls(urlpage.getPageContent());
+    return new ResponseEntity<>(pager, urlpage.getPageHeaders(), HttpStatus.OK);
   }
 
 
   /**
    * Return details of form the RepairQueue of a called poll.
+   *
    * @param pollKey the PollKey assigned by the Poll Manager
    * @param repair the kind of repair data to return.
    * @param page the page number of the paged results
@@ -329,7 +330,8 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
     Poll poll = pm.getPoll(pollKey);
     String baseLink = request.getRequestURI();
     if (poll instanceof V3Poller) {
-      PollerStateBean.RepairQueue repairQueue = ((V3Poller) poll).getPollerStateBean().getRepairQueue();
+      PollerStateBean.RepairQueue repairQueue = ((V3Poller) poll).getPollerStateBean()
+          .getRepairQueue();
       List<Repair> repairList;
       switch (repair) {
         case "active":
@@ -344,7 +346,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
         default:
           repairList = new ArrayList<>();
       }
-      if(repairList != null) {
+      if (repairList != null) {
         Page<Repair> rpage = new Page(repairList, page, size, baseLink);
         // The page description.
         PageDesc desc = getPageDesc(rpage);
@@ -353,23 +355,25 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
         // The page content.
         if (rpage.hasContent()) {
           List<Repair> rlist = rpage.getPageContent();
-          for(Repair rep : rlist) {
+          for (Repair rep : rlist) {
             RepairData rdata = new RepairData();
             rdata.setRepairUrl(rep.getUrl());
             rdata.setRepairFrom(rep.getRepairFrom().getIdString());
-            if("completed".equals(repair))
+            if ("completed".equals(repair)) {
               rdata.setResult(ResultEnum.fromValue(rep.getTallyResult().toString()));
+            }
             pager.addRepairsItem(rdata);
           }
         }
-        return new ResponseEntity<>(pager,rpage.getPageHeaders(),HttpStatus.OK);
+        return new ResponseEntity<>(pager, rpage.getPageHeaders(), HttpStatus.OK);
       }
     }
-    return new ResponseEntity<>(new RepairPager(),HttpStatus.NOT_FOUND);
+    return new ResponseEntity<>(new RepairPager(), HttpStatus.NOT_FOUND);
   }
 
   /**
    * Return the Tallied Urls.
+   *
    * @param pollKey the PollKey assigned by the Poll Manager
    * @param tally the kind of tally data to return.
    * @param page the page number of the paged results
@@ -383,7 +387,8 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
     Poll poll = pm.getPoll(pollKey);
     String baseLink = request.getRequestURI();
     if (poll instanceof V3Poller) {
-      final PollerStateBean.TallyStatus tallyStatus = ((V3Poller) poll).getPollerStateBean().getTallyStatus();
+      final PollerStateBean.TallyStatus tallyStatus = ((V3Poller) poll).getPollerStateBean()
+          .getTallyStatus();
       Set tallySet;
       switch (tally) {
         case "agree":
@@ -404,16 +409,17 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
         default:
           tallySet = new HashSet<String>();
       }
-      if(tallySet != null) {
+      if (tallySet != null) {
         return getUrlPagerResponseEntity(page, size, baseLink, tallySet);
       }
-     }
+    }
     return new ResponseEntity<>(new UrlPager(), HttpStatus.NOT_FOUND);
   }
   /*  -------------------Poller methods. --------------------------- */
 
   /**
    * Get the Polls for which we are the poller.
+   *
    * @param page the page number of the paged results
    * @param size the size of the page.
    * @return A PollPager used to page in the PollerSummary objects.
@@ -426,19 +432,23 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
     PollManager pm = getPollManager();
     Collection<V3Poller> pollers = pm.getV3Pollers();
     String baseLink = request.getRequestURI();
-    Page<V3Poller> ppage = new Page<>(pollers, size, page,baseLink);
+    Page<V3Poller> ppage = new Page<>(pollers, size, page, baseLink);
     PollerPager pager = new PollerPager();
     // The page description.
     PageDesc desc = getPageDesc(ppage);
     pager.setPageDesc(desc);
     // The page content.
+
     if (ppage.hasContent()) {
       List<V3Poller> pollerList = ppage.getPageContent();
-      for( V3Poller poll: pollerList){
+      for (V3Poller poll : pollerList) {
         pager.addPollsItem(summarizePollerPoll(poll));
       }
     }
-    return new ResponseEntity<>(pager, ppage.getPageHeaders(),HttpStatus.OK);
+    else {
+      pager.setPolls(new ArrayList<PollerSummary>());
+    }
+    return new ResponseEntity<>(pager, ppage.getPageHeaders(), HttpStatus.OK);
   }
 
 
@@ -446,6 +456,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
 
   /**
    * Get the Polls for which we are only a voter.
+   *
    * @param page the page number of the paged results
    * @param size the size of the page.
    * @return A VoterPager used to page in the VoterSummary objects.
@@ -458,7 +469,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
     PollManager pm = getPollManager();
     Collection<V3Voter> voters = pm.getV3Voters();
     String baseLink = request.getRequestURI();
-    Page<V3Voter> vpage = new Page<>(voters, size, page,baseLink);
+    Page<V3Voter> vpage = new Page<>(voters, size, page, baseLink);
     VoterPager pager = new VoterPager();
     // The page description.
     PageDesc desc = new PageDesc();
@@ -471,9 +482,12 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
     // The page content.
     if (vpage.hasContent()) {
       List<V3Voter> pollerList = vpage.getPageContent();
-      for(V3Voter poll : pollerList) {
+      for (V3Voter poll : pollerList) {
         pager.addPollsItem(summarizeVoterPoll((poll)));
       }
+    }
+    else {
+      pager.setPolls(Collections.EMPTY_LIST);
     }
     return new ResponseEntity<>(pager, HttpStatus.OK);
   }
@@ -482,6 +496,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
 
   /**
    * Convert a Poller Service PollSpec DTO into a PollManager PollSpec.
+   *
    * @param pollDesc the description to convert.
    * @return a PollSpec.
    */
@@ -489,11 +504,10 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
     String auId = pollDesc.getAuId();
     CachedUriSetSpec spec = pollDesc.getCuSetSpec();
 
-    if(spec == null) {
+    if (spec == null) {
       CachedUrlSet cus = getPluginManager().getAuFromId(auId).getAuCachedUrlSet();
-      return new PollSpec(cus,org.lockss.poller.Poll.V3_POLL);
-    }
-    else {
+      return new PollSpec(cus, org.lockss.poller.Poll.V3_POLL);
+    } else {
       return new PollSpec(auId, spec.getUrlPrefix(), spec.getLowerBound(),
           spec.getUpperBound(), org.lockss.poller.Poll.V3_POLL);
     }
@@ -501,6 +515,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
 
   /**
    * Covert a PollManager PollSpec to a PollDesc
+   *
    * @param pollSpec the PollSpec to convert.
    * @return a PollDesc DTO.
    */
@@ -520,6 +535,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
 
   /**
    * Summarize a PollManager Poller Poll as a PollerSummary DTO
+   *
    * @param inPoll the poll to summarize
    * @return a new PollerSummary DTO
    */
@@ -548,12 +564,13 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
 
   /**
    * Summarize a PollManager Voter Poll as a VoterSummary DTO
+   *
    * @param inPoll the poll to summarize
    * @return a new VoterSummary DTO
    */
   private VoterSummary summarizeVoterPoll(Poll inPoll) {
     VoterSummary summary = new VoterSummary();
-    if(inPoll instanceof V3Voter) {
+    if (inPoll instanceof V3Voter) {
       V3Voter v3Voter = (V3Voter) inPoll;
       VoterUserData userData = v3Voter.getVoterUserData();
       summary.setAuId(userData.getAuId());
@@ -562,7 +579,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
       summary.setPollKey(userData.getPollKey());
       summary.setStart(userData.getCreateTime());
       summary.setStatus(userData.getStatusString());
-      summary.setDetailLink( makeDetailLink("voter/" + userData.getPollKey()));
+      summary.setDetailLink(makeDetailLink("voter/" + userData.getPollKey()));
     }
     return summary;
   }
@@ -570,6 +587,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
 
   /**
    * Convert a PollManager Poll object into a long PollDetail DTO.
+   *
    * @param poll the poll to convert.
    * @return a PollDetail DTO
    */
@@ -596,15 +614,16 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
       detail.setQuorum(psb.getQuorum());
       detail.setErrorDetails(psb.getErrorDetail());
       detail.setVoteDuration(psb.getVoteDuration());
-      for(PeerIdentity peerId : psb.getNoAuPeers()) {
+      for (PeerIdentity peerId : psb.getNoAuPeers()) {
         detail.addNoAuPeersItem(peerId.getIdString());
       }
-      for(ParticipantUserData participantData: v3poller.getParticipants()) {
-        detail.addVotedPeersItem(peerDataFromParticipantData(participantData,psb.getPollKey()));
+      for (ParticipantUserData participantData : v3poller.getParticipants()) {
+        detail.addVotedPeersItem(peerDataFromParticipantData(participantData, psb.getPollKey()));
       }
-      TallyData tallyData = tallyDataFromTallyStatus(psb.getTallyStatus(),psb.getPollKey());
+      TallyData tallyData = tallyDataFromTallyStatus(psb.getTallyStatus(), psb.getPollKey());
       detail.setTally(tallyData);
-      RepairQueue repairQueue = repairQueueFromDataRepairQueue(psb.getRepairQueue(),psb.getPollKey());
+      RepairQueue repairQueue = repairQueueFromDataRepairQueue(psb.getRepairQueue(),
+          psb.getPollKey());
       detail.setRepairQueue(repairQueue);
     }
     return detail;
@@ -612,6 +631,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
 
   /**
    * Given a link and a page number return a page description
+   *
    * @param page the current page
    * @return a PageDesc.
    */
@@ -627,12 +647,13 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
 
   /**
    * Convert a PollManager V3Voter Poll into a VoterDetail
+   *
    * @param poll the poll to convert
    * @return the VoterDetail.
    */
   private VoterDetail detailVoterPoll(Poll poll) {
     VoterDetail detail = new VoterDetail();
-    if( poll instanceof V3Voter ) {
+    if (poll instanceof V3Voter) {
       V3Voter v3voter = (V3Voter) poll;
       PollDesc desc = pollDescFromSpec(v3voter.getPollSpec());
       VoterUserData vud = v3voter.getVoterUserData();
@@ -648,26 +669,26 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
       detail.setHashAlgorithm(vud.getHashAlgorithm());
       detail.setVoteDeadline(vud.getVoteDeadline());
       detail.setErrorDetails(vud.getErrorDetail());
-      if(v3voter.getStatus() == V3Voter.STATUS_COMPLETE) {
-        if(vud.hasReceivedHint()) {
+      if (v3voter.getStatus() == V3Voter.STATUS_COMPLETE) {
+        if (vud.hasReceivedHint()) {
           detail.setAgreement(vud.getAgreementHint());
         }
-        if(vud.hasReceivedWeightedHint()) {
+        if (vud.hasReceivedWeightedHint()) {
           detail.setWtAgreement(vud.getWeightedAgreementHint());
         }
-        if(vud.hasReceivedSymmetricAgreement()) {
+        if (vud.hasReceivedSymmetricAgreement()) {
           detail.setSymmetricAgreement(vud.getSymmetricAgreement());
         }
-        if(vud.hasReceivedSymmetricWeightedAgreement()) {
+        if (vud.hasReceivedSymmetricWeightedAgreement()) {
           detail.setWtSymmetricAgreement(vud.getSymmetricAgreement());
         }
       }
       detail.setPollerNonce(ByteArray.toBase64(vud.getPollerNonce()));
       detail.setVoterNonce(ByteArray.toBase64((vud.getVoterNonce())));
-      if(vud.isSymmetricPoll()) {
+      if (vud.isSymmetricPoll()) {
         detail.setVoter2Nonce(ByteArray.toBase64(vud.getVoterNonce2()));
-        if(v3voter.getStatus() == V3Voter.STATUS_COMPLETE) {
-          detail.setNumAgree( vud.getNumAgreeUrl());
+        if (v3voter.getStatus() == V3Voter.STATUS_COMPLETE) {
+          detail.setNumAgree(vud.getNumAgreeUrl());
           detail.setNumDisagree(vud.getNumDisagreeUrl());
           detail.setNumPollerOnly(vud.getNumPollerOnlyUrl());
           detail.setNumVoterOnly(vud.getNumVoterOnlyUrl());
@@ -680,6 +701,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
 
   /**
    * Convert a PollManager's ParticipantUserData object to a PeerData DTO.
+   *
    * @param voter the voter data to convert
    * @param pollKey the poll key to use for lin construction.
    * @return a PeerData data transfer object.
@@ -712,20 +734,22 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
       }
     }
     String peerId = peerData.getPeerId();
-    peerData.setAgreeLink(makePeerLink(pollKey, peerId,"agree"));
-    peerData.setDisagreeLink(makePeerLink(pollKey, peerId,"disagree"));
-    peerData.setPollerOnlyLink(makePeerLink(pollKey, peerId,"pollerOnly"));
-    peerData.setVoterOnlyLink(makePeerLink(pollKey, peerId,"voterOnly"));
+    peerData.setAgreeLink(makePeerLink(pollKey, peerId, "agree"));
+    peerData.setDisagreeLink(makePeerLink(pollKey, peerId, "disagree"));
+    peerData.setPollerOnlyLink(makePeerLink(pollKey, peerId, "pollerOnly"));
+    peerData.setVoterOnlyLink(makePeerLink(pollKey, peerId, "voterOnly"));
     return peerData;
   }
 
   /**
    * Convert a PollManager's RepairQueue object into a RepairQueue DTO
+   *
    * @param inQueue the RepairQueue to convert
    * @param pollKey the key of the repair queue.
    * @return a PollService Repair Queue
    */
-  private RepairQueue repairQueueFromDataRepairQueue(PollerStateBean.RepairQueue inQueue, String pollKey) {
+  private RepairQueue repairQueueFromDataRepairQueue(PollerStateBean.RepairQueue inQueue,
+      String pollKey) {
     RepairQueue outQueue = new RepairQueue();
     outQueue.setNumActive(inQueue.getActiveRepairs().size());
     outQueue.setNumPending(inQueue.getPendingRepairs().size());
@@ -738,6 +762,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
 
   /**
    * Convert a  PollManager's TallyStatus object into a TallyData DTO
+   *
    * @param tallyStatus The TallyStatus object to convert
    * @param pollKey the key to use for the links.
    * @return a new TallyData object
@@ -763,11 +788,11 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
 
   /**
    * Make a link to the details for a poll.
+   *
    * @param pollKey the key to the poll.
    * @return a link to the polls detailed data.
    */
-  private LinkDesc makeDetailLink(String pollKey)
-  {
+  private LinkDesc makeDetailLink(String pollKey) {
     try {
       // build a path element: "/polls/{pollKey}/"
       String prefix = UrlUtil.getUrlPrefix(request.getRequestURI());
@@ -783,17 +808,17 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
 
   /**
    * Make a link to the tally details for a poll.
+   *
    * @param pollKey the key for the poll
    * @param tallyType the type of tally data to return.
    * @return a new Link description object.
    */
-  private LinkDesc makeTallyLink(String pollKey, String tallyType)
-  {
+  private LinkDesc makeTallyLink(String pollKey, String tallyType) {
     try {
       // build a path element: "/polls/{pollKey}/tally?tally=type"
       String prefix = UrlUtil.getUrlPrefix(request.getRequestURI());
       LinkDesc ldesc = new LinkDesc();
-      ldesc.setLink(prefix + "/polls/" + pollKey + "/tally?tally="+ tallyType);
+      ldesc.setLink(prefix + "/polls/" + pollKey + "/tally?tally=" + tallyType);
       return ldesc;
     } catch (MalformedURLException e) {
       logger.error(DETAIL_UNAVAILABLE);
@@ -804,16 +829,17 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
 
   /**
    * Make a link to the repair queue details for a poll.
+   *
    * @param pollKey the key for the poll.
    * @param repairType the repair data to provide.
    * @return a new Link description object.
    */
-  private LinkDesc makeRepairQLink(String pollKey, String repairType)  {
+  private LinkDesc makeRepairQLink(String pollKey, String repairType) {
     try {
       //  build a path element: /polls/{pollKey}/repairs?repair=type
       String prefix = UrlUtil.getUrlPrefix(request.getRequestURI());
       LinkDesc ldesc = new LinkDesc();
-      ldesc.setLink(prefix + "/polls/" + pollKey + "/repairs?repair="+ repairType);
+      ldesc.setLink(prefix + "/polls/" + pollKey + "/repairs?repair=" + repairType);
       return ldesc;
     } catch (MalformedURLException e) {
       logger.error(DETAIL_UNAVAILABLE);
@@ -824,6 +850,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
 
   /**
    * Make a link to the tally details for a peer.
+   *
    * @param pollKey the pollKey for the link.
    * @param peerId the peerId for the link.
    * @param tallyType the tally data to provide.
@@ -834,7 +861,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
     try {
       String prefix = UrlUtil.getUrlPrefix(request.getRequestURI());
       LinkDesc ldesc = new LinkDesc();
-      ldesc.setLink(prefix + "/polls/" + pollKey + "/peer/" + peerId +"?tally="+ tallyType);
+      ldesc.setLink(prefix + "/polls/" + pollKey + "/peer/" + peerId + "?tally=" + tallyType);
       return ldesc;
     } catch (MalformedURLException e) {
       logger.error(DETAIL_UNAVAILABLE);
@@ -844,16 +871,18 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
 
   /**
    * Find the user data for a voting peer.
+   *
    * @param peerId the Peer Id of the voting peer
    * @param participants the list of voting peers
    * @return the ParticipantUserData for the Peer or null if not found.
    */
   private ParticipantUserData userDataForPeer(String peerId,
       List<ParticipantUserData> participants) {
-    if(peerId == null || participants == null || participants.isEmpty())
+    if (peerId == null || participants == null || participants.isEmpty()) {
       return null;
-    for(ParticipantUserData userData : participants) {
-      if(userData.getVoterId().getIdString().equals(peerId)) {
+    }
+    for (ParticipantUserData userData : participants) {
+      if (userData.getVoterId().getIdString().equals(peerId)) {
         return userData;
       }
     }

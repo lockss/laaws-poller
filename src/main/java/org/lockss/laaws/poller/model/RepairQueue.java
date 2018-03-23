@@ -31,6 +31,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.Objects;
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import org.springframework.validation.annotation.Validated;
 
 /**
@@ -39,7 +40,8 @@ import org.springframework.validation.annotation.Validated;
 @ApiModel(description = "Description of the RepairQueue.")
 @Validated
 
-public class RepairQueue   {
+public class RepairQueue {
+
   @JsonProperty("numPending")
   private Integer numPending = null;
 
@@ -65,10 +67,11 @@ public class RepairQueue   {
 
   /**
    * The number of pending repairs
+   *
    * @return numPending
-  **/
-  @ApiModelProperty(value = "The number of pending repairs")
-
+   **/
+  @ApiModelProperty(required = true, value = "The number of pending repairs")
+  @NotNull
 
   public Integer getNumPending() {
     return numPending;
@@ -85,8 +88,9 @@ public class RepairQueue   {
 
   /**
    * Get pendingLink
+   *
    * @return pendingLink
-  **/
+   **/
   @ApiModelProperty(value = "")
 
   @Valid
@@ -106,10 +110,11 @@ public class RepairQueue   {
 
   /**
    * The number of active repairs
+   *
    * @return numActive
-  **/
-  @ApiModelProperty(value = "The number of active repairs")
-
+   **/
+  @ApiModelProperty(required = true, value = "The number of active repairs")
+  @NotNull
 
   public Integer getNumActive() {
     return numActive;
@@ -126,8 +131,9 @@ public class RepairQueue   {
 
   /**
    * Get activeLink
+   *
    * @return activeLink
-  **/
+   **/
   @ApiModelProperty(value = "")
 
   @Valid
@@ -147,10 +153,11 @@ public class RepairQueue   {
 
   /**
    * The number of completed repairs
+   *
    * @return numCompleted
-  **/
-  @ApiModelProperty(value = "The number of completed repairs")
-
+   **/
+  @ApiModelProperty(required = true, value = "The number of completed repairs")
+  @NotNull
 
   public Integer getNumCompleted() {
     return numCompleted;
@@ -167,8 +174,9 @@ public class RepairQueue   {
 
   /**
    * Get completedLink
+   *
    * @return completedLink
-  **/
+   **/
   @ApiModelProperty(value = "")
 
   @Valid
@@ -201,14 +209,15 @@ public class RepairQueue   {
 
   @Override
   public int hashCode() {
-    return Objects.hash(numPending, pendingLink, numActive, activeLink, numCompleted, completedLink);
+    return Objects
+        .hash(numPending, pendingLink, numActive, activeLink, numCompleted, completedLink);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class RepairQueue {\n");
-    
+
     sb.append("    numPending: ").append(toIndentedString(numPending)).append("\n");
     sb.append("    pendingLink: ").append(toIndentedString(pendingLink)).append("\n");
     sb.append("    numActive: ").append(toIndentedString(numActive)).append("\n");

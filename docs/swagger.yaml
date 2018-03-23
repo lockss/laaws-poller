@@ -16,21 +16,17 @@ host: 'laaws.lockss.org:443'
 basePath: /
 schemes:
   - https
-consumes:
-  - application/json
-produces:
-  - application/json
 security:
   - basicAuth: []
 paths:
   /polls:
     post:
       tags:
-        - service
+        - "service"
       summary: Send a request to call a poll to the poller
       description: Use the information found in the descriptor object to initiate a  poll.
       operationId: callPoll
-      consumes:
+      consumes: 
         - application/json
       produces:
         - application/json
@@ -57,7 +53,7 @@ paths:
   '/polls/{psId}':
     get:
       tags:
-        - service
+        - "service"
       summary: Get queued poll status
       description: Get the status of a previously queued poll.
       operationId: getPollStatus
@@ -77,7 +73,7 @@ paths:
           description: Internal Server Error
     delete:
       tags:
-        - service
+        - "service"
       summary: Stop a poll and remove from queue.
       description: >-
         Stop a running poll and delete any schecduled polls for poll with the
@@ -103,7 +99,7 @@ paths:
   /status:
     get:
       tags:
-      - "status"
+      - "service"
       summary: "Get the status of the service"
       description: "Get the status of the service"
       operationId: "getStatus"
@@ -123,9 +119,11 @@ paths:
   '/polls/{pollKey}/tallies':
     get:
       tags:
-        - poll
+        - "poll-detail"
       summary: Page Tally
       operationId: getTallyUrls
+      produces:
+        - application/json
       parameters:
         - name: tally
           in: query
@@ -133,11 +131,11 @@ paths:
           type: string
           description: The kind of tally element to return.
           enum:
-            - agree
-            - disagree
-            - error
-            - noQuorum
-            - tooClose
+            - "agree"
+            - "disagree"
+            - "error"
+            - "noQuorum"
+            - "tooClose"
         - name: page
           in: query
           required: false
@@ -179,9 +177,11 @@ paths:
   '/polls/{pollKey}/repairs':
     get:
       tags:
-        - poll
+        - "poll-detail"
       summary: Poll Repairs
       operationId: getRepairQueueData
+      produces:
+        - application/json
       parameters:
         - name: repair
           in: query
@@ -189,9 +189,9 @@ paths:
           type: string
           description: The repair queue elements to return.
           enum:
-            - pending
-            - active
-            - completed
+            - "pending"
+            - "active"
+            - "completed"
         - name: page
           in: query
           required: false
@@ -233,9 +233,11 @@ paths:
   '/polls/{pollKey}/peer/{peerId}':
     get:
       tags:
-        - poll
+        - "poll-detail"
       summary: Poll Peer Data
       operationId: getPollPeerVoteUrls
+      produces:
+        - application/json
       parameters:
         - name: urls
           in: query
@@ -243,10 +245,10 @@ paths:
           type: string
           description: The voter urls to return.
           enum:
-            - agreed
-            - disagreed
-            - pollerOnly
-            - voterOnly
+            - "agreed"
+            - "disagreed"
+            - "pollerOnly"
+            - "voterOnly"
         - name: page
           in: query
           required: false
@@ -293,7 +295,7 @@ paths:
   /polls/poller:
     get:
       tags:
-        - poller
+        - "poller-polls"
       summary: Get the list of recent polls as poller.
       description: >-
         Get the list of recent polls as poller from the poll queue. if size and
@@ -341,9 +343,12 @@ paths:
   '/polls/poller/{pollKey}':
     get:
       tags:
-        - poller
+        - "poller-polls"
       summary: PollerDetails
+      
       operationId: getPollerPollDetails
+      produces:
+        - application/json
       description: Return the detailed information about a poll.
       parameters: []
       responses:
@@ -365,7 +370,7 @@ paths:
   /polls/voter:
     get:
       tags:
-        - voter
+        - "voter-polls"
       summary: Get the list of recent voter only polls.
       description: >-
         Get the list of recent polls as voter from the poll queue. if size and
@@ -413,9 +418,11 @@ paths:
   '/polls/voter/{pollKey}':
     get:
       tags:
-        - voter
+        - "voter-polls"
       summary: VoterDetails
       operationId: getVoterPollDetails
+      produces:
+        - application/json
       description: Return the detailed information about a poll.
       parameters: []
       responses:
@@ -672,11 +679,11 @@ definitions:
   TallyData:
     type: object
     required:
-      - agree
-      - disagree
-      - error
-      - noQuorum
-      - tooClose
+      - numAgree
+      - numDisagree
+      - numError
+      - numNoQuorum
+      - numTooClose
     properties:
       numAgree:
         type: integer
@@ -727,9 +734,9 @@ definitions:
   RepairQueue:
     type: object
     required:
-      - active
-      - completed
-      - pending
+      - numActive
+      - numCompleted
+      - numPending
     properties:
       numPending:
         type: integer
@@ -766,12 +773,12 @@ definitions:
         type: string
         description: The status of this repair
         enum:
-          - No Quorum
-          - Too Close
-          - Lost
-          - Lost - Poller-only Block
-          - Lost - Voter-only Block
-          - Won
+          - "NoQuorum"
+          - "TooClose"
+          - "Lost"
+          - "LostPollerOnly"
+          - "LostVoterOnly"
+          - "Won"
     description: >-
       structure used to define a repair source for url. if the source is null
       than repair from publisher
@@ -805,7 +812,6 @@ definitions:
     type: object
     required:
       - pageDesc
-      - polls
     properties:
       pageDesc:
         $ref: '#/definitions/PageDesc'
@@ -937,10 +943,10 @@ definitions:
         type: string
         description: The V3 poll variation.
         enum:
-          - PoR
-          - PoP
-          - Local
-          - NoPoll
+          - "PoR"
+          - "PoP"
+          - "Local"
+          - "NoPoll"
       modulus:
         type: integer
         description: Poll on every 'n'th url.
@@ -968,7 +974,7 @@ definitions:
     required:
       - page
       - size
-      - mTotal
+      - total
     properties:
       page:
         type: integer

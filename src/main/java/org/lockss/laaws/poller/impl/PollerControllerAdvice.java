@@ -38,7 +38,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ControllerAdvice
 public class PollerControllerAdvice {
+
   private static Logger logger = LoggerFactory.getLogger(PollsApiServiceImpl.class);
+
   /**
    * Handles the general error case. Log track trace at error level
    *

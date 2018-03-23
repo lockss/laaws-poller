@@ -41,7 +41,7 @@ class TestPage {
   private static final String ENTRY_PREFIX = "StringEntry:";
   private static final String BASE_URI = "http://www.example.com";
   private Page<String> mPage;
-  private List<String> mStrList= new ArrayList<>();
+  private List<String> mStrList = new ArrayList<>();
 
   @Test
   void testGetPageContent() {
@@ -110,7 +110,7 @@ class TestPage {
     mStrList.clear();
     initList(mStrList, SMALL_TEST_SIZE);
     mPage = new Page<>(mStrList, DEFAULT_PAGE, DEFAULT_SIZE, BASE_URI);
-    expected = BASE_URI + "?page=1&size="+SMALL_TEST_SIZE;
+    expected = BASE_URI + "?page=1&size=" + SMALL_TEST_SIZE;
     Assertions.assertEquals(expected, mPage.getFirstLink());
   }
 
@@ -126,7 +126,7 @@ class TestPage {
     mStrList.clear();
     initList(mStrList, SMALL_TEST_SIZE);
     mPage = new Page<>(mStrList, DEFAULT_PAGE, DEFAULT_SIZE, BASE_URI);
-    expected = BASE_URI + "?page=1&size="+SMALL_TEST_SIZE;
+    expected = BASE_URI + "?page=1&size=" + SMALL_TEST_SIZE;
     Assertions.assertEquals(expected, mPage.getLastLink());
   }
 
@@ -171,9 +171,31 @@ class TestPage {
 
   }
 
+  @Test
+  void testNullorEmpty() {
+    // Null
+    mPage = new Page<>(null, 0, 0, BASE_URI);
+    Assertions.assertEquals(1, mPage.getPageNum());
+    Assertions.assertEquals(0, mPage.getPageSize());
+    Assertions.assertEquals(0, mPage.getTotal());
+    Assertions.assertNull(mPage.getNextLink());
+    Assertions.assertNull(mPage.getPrevLink());
+    Assertions.assertNotNull(mPage.getPageContent());
+    Assertions.assertFalse(mPage.hasContent());
+
+    // Empty List
+    mPage = new Page<>(mStrList, 0, 0, BASE_URI);
+    Assertions.assertEquals(1, mPage.getPageNum());
+    Assertions.assertEquals(0, mPage.getPageSize());
+    Assertions.assertEquals(0, mPage.getTotal());
+    Assertions.assertNull(mPage.getNextLink());
+    Assertions.assertNull(mPage.getPrevLink());
+    Assertions.assertNotNull(mPage.getPageContent());
+    Assertions.assertFalse(mPage.hasContent());
+  }
 
   private void initList(List<String> szList, int size) {
-    for(int i = 0; i< size; i++) {
+    for (int i = 0; i < size; i++) {
       szList.add(i, ENTRY_PREFIX + i);
     }
   }

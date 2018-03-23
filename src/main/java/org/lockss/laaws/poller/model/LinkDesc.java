@@ -37,7 +37,8 @@ import org.springframework.validation.annotation.Validated;
  */
 @Validated
 
-public class LinkDesc   {
+public class LinkDesc {
+
   @JsonProperty("link")
   private String link = null;
 
@@ -51,11 +52,11 @@ public class LinkDesc   {
 
   /**
    * The actual link suitable for a standard GET request
+   *
    * @return link
-  **/
+   **/
   @ApiModelProperty(example = "http:www.example.com/v1/element", required = true, value = "The actual link suitable for a standard GET request")
   @NotNull
-
 
   public String getLink() {
     return link;
@@ -72,10 +73,10 @@ public class LinkDesc   {
 
   /**
    * A description of this link
+   *
    * @return desc
-  **/
+   **/
   @ApiModelProperty(example = "pollerOnly", value = "A description of this link")
-
 
   public String getDesc() {
     return desc;
@@ -108,7 +109,7 @@ public class LinkDesc   {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class LinkDesc {\n");
-    
+
     sb.append("    link: ").append(toIndentedString(link)).append("\n");
     sb.append("    desc: ").append(toIndentedString(desc)).append("\n");
     sb.append("}");

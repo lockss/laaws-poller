@@ -28,6 +28,7 @@ package org.lockss.laaws.poller.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import org.springframework.http.HttpHeaders;
 
@@ -43,16 +44,18 @@ public class Page<T> {
   private String mLinkBase;
 
   private static final String LINK_TEMPLATE = "%s?page=%d&size=%d";
-  private final List<T> mContent = new ArrayList<>();
+  private List<T> mContent = new ArrayList<>();
 
   public Page(Collection<T> content, int page, int size, String linkBase) {
     if (null == content) {
-      throw new IllegalArgumentException("Content must not be null!");
+      mContent = Collections.EMPTY_LIST;
+      mTotal = 0;
+    } else {
+      mContent.addAll(content);
     }
-    this.mContent.addAll(content);
     mLinkBase = linkBase;
     mPageSize = size;
-    mTotal = content.size();
+    mTotal = mContent.size();
     if (mTotal == 0 || size <= 0 || size >= mTotal) {
       // we return everything (or nothing)
       mPageNum = 1;
@@ -60,15 +63,14 @@ public class Page<T> {
       mFirstItem = 0;
       mLastItem = mTotal;
       mPageSize = mTotal;
-    }
-    else {
+    } else {
       // we need to calculate
       mPageNum = page > 0 ? page : 1;
       mLastPage = mTotal / size + (mTotal % size > 0 ? 1 : 0);
       mPageNum = mPageNum > mLastPage ? mLastPage : mPageNum;
       mFirstItem = (mPageNum - 1) * size;
       mLastItem = mFirstItem + size;
-      if(mLastItem > mTotal) {
+      if (mLastItem > mTotal) {
         mLastItem = mTotal;
       }
     }
@@ -99,8 +101,7 @@ public class Page<T> {
   }
 
   public List<T> getPageContent() {
-
-    if(mFirstItem != 0 && mLastItem != mTotal) {
+    if (mFirstItem != 0 && mLastItem != mTotal) {
       return mContent.subList(mFirstItem, mLastItem);
     }
     return mContent;
@@ -114,7 +115,7 @@ public class Page<T> {
   public String getNextLink() {
     String nextPage = null;
     if (mPageNum < mLastPage) {
-      nextPage = String.format(LINK_TEMPLATE, mLinkBase, mPageNum+1, mPageSize);
+      nextPage = String.format(LINK_TEMPLATE, mLinkBase, mPageNum + 1, mPageSize);
     }
     return nextPage;
   }
@@ -122,7 +123,7 @@ public class Page<T> {
   public String getPrevLink() {
     String prevPage = null;
     if (mPageNum > 1) {
-      prevPage = String.format(LINK_TEMPLATE, mLinkBase, mPageNum-1, mPageSize);
+      prevPage = String.format(LINK_TEMPLATE, mLinkBase, mPageNum - 1, mPageSize);
     }
     return prevPage;
   }

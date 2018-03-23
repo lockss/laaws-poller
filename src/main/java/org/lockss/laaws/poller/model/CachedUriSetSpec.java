@@ -39,7 +39,8 @@ import org.springframework.validation.annotation.Validated;
 @ApiModel(description = "A set of urls bounded by  upper and lower restraints.  If lower = \".\" this is a singleContentNode. If lower is null then start at the root url, if upper is null end with the last.")
 @Validated
 
-public class CachedUriSetSpec   {
+public class CachedUriSetSpec {
+
   @JsonProperty("urlPrefix")
   private String urlPrefix = null;
 
@@ -56,11 +57,11 @@ public class CachedUriSetSpec   {
 
   /**
    * The base which roots the lower and upper bound
+   *
    * @return urlPrefix
-  **/
+   **/
   @ApiModelProperty(required = true, value = "The base which roots the lower and upper bound")
   @NotNull
-
 
   public String getUrlPrefix() {
     return urlPrefix;
@@ -77,10 +78,10 @@ public class CachedUriSetSpec   {
 
   /**
    * lower bound of the prefix range, inclusive.
+   *
    * @return lowerBound
-  **/
+   **/
   @ApiModelProperty(value = "lower bound of the prefix range, inclusive.")
-
 
   public String getLowerBound() {
     return lowerBound;
@@ -97,10 +98,10 @@ public class CachedUriSetSpec   {
 
   /**
    * upper bound of prefix range, inclusive.
+   *
    * @return upperBound
-  **/
+   **/
   @ApiModelProperty(value = "upper bound of prefix range, inclusive.")
-
 
   public String getUpperBound() {
     return upperBound;
@@ -134,7 +135,7 @@ public class CachedUriSetSpec   {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class CachedUriSetSpec {\n");
-    
+
     sb.append("    urlPrefix: ").append(toIndentedString(urlPrefix)).append("\n");
     sb.append("    lowerBound: ").append(toIndentedString(lowerBound)).append("\n");
     sb.append("    upperBound: ").append(toIndentedString(upperBound)).append("\n");

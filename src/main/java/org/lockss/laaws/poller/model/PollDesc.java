@@ -43,7 +43,8 @@ import org.springframework.validation.annotation.Validated;
 @ApiModel(description = "The Poller Services poll spec used to define a poll.")
 @Validated
 
-public class PollDesc   {
+public class PollDesc {
+
   @JsonProperty("auId")
   private String auId = null;
 
@@ -64,11 +65,11 @@ public class PollDesc   {
    */
   public enum VariantEnum {
     POR("PoR"),
-    
+
     POP("PoP"),
-    
+
     LOCAL("Local"),
-    
+
     NOPOLL("NoPoll");
 
     private String value;
@@ -107,11 +108,11 @@ public class PollDesc   {
 
   /**
    * The id which defines the poll
+   *
    * @return auId
-  **/
+   **/
   @ApiModelProperty(required = true, value = "The id which defines the poll")
   @NotNull
-
 
   public String getAuId() {
     return auId;
@@ -128,8 +129,9 @@ public class PollDesc   {
 
   /**
    * Get cuSetSpec
+   *
    * @return cuSetSpec
-  **/
+   **/
   @ApiModelProperty(value = "")
 
   @Valid
@@ -150,11 +152,12 @@ public class PollDesc   {
   /**
    * The type of poll to run. Only V3 is supported.
    * minimum: 3
+   *
    * @return pollType
-  **/
+   **/
   @ApiModelProperty(value = "The type of poll to run. Only V3 is supported.")
 
-@Min(3)
+  @Min(3)
   public Integer getPollType() {
     return pollType;
   }
@@ -170,10 +173,10 @@ public class PollDesc   {
 
   /**
    * The version of polling protocol.
+   *
    * @return protocol
-  **/
+   **/
   @ApiModelProperty(value = "The version of polling protocol.")
-
 
   public Integer getProtocol() {
     return protocol;
@@ -190,10 +193,10 @@ public class PollDesc   {
 
   /**
    * The version of the polling features needed by the plugin.
+   *
    * @return pluginPollVersion
-  **/
+   **/
   @ApiModelProperty(value = "The version of the polling features needed by the plugin.")
-
 
   public String getPluginPollVersion() {
     return pluginPollVersion;
@@ -210,10 +213,10 @@ public class PollDesc   {
 
   /**
    * The V3 poll variation.
+   *
    * @return variant
-  **/
+   **/
   @ApiModelProperty(value = "The V3 poll variation.")
-
 
   public VariantEnum getVariant() {
     return variant;
@@ -230,10 +233,10 @@ public class PollDesc   {
 
   /**
    * Poll on every 'n'th url.
+   *
    * @return modulus
-  **/
+   **/
   @ApiModelProperty(value = "Poll on every 'n'th url.")
-
 
   public Integer getModulus() {
     return modulus;
@@ -271,7 +274,7 @@ public class PollDesc   {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class PollDesc {\n");
-    
+
     sb.append("    auId: ").append(toIndentedString(auId)).append("\n");
     sb.append("    cuSetSpec: ").append(toIndentedString(cuSetSpec)).append("\n");
     sb.append("    pollType: ").append(toIndentedString(pollType)).append("\n");

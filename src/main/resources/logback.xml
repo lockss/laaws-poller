@@ -40,11 +40,11 @@
     </encoder>
   </appender>
   <logger name="org.lockss" level="debug">
-    <appender-ref ref="FILE" />
+    <appender-ref ref="FILE"/>
   </logger>
 
   <!-- Setting the root level of logging to INFO -->
   <root level="info">
-    <appender-ref ref="STDOUT" />
+    <appender-ref ref="STDOUT"/>
   </root>
 </configuration>

@@ -31,6 +31,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.Objects;
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import org.springframework.validation.annotation.Validated;
 
 /**
@@ -39,7 +40,8 @@ import org.springframework.validation.annotation.Validated;
 @ApiModel(description = "The tally for the current poll.")
 @Validated
 
-public class TallyData   {
+public class TallyData {
+
   @JsonProperty("numAgree")
   private Integer numAgree = null;
 
@@ -89,10 +91,11 @@ public class TallyData   {
 
   /**
    * Get numAgree
+   *
    * @return numAgree
-  **/
-  @ApiModelProperty(value = "")
-
+   **/
+  @ApiModelProperty(required = true, value = "")
+  @NotNull
 
   public Integer getNumAgree() {
     return numAgree;
@@ -109,8 +112,9 @@ public class TallyData   {
 
   /**
    * Get agreeLink
+   *
    * @return agreeLink
-  **/
+   **/
   @ApiModelProperty(value = "")
 
   @Valid
@@ -130,10 +134,11 @@ public class TallyData   {
 
   /**
    * Get numDisagree
+   *
    * @return numDisagree
-  **/
-  @ApiModelProperty(value = "")
-
+   **/
+  @ApiModelProperty(required = true, value = "")
+  @NotNull
 
   public Integer getNumDisagree() {
     return numDisagree;
@@ -150,8 +155,9 @@ public class TallyData   {
 
   /**
    * Get disagreeLink
+   *
    * @return disagreeLink
-  **/
+   **/
   @ApiModelProperty(value = "")
 
   @Valid
@@ -171,10 +177,11 @@ public class TallyData   {
 
   /**
    * Get numTooClose
+   *
    * @return numTooClose
-  **/
-  @ApiModelProperty(value = "")
-
+   **/
+  @ApiModelProperty(required = true, value = "")
+  @NotNull
 
   public Integer getNumTooClose() {
     return numTooClose;
@@ -191,8 +198,9 @@ public class TallyData   {
 
   /**
    * Get tooCloseLink
+   *
    * @return tooCloseLink
-  **/
+   **/
   @ApiModelProperty(value = "")
 
   @Valid
@@ -212,10 +220,11 @@ public class TallyData   {
 
   /**
    * Get numNoQuorum
+   *
    * @return numNoQuorum
-  **/
-  @ApiModelProperty(value = "")
-
+   **/
+  @ApiModelProperty(required = true, value = "")
+  @NotNull
 
   public Integer getNumNoQuorum() {
     return numNoQuorum;
@@ -232,8 +241,9 @@ public class TallyData   {
 
   /**
    * Get noQuorumLink
+   *
    * @return noQuorumLink
-  **/
+   **/
   @ApiModelProperty(value = "")
 
   @Valid
@@ -253,10 +263,11 @@ public class TallyData   {
 
   /**
    * Get numError
+   *
    * @return numError
-  **/
-  @ApiModelProperty(value = "")
-
+   **/
+  @ApiModelProperty(required = true, value = "")
+  @NotNull
 
   public Integer getNumError() {
     return numError;
@@ -273,8 +284,9 @@ public class TallyData   {
 
   /**
    * Get errorLink
+   *
    * @return errorLink
-  **/
+   **/
   @ApiModelProperty(value = "")
 
   @Valid
@@ -294,10 +306,10 @@ public class TallyData   {
 
   /**
    * The weighted sum agreed uris.
+   *
    * @return wtAgreed
-  **/
+   **/
   @ApiModelProperty(value = "The weighted sum agreed uris.")
-
 
   public Float getWtAgreed() {
     return wtAgreed;
@@ -314,10 +326,10 @@ public class TallyData   {
 
   /**
    * The weighted sum of disagree uris.
+   *
    * @return wtDisagreed
-  **/
+   **/
   @ApiModelProperty(value = "The weighted sum of disagree uris.")
-
 
   public Float getWtDisagreed() {
     return wtDisagreed;
@@ -334,10 +346,10 @@ public class TallyData   {
 
   /**
    * The sum of the tooClose uris.
+   *
    * @return wtTooClose
-  **/
+   **/
   @ApiModelProperty(value = "The sum of the tooClose uris.")
-
 
   public Float getWtTooClose() {
     return wtTooClose;
@@ -354,10 +366,10 @@ public class TallyData   {
 
   /**
    * The weighted sum of NoQuorum uris.
+   *
    * @return wtNoQuorum
-  **/
+   **/
   @ApiModelProperty(value = "The weighted sum of NoQuorum uris.")
-
 
   public Float getWtNoQuorum() {
     return wtNoQuorum;
@@ -395,14 +407,16 @@ public class TallyData   {
 
   @Override
   public int hashCode() {
-    return Objects.hash(numAgree, agreeLink, numDisagree, disagreeLink, numTooClose, tooCloseLink, numNoQuorum, noQuorumLink, numError, errorLink, wtAgreed, wtDisagreed, wtTooClose, wtNoQuorum);
+    return Objects.hash(numAgree, agreeLink, numDisagree, disagreeLink, numTooClose, tooCloseLink,
+        numNoQuorum, noQuorumLink, numError, errorLink, wtAgreed, wtDisagreed, wtTooClose,
+        wtNoQuorum);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class TallyData {\n");
-    
+
     sb.append("    numAgree: ").append(toIndentedString(numAgree)).append("\n");
     sb.append("    agreeLink: ").append(toIndentedString(agreeLink)).append("\n");
     sb.append("    numDisagree: ").append(toIndentedString(numDisagree)).append("\n");

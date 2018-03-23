@@ -27,64 +27,70 @@ import org.lockss.test.SpringLockssTestCase;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class TestPollerApplication extends SpringLockssTestCase {
 
-	private static final Logger logger =
-			LoggerFactory.getLogger(TestPollerApplication.class);
-	// The port that Tomcat is using during this test.
-	@LocalServerPort
-	private int port;
+  private static final Logger logger =
+      LoggerFactory.getLogger(TestPollerApplication.class);
+  // The port that Tomcat is using during this test.
+  @LocalServerPort
+  private int port;
 
-	/* The identifier of an AU that exists in the test system. */
-	String goodAuid = "org|lockss|plugin|pensoft|oai|PensoftOaiPlugin"
-			+ "&au_oai_date~2014&au_oai_set~biorisk"
-			+ "&base_url~http%3A%2F%2Fbiorisk%2Epensoft%2Enet%2F";
+  /* The identifier of an AU that exists in the test system. */
+  String goodAuid = "org|lockss|plugin|pensoft|oai|PensoftOaiPlugin"
+      + "&au_oai_date~2014&au_oai_set~biorisk"
+      + "&base_url~http%3A%2F%2Fbiorisk%2Epensoft%2Enet%2F";
 
-	/* The name of an AU that exists in the test system. */
-	String goodAuName = "BioRisk Volume 2014";
+  /* The name of an AU that exists in the test system. */
+  String goodAuName = "BioRisk Volume 2014";
 
-	// The application Context used to specify the command line arguments to be
-	// used for the tests.
-	@Autowired
-	ApplicationContext appCtx;
+  // The application Context used to specify the command line arguments to be
+  // used for the tests.
+  @Autowired
+  ApplicationContext appCtx;
 
-	/**
-	 * Set up code to be run before each test.
-	 *
-	 * @throws IOException if there are problems.
-	 */
-	@Before
-	public void setUpBeforeEachTest() throws Exception {
-		if (logger.isDebugEnabled()) logger.debug("port = " + port);
+  /**
+   * Set up code to be run before each test.
+   *
+   * @throws IOException if there are problems.
+   */
+  @Before
+  public void setUpBeforeEachTest() throws Exception {
+    if (logger.isDebugEnabled()) {
+      logger.debug("port = " + port);
+    }
 
-		// Set up the temporary directory where the test data will reside.
-		setUpTempDirectory(PollerApplication.class.getCanonicalName());
+    // Set up the temporary directory where the test data will reside.
+    setUpTempDirectory(PollerApplication.class.getCanonicalName());
 
-		// Copy the necessary files to the test temporary directory.
-		File srcTree = new File(new File("test"), "cache");
-		if (logger.isDebugEnabled())
-			logger.debug("srcTree = " + srcTree.getAbsolutePath());
+    // Copy the necessary files to the test temporary directory.
+    File srcTree = new File(new File("test"), "cache");
+    if (logger.isDebugEnabled()) {
+      logger.debug("srcTree = " + srcTree.getAbsolutePath());
+    }
 
-		copyToTempDir(srcTree);
+    copyToTempDir(srcTree);
 
-		srcTree = new File(new File("test"), "tdbxml");
-		if (logger.isDebugEnabled())
-			logger.debug("srcTree = " + srcTree.getAbsolutePath());
+    srcTree = new File(new File("test"), "tdbxml");
+    if (logger.isDebugEnabled()) {
+      logger.debug("srcTree = " + srcTree.getAbsolutePath());
+    }
 
-		copyToTempDir(srcTree);
+    copyToTempDir(srcTree);
     runAuthenticated();
-	}
+  }
 
-	@Test
-	public void contextLoads() {
-	}
+  @Test
+  public void contextLoads() {
+  }
 
   /**
    * Runs the Swagger-related tests.
    *
-   * @throws Exception
-   *           if there are problems.
+   * @throws Exception if there are problems.
    */
-  @Test public void testGetSwaggerDocs() throws Exception {
-    if (logger.isDebugEnabled()) logger.debug("Get Swagger Docs....");
+  @Test
+  public void testGetSwaggerDocs() throws Exception {
+    if (logger.isDebugEnabled()) {
+      logger.debug("Get Swagger Docs....");
+    }
     ResponseEntity<String> successResponse = new TestRestTemplate().exchange(
         getTestUrlTemplate("/v2/api-docs"),
         HttpMethod.GET, null, String.class);
@@ -95,18 +101,22 @@ public class TestPollerApplication extends SpringLockssTestCase {
     String expectedBody = "{'swagger':'2.0',"
         + "'info':{'description':'REST API for handling poller tasks '}}";
     JSONAssert.assertEquals(expectedBody, successResponse.getBody(), false);
-    if (logger.isDebugEnabled()) logger.debug("Done.");
+    if (logger.isDebugEnabled()) {
+      logger.debug("Done.");
+    }
   }
 
   /**
    * Runs the status-related tests.
    *
-   * @throws Exception
-   *           if there are problems.
+   * @throws Exception if there are problems.
    */
 
-  @Test public void testGetStatus() throws Exception {
-    if (logger.isDebugEnabled()) logger.debug("Get Status...");
+  @Test
+  public void testGetStatus() throws Exception {
+    if (logger.isDebugEnabled()) {
+      logger.debug("Get Status...");
+    }
 
     ResponseEntity<String> successResponse = new TestRestTemplate().exchange(
         getTestUrlTemplate("/status"), HttpMethod.GET, null, String.class);
@@ -117,10 +127,19 @@ public class TestPollerApplication extends SpringLockssTestCase {
     String expectedBody = "{\"version\":\"1.0.0\",\"ready\":true}}";
 
     JSONAssert.assertEquals(expectedBody, successResponse.getBody(), false);
-    if (logger.isDebugEnabled()) logger.debug("Done.");
+    if (logger.isDebugEnabled()) {
+      logger.debug("Done.");
+    }
   }
 
-  private void runUnauthenticated () throws Exception {
+  public void testGetPollerPolls() throws Exception {
+    if (logger.isDebugEnabled()) {
+      logger.debug("Get Poller Polls...");
+    }
+
+  }
+
+  private void runUnauthenticated() throws Exception {
     // Specify the command line parameters to be used for the tests.
     List<String> cmdLineArgs = getCommandLineArguments();
     cmdLineArgs.add("-p");
@@ -129,14 +148,15 @@ public class TestPollerApplication extends SpringLockssTestCase {
     CommandLineRunner runner = appCtx.getBean(CommandLineRunner.class);
     runner.run(cmdLineArgs.toArray(new String[cmdLineArgs.size()]));
 
-    if (logger.isDebugEnabled()) logger.debug("Done.");
+    if (logger.isDebugEnabled()) {
+      logger.debug("Done.");
+    }
   }
 
   /**
    * Runs the tests with authentication turned on.
    *
-   * @throws Exception
-   *           if there are problems.
+   * @throws Exception if there are problems.
    */
   private void runAuthenticated() throws Exception {
     // Specify the command line parameters to be used for the tests.
@@ -146,7 +166,9 @@ public class TestPollerApplication extends SpringLockssTestCase {
 
     CommandLineRunner runner = appCtx.getBean(CommandLineRunner.class);
     runner.run(cmdLineArgs.toArray(new String[cmdLineArgs.size()]));
-    if (logger.isDebugEnabled()) logger.debug("Done.");
+    if (logger.isDebugEnabled()) {
+      logger.debug("Done.");
+    }
   }
 
   /**
@@ -173,9 +195,8 @@ public class TestPollerApplication extends SpringLockssTestCase {
   /**
    * Provides the URL template to be tested.
    *
-   * @param pathAndQueryParams
-   *          A String with the path and query parameters of the URL template to
-   *          be tested.
+   * @param pathAndQueryParams A String with the path and query parameters of the URL template to
+   * be tested.
    * @return a String with the URL template to be tested.
    */
   private String getTestUrlTemplate(String pathAndQueryParams) {

@@ -42,7 +42,8 @@ import org.springframework.validation.annotation.Validated;
 @ApiModel(description = "A Pager for a list of urls found in poll details.")
 @Validated
 
-public class UrlPager   {
+public class UrlPager {
+
   @JsonProperty("pageDesc")
   private PageDesc pageDesc = null;
 
@@ -57,8 +58,9 @@ public class UrlPager   {
 
   /**
    * Get pageDesc
+   *
    * @return pageDesc
-  **/
+   **/
   @ApiModelProperty(required = true, value = "")
   @NotNull
 
@@ -87,10 +89,10 @@ public class UrlPager   {
 
   /**
    * The urls on this page.
+   *
    * @return urls
-  **/
+   **/
   @ApiModelProperty(value = "The urls on this page.")
-
 
   public List<String> getUrls() {
     return urls;
@@ -123,7 +125,7 @@ public class UrlPager   {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class UrlPager {\n");
-    
+
     sb.append("    pageDesc: ").append(toIndentedString(pageDesc)).append("\n");
     sb.append("    urls: ").append(toIndentedString(urls)).append("\n");
     sb.append("}");

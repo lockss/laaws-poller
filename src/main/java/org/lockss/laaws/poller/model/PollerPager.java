@@ -42,7 +42,8 @@ import org.springframework.validation.annotation.Validated;
 @ApiModel(description = "A page of poller poll summaries.")
 @Validated
 
-public class PollerPager   {
+public class PollerPager {
+
   @JsonProperty("pageDesc")
   private PageDesc pageDesc = null;
 
@@ -57,8 +58,9 @@ public class PollerPager   {
 
   /**
    * Get pageDesc
+   *
    * @return pageDesc
-  **/
+   **/
   @ApiModelProperty(required = true, value = "")
   @NotNull
 
@@ -78,16 +80,19 @@ public class PollerPager   {
   }
 
   public PollerPager addPollsItem(PollerSummary pollsItem) {
+    if (this.polls == null) {
+      this.polls = new ArrayList<>();
+    }
     this.polls.add(pollsItem);
     return this;
   }
 
   /**
    * The list of polls for the current page or null
+   *
    * @return polls
-  **/
-  @ApiModelProperty(required = true, value = "The list of polls for the current page or null")
-  @NotNull
+   **/
+  @ApiModelProperty(value = "The list of polls for the current page or null")
 
   @Valid
 
@@ -122,7 +127,7 @@ public class PollerPager   {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class PollerPager {\n");
-    
+
     sb.append("    pageDesc: ").append(toIndentedString(pageDesc)).append("\n");
     sb.append("    polls: ").append(toIndentedString(polls)).append("\n");
     sb.append("}");

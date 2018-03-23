@@ -42,7 +42,8 @@ import org.springframework.validation.annotation.Validated;
 @ApiModel(description = "A Pager for a list of urls found in poll details.")
 @Validated
 
-public class RepairPager   {
+public class RepairPager {
+
   @JsonProperty("pageDesc")
   private PageDesc pageDesc = null;
 
@@ -57,8 +58,9 @@ public class RepairPager   {
 
   /**
    * Get pageDesc
+   *
    * @return pageDesc
-  **/
+   **/
   @ApiModelProperty(required = true, value = "")
   @NotNull
 
@@ -87,8 +89,9 @@ public class RepairPager   {
 
   /**
    * The list of repair data on this page or null.
+   *
    * @return repairs
-  **/
+   **/
   @ApiModelProperty(value = "The list of repair data on this page or null.")
 
   @Valid
@@ -124,7 +127,7 @@ public class RepairPager   {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class RepairPager {\n");
-    
+
     sb.append("    pageDesc: ").append(toIndentedString(pageDesc)).append("\n");
     sb.append("    repairs: ").append(toIndentedString(repairs)).append("\n");
     sb.append("}");

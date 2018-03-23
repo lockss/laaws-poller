@@ -41,7 +41,8 @@ import org.springframework.validation.annotation.Validated;
 @ApiModel(description = "structure used to define a repair source for url. if the source is null than repair from publisher")
 @Validated
 
-public class RepairData   {
+public class RepairData {
+
   @JsonProperty("repairUrl")
   private String repairUrl = null;
 
@@ -52,16 +53,16 @@ public class RepairData   {
    * The status of this repair
    */
   public enum ResultEnum {
-    NO_QUORUM("No Quorum"),
-    
-    TOO_CLOSE("Too Close"),
-    
+    NOQUORUM("NoQuorum"),
+
+    TOOCLOSE("TooClose"),
+
     LOST("Lost"),
-    
-    LOST_POLLER_ONLY_BLOCK("Lost - Poller-only Block"),
-    
-    LOST_VOTER_ONLY_BLOCK("Lost - Voter-only Block"),
-    
+
+    LOSTPOLLERONLY("LostPollerOnly"),
+
+    LOSTVOTERONLY("LostVoterOnly"),
+
     WON("Won");
 
     private String value;
@@ -97,11 +98,11 @@ public class RepairData   {
 
   /**
    * The url to repair
+   *
    * @return repairUrl
-  **/
+   **/
   @ApiModelProperty(required = true, value = "The url to repair")
   @NotNull
-
 
   public String getRepairUrl() {
     return repairUrl;
@@ -118,11 +119,11 @@ public class RepairData   {
 
   /**
    * The peer to repair from
+   *
    * @return repairFrom
-  **/
+   **/
   @ApiModelProperty(required = true, value = "The peer to repair from")
   @NotNull
-
 
   public String getRepairFrom() {
     return repairFrom;
@@ -139,10 +140,10 @@ public class RepairData   {
 
   /**
    * The status of this repair
+   *
    * @return result
-  **/
+   **/
   @ApiModelProperty(value = "The status of this repair")
-
 
   public ResultEnum getResult() {
     return result;
@@ -176,7 +177,7 @@ public class RepairData   {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class RepairData {\n");
-    
+
     sb.append("    repairUrl: ").append(toIndentedString(repairUrl)).append("\n");
     sb.append("    repairFrom: ").append(toIndentedString(repairFrom)).append("\n");
     sb.append("    result: ").append(toIndentedString(result)).append("\n");

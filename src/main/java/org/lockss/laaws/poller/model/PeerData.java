@@ -40,7 +40,8 @@ import org.springframework.validation.annotation.Validated;
 @ApiModel(description = "Detail for a single voter in a poll.")
 @Validated
 
-public class PeerData   {
+public class PeerData {
+
   @JsonProperty("peerId")
   private String peerId = null;
 
@@ -108,11 +109,11 @@ public class PeerData   {
 
   /**
    * the peer id for this participant
+   *
    * @return peerId
-  **/
+   **/
   @ApiModelProperty(required = true, value = "the peer id for this participant")
   @NotNull
-
 
   public String getPeerId() {
     return peerId;
@@ -129,11 +130,11 @@ public class PeerData   {
 
   /**
    * the status of this peer
+   *
    * @return status
-  **/
+   **/
   @ApiModelProperty(required = true, value = "the status of this peer")
   @NotNull
-
 
   public String getStatus() {
     return status;
@@ -150,10 +151,10 @@ public class PeerData   {
 
   /**
    * the percentage of vote agreement.
+   *
    * @return agreement
-  **/
+   **/
   @ApiModelProperty(value = "the percentage of vote agreement.")
-
 
   public Float getAgreement() {
     return agreement;
@@ -170,10 +171,10 @@ public class PeerData   {
 
   /**
    * Get numAgree
+   *
    * @return numAgree
-  **/
+   **/
   @ApiModelProperty(value = "")
-
 
   public Long getNumAgree() {
     return numAgree;
@@ -190,8 +191,9 @@ public class PeerData   {
 
   /**
    * Get agreeLink
+   *
    * @return agreeLink
-  **/
+   **/
   @ApiModelProperty(value = "")
 
   @Valid
@@ -211,10 +213,10 @@ public class PeerData   {
 
   /**
    * Get numDisagree
+   *
    * @return numDisagree
-  **/
+   **/
   @ApiModelProperty(value = "")
-
 
   public Long getNumDisagree() {
     return numDisagree;
@@ -231,8 +233,9 @@ public class PeerData   {
 
   /**
    * Get disagreeLink
+   *
    * @return disagreeLink
-  **/
+   **/
   @ApiModelProperty(value = "")
 
   @Valid
@@ -252,10 +255,10 @@ public class PeerData   {
 
   /**
    * Get numPollerOnly
+   *
    * @return numPollerOnly
-  **/
+   **/
   @ApiModelProperty(value = "")
-
 
   public Long getNumPollerOnly() {
     return numPollerOnly;
@@ -272,8 +275,9 @@ public class PeerData   {
 
   /**
    * Get pollerOnlyLink
+   *
    * @return pollerOnlyLink
-  **/
+   **/
   @ApiModelProperty(value = "")
 
   @Valid
@@ -293,10 +297,10 @@ public class PeerData   {
 
   /**
    * Get numVoterOnly
+   *
    * @return numVoterOnly
-  **/
+   **/
   @ApiModelProperty(value = "")
-
 
   public Long getNumVoterOnly() {
     return numVoterOnly;
@@ -313,8 +317,9 @@ public class PeerData   {
 
   /**
    * Get voterOnlyLink
+   *
    * @return voterOnlyLink
-  **/
+   **/
   @ApiModelProperty(value = "")
 
   @Valid
@@ -334,10 +339,10 @@ public class PeerData   {
 
   /**
    * the number of bytes hashed.
+   *
    * @return bytesHashed
-  **/
+   **/
   @ApiModelProperty(value = "the number of bytes hashed.")
-
 
   public Long getBytesHashed() {
     return bytesHashed;
@@ -354,10 +359,10 @@ public class PeerData   {
 
   /**
    * the number of bytes read.
+   *
    * @return bytesRead
-  **/
+   **/
   @ApiModelProperty(value = "the number of bytes read.")
-
 
   public Long getBytesRead() {
     return bytesRead;
@@ -374,10 +379,10 @@ public class PeerData   {
 
   /**
    * the weight of vote percentage agreement.
+   *
    * @return wtAgreement
-  **/
+   **/
   @ApiModelProperty(value = "the weight of vote percentage agreement.")
-
 
   public Float getWtAgreement() {
     return wtAgreement;
@@ -394,10 +399,10 @@ public class PeerData   {
 
   /**
    * the weight of number agree votes.
+   *
    * @return wtNumAgree
-  **/
+   **/
   @ApiModelProperty(value = "the weight of number agree votes.")
-
 
   public Float getWtNumAgree() {
     return wtNumAgree;
@@ -414,10 +419,10 @@ public class PeerData   {
 
   /**
    * the weight of number of disagree votes.
+   *
    * @return wtNumDisagree
-  **/
+   **/
   @ApiModelProperty(value = "the weight of number of disagree votes.")
-
 
   public Float getWtNumDisagree() {
     return wtNumDisagree;
@@ -434,10 +439,10 @@ public class PeerData   {
 
   /**
    * the weight of number of poller only votes.
+   *
    * @return wtNumPollerOnly
-  **/
+   **/
   @ApiModelProperty(value = "the weight of number of poller only votes.")
-
 
   public Float getWtNumPollerOnly() {
     return wtNumPollerOnly;
@@ -454,10 +459,10 @@ public class PeerData   {
 
   /**
    * the weight of number of voter only votes.
+   *
    * @return wtNumVoterOnly
-  **/
+   **/
   @ApiModelProperty(value = "the weight of number of voter only votes.")
-
 
   public Float getWtNumVoterOnly() {
     return wtNumVoterOnly;
@@ -474,10 +479,10 @@ public class PeerData   {
 
   /**
    * the state machine state.
+   *
    * @return state
-  **/
+   **/
   @ApiModelProperty(value = "the state machine state.")
-
 
   public String getState() {
     return state;
@@ -494,10 +499,10 @@ public class PeerData   {
 
   /**
    * the time of last state change.
+   *
    * @return lastStateChange
-  **/
+   **/
   @ApiModelProperty(value = "the time of last state change.")
-
 
   public Long getLastStateChange() {
     return lastStateChange;
@@ -541,14 +546,17 @@ public class PeerData   {
 
   @Override
   public int hashCode() {
-    return Objects.hash(peerId, status, agreement, numAgree, agreeLink, numDisagree, disagreeLink, numPollerOnly, pollerOnlyLink, numVoterOnly, voterOnlyLink, bytesHashed, bytesRead, wtAgreement, wtNumAgree, wtNumDisagree, wtNumPollerOnly, wtNumVoterOnly, state, lastStateChange);
+    return Objects.hash(peerId, status, agreement, numAgree, agreeLink, numDisagree, disagreeLink,
+        numPollerOnly, pollerOnlyLink, numVoterOnly, voterOnlyLink, bytesHashed, bytesRead,
+        wtAgreement, wtNumAgree, wtNumDisagree, wtNumPollerOnly, wtNumVoterOnly, state,
+        lastStateChange);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class PeerData {\n");
-    
+
     sb.append("    peerId: ").append(toIndentedString(peerId)).append("\n");
     sb.append("    status: ").append(toIndentedString(status)).append("\n");
     sb.append("    agreement: ").append(toIndentedString(agreement)).append("\n");

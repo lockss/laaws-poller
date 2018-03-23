@@ -39,14 +39,15 @@ import org.springframework.validation.annotation.Validated;
 @ApiModel(description = "The information needed to page in a long list of data")
 @Validated
 
-public class PageDesc   {
+public class PageDesc {
+
   @JsonProperty("page")
   private Integer page = null;
 
   @JsonProperty("size")
   private Integer size = null;
 
-  @JsonProperty("mTotal")
+  @JsonProperty("total")
   private Integer total = null;
 
   @JsonProperty("prevPage")
@@ -62,11 +63,11 @@ public class PageDesc   {
 
   /**
    * The page number
+   *
    * @return page
-  **/
+   **/
   @ApiModelProperty(example = "10", required = true, value = "The page number")
   @NotNull
-
 
   public Integer getPage() {
     return page;
@@ -83,11 +84,11 @@ public class PageDesc   {
 
   /**
    * The size or number of elements on a page
+   *
    * @return size
-  **/
+   **/
   @ApiModelProperty(example = "5", required = true, value = "The size or number of elements on a page")
   @NotNull
-
 
   public Integer getSize() {
     return size;
@@ -104,11 +105,11 @@ public class PageDesc   {
 
   /**
    * The mTotal number of elements.
-   * @return mTotal
-  **/
+   *
+   * @return total
+   **/
   @ApiModelProperty(example = "150", required = true, value = "The mTotal number of elements.")
   @NotNull
-
 
   public Integer getTotal() {
     return total;
@@ -125,10 +126,10 @@ public class PageDesc   {
 
   /**
    * The url of the prev page of results or null
+   *
    * @return prevPage
-  **/
+   **/
   @ApiModelProperty(value = "The url of the prev page of results or null")
-
 
   public String getPrevPage() {
     return prevPage;
@@ -145,10 +146,10 @@ public class PageDesc   {
 
   /**
    * The url to the next page of results or null.
+   *
    * @return nextPage
-  **/
+   **/
   @ApiModelProperty(value = "The url to the next page of results or null.")
-
 
   public String getNextPage() {
     return nextPage;
@@ -184,10 +185,10 @@ public class PageDesc   {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class PageDesc {\n");
-    
+
     sb.append("    page: ").append(toIndentedString(page)).append("\n");
     sb.append("    size: ").append(toIndentedString(size)).append("\n");
-    sb.append("    mTotal: ").append(toIndentedString(total)).append("\n");
+    sb.append("    total: ").append(toIndentedString(total)).append("\n");
     sb.append("    prevPage: ").append(toIndentedString(prevPage)).append("\n");
     sb.append("    nextPage: ").append(toIndentedString(nextPage)).append("\n");
     sb.append("}");
