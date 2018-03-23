@@ -10,5 +10,7 @@
   "hideGenerationTimestamp": true,
   "title": "Lockss Laaws Poller",
   "java8": true,
-  "delegatePattern": true
+  "delegatePattern": true,
+  "sourceFolder": "src/gen/java",
+  "swaggerDocketConfig": true
 }

@@ -24,15 +24,42 @@
  * in this Software without prior written authorization from Stanford University.
  */
 
-package org.lockss.laaws.poller.api;
+package org.lockss.laaws.poller.impl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.hateoas.VndErrors;
+import org.springframework.http.HttpStatus;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
-public class NotFoundException extends ApiException {
+@ControllerAdvice
+public class PollerControllerAdvice {
 
-  private int code;
+  private static Logger logger = LoggerFactory.getLogger(PollsApiServiceImpl.class);
 
-  public NotFoundException(int code, String msg) {
-    super(code, msg);
-    this.code = code;
+  /**
+   * Handles the general error case. Log track trace at error level
+   *
+   * @param e the exception not handled by other exception handler methods
+   * @return the error response in JSON format with media type
+   * application/vnd.error+json
+   */
+  @ExceptionHandler(Exception.class)
+  @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+  @ResponseBody
+  public VndErrors onException(Exception e) {
+    logger.error("Caught exception while handling a request", e);
+    String ref = e.getClass().getSimpleName();
+    String msg = getExceptionMessage(e);
+    return new VndErrors(ref, msg);
   }
+
+  private String getExceptionMessage(Exception e) {
+    return StringUtils.hasText(e.getMessage()) ? e.getMessage() : e.getClass().getSimpleName();
+  }
+
 }
