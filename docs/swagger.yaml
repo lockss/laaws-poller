@@ -345,7 +345,6 @@ paths:
       tags:
         - "poller-polls"
       summary: PollerDetails
-      
       operationId: getPollerPollDetails
       produces:
         - application/json
