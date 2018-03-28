@@ -33,7 +33,7 @@
   <parent>
     <groupId>org.lockss</groupId>
     <artifactId>lockss-core-spring-parent-pom</artifactId>
-    <version>1.2.0</version>
+    <version>1.3.0</version>
   </parent>
 
   <groupId>org.lockss.laaws</groupId>
@@ -84,23 +84,24 @@
 
     <!-- LOCKSS daemon support -->
     <dependency>
-      <groupId>org.lockss.laaws</groupId>
-      <artifactId>laaws-plugins</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
+      <groupId>org.lockss</groupId>
+      <artifactId>lockss-plugins</artifactId>
+      <version>20180327</version>
     </dependency>
   </dependencies>
-  
+
   <repositories>
     <repository>
-      <id>lockss-releases</id>
-      <name>Lockss Releases Maven Repo</name>
-      <url>http://artifacts.lockss.org:8081/artifactory/libs-release</url>
-    </repository>
-    <repository>
-      <id>lockss-snapshots</id>
-      <name>Lockss Snapshot Maven Repo</name>
-      <url>http://artifacts.lockss.org:8081/artifactory/libs-snapshot</url>
-      <snapshots><enabled>true</enabled></snapshots>
+      <id>lockss-legacy</id>
+      <name>LOCKSS Legacy JARs</name>
+      <url>https://github.com/lockss/lockss-legacy-jars/raw/master/maven2</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
     </repository>
   </repositories>
+
 </project>
