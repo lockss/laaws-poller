@@ -59,8 +59,7 @@ public interface PollsApi extends SpringLockssBaseApi {
       produces = {"application/json"},
       consumes = {"application/json"},
       method = RequestMethod.POST)
-  default ResponseEntity<String> callPoll(
-      @ApiParam(value = "", required = true) @Valid @RequestBody PollDesc body) {
+    default ResponseEntity<String> callPoll(@ApiParam(value = "" ,required=true )  @Valid @RequestBody PollDesc body) {
     return getDelegate().callPoll(body);
   }
 
@@ -76,13 +75,12 @@ public interface PollsApi extends SpringLockssBaseApi {
   @RequestMapping(value = "/polls/{psId}",
       produces = {"application/json"},
       method = RequestMethod.DELETE)
-  default ResponseEntity<Void> cancelPoll(
-      @ApiParam(value = "", required = true) @PathVariable("psId") String psId) {
+    default ResponseEntity<Void> cancelPoll(@ApiParam(value = "",required=true) @PathVariable("psId") String psId) {
     return getDelegate().cancelPoll(psId);
   }
 
 
-  @ApiOperation(value = "Poll Peer Data", nickname = "getPollPeerVoteUrls", notes = "", response = UrlPager.class, authorizations = {
+    @ApiOperation(value = "Poll Peer Data", nickname = "getPollPeerVoteUrls", notes = "", response = UrlPager.class, authorizations = {
       @Authorization(value = "basicAuth")
   }, tags = {"poll-detail",})
   @ApiResponses(value = {
@@ -92,12 +90,7 @@ public interface PollsApi extends SpringLockssBaseApi {
   @RequestMapping(value = "/polls/{pollKey}/peer/{peerId}",
       produces = {"application/json"},
       method = RequestMethod.GET)
-  default ResponseEntity<UrlPager> getPollPeerVoteUrls(
-      @ApiParam(value = "The pollKey from the PollDetail", required = true) @PathVariable("pollKey") String pollKey,
-      @ApiParam(value = "The peerId from the Poll Detail.PeerData", required = true) @PathVariable("peerId") String peerId,
-      @NotNull @ApiParam(value = "The voter urls to return.", required = true, allowableValues = "agreed, disagreed, pollerOnly, voterOnly") @Valid @RequestParam(value = "urls", required = true) String urls,
-      @ApiParam(value = "The page number") @Valid @RequestParam(value = "page", required = false) Integer page,
-      @ApiParam(value = "The page size") @Valid @RequestParam(value = "size", required = false) Integer size) {
+    default ResponseEntity<UrlPager> getPollPeerVoteUrls(@ApiParam(value = "The key assigned by the PollManager.",required=true) @PathVariable("pollKey") String pollKey,@ApiParam(value = "The peerId from the Poll Detail.PeerData",required=true) @PathVariable("peerId") String peerId,@NotNull @ApiParam(value = "The voter urls to return.", required = true, allowableValues = "agreed, disagreed, pollerOnly, voterOnly") @Valid @RequestParam(value = "urls", required = true) String urls,@ApiParam(value = "The page number") @Valid @RequestParam(value = "page", required = false) Integer page,@ApiParam(value = "The page size") @Valid @RequestParam(value = "size", required = false) Integer size) {
     return getDelegate().getPollPeerVoteUrls(pollKey, peerId, urls, page, size);
   }
 
@@ -113,8 +106,7 @@ public interface PollsApi extends SpringLockssBaseApi {
   @RequestMapping(value = "/polls/{psId}",
       produces = {"application/json"},
       method = RequestMethod.GET)
-  default ResponseEntity<PollerSummary> getPollStatus(
-      @ApiParam(value = "", required = true) @PathVariable("psId") String psId) {
+    default ResponseEntity<PollerSummary> getPollStatus(@ApiParam(value = "",required=true) @PathVariable("psId") String psId) {
     return getDelegate().getPollStatus(psId);
   }
 
@@ -130,8 +122,7 @@ public interface PollsApi extends SpringLockssBaseApi {
   @RequestMapping(value = "/polls/poller/{pollKey}",
       produces = {"application/json"},
       method = RequestMethod.GET)
-  default ResponseEntity<PollerDetail> getPollerPollDetails(
-      @ApiParam(value = "", required = true) @PathVariable("pollKey") String pollKey) {
+    default ResponseEntity<PollerDetail> getPollerPollDetails(@ApiParam(value = "The key assigned by the PollManager.",required=true) @PathVariable("pollKey") String pollKey) {
     return getDelegate().getPollerPollDetails(pollKey);
   }
 
@@ -146,9 +137,7 @@ public interface PollsApi extends SpringLockssBaseApi {
   @RequestMapping(value = "/polls/poller",
       produces = {"application/json"},
       method = RequestMethod.GET)
-  default ResponseEntity<PollerPager> getPollsAsPoller(
-      @ApiParam(value = "Size of the page to retrieve.") @Valid @RequestParam(value = "size", required = false) Integer size,
-      @ApiParam(value = "Number of the page to retrieve.") @Valid @RequestParam(value = "page", required = false) Integer page) {
+    default ResponseEntity<PollerPager> getPollsAsPoller(@ApiParam(value = "Size of the page to retrieve.") @Valid @RequestParam(value = "size", required = false) Integer size,@ApiParam(value = "Number of the page to retrieve.") @Valid @RequestParam(value = "page", required = false) Integer page) {
     return getDelegate().getPollsAsPoller(size, page);
   }
 
@@ -163,14 +152,12 @@ public interface PollsApi extends SpringLockssBaseApi {
   @RequestMapping(value = "/polls/voter",
       produces = {"application/json"},
       method = RequestMethod.GET)
-  default ResponseEntity<VoterPager> getPollsAsVoter(
-      @ApiParam(value = "Size of the page to retrieve.") @Valid @RequestParam(value = "size", required = false) Integer size,
-      @ApiParam(value = "Number of the page to retrieve.") @Valid @RequestParam(value = "page", required = false) Integer page) {
+    default ResponseEntity<VoterPager> getPollsAsVoter(@ApiParam(value = "Size of the page to retrieve.") @Valid @RequestParam(value = "size", required = false) Integer size,@ApiParam(value = "Number of the page to retrieve.") @Valid @RequestParam(value = "page", required = false) Integer page) {
     return getDelegate().getPollsAsVoter(size, page);
   }
 
 
-  @ApiOperation(value = "Poll Repairs", nickname = "getRepairQueueData", notes = "", response = RepairPager.class, authorizations = {
+    @ApiOperation(value = "Poll Repairs", nickname = "getRepairQueueData", notes = "", response = RepairPager.class, authorizations = {
       @Authorization(value = "basicAuth")
   }, tags = {"poll-detail",})
   @ApiResponses(value = {
@@ -180,16 +167,12 @@ public interface PollsApi extends SpringLockssBaseApi {
   @RequestMapping(value = "/polls/{pollKey}/repairs",
       produces = {"application/json"},
       method = RequestMethod.GET)
-  default ResponseEntity<RepairPager> getRepairQueueData(
-      @ApiParam(value = "The pollKey as listed in the PollDetail object.", required = true) @PathVariable("pollKey") String pollKey,
-      @NotNull @ApiParam(value = "The repair queue elements to return.", required = true, allowableValues = "pending, active, completed") @Valid @RequestParam(value = "repair", required = true) String repair,
-      @ApiParam(value = "The page number.") @Valid @RequestParam(value = "page", required = false) Integer page,
-      @ApiParam(value = "The size of the page.") @Valid @RequestParam(value = "size", required = false) Integer size) {
+    default ResponseEntity<RepairPager> getRepairQueueData(@ApiParam(value = "The key assigned by the PollManager..",required=true) @PathVariable("pollKey") String pollKey,@NotNull @ApiParam(value = "The repair queue elements to return.", required = true, allowableValues = "pending, active, completed") @Valid @RequestParam(value = "repair", required = true) String repair,@ApiParam(value = "The page number.") @Valid @RequestParam(value = "page", required = false) Integer page,@ApiParam(value = "The size of the page.") @Valid @RequestParam(value = "size", required = false) Integer size) {
     return getDelegate().getRepairQueueData(pollKey, repair, page, size);
   }
 
 
-  @ApiOperation(value = "Page Tally", nickname = "getTallyUrls", notes = "", response = UrlPager.class, authorizations = {
+    @ApiOperation(value = "Page Tally", nickname = "getTallyUrls", notes = "", response = UrlPager.class, authorizations = {
       @Authorization(value = "basicAuth")
   }, tags = {"poll-detail",})
   @ApiResponses(value = {
@@ -199,11 +182,7 @@ public interface PollsApi extends SpringLockssBaseApi {
   @RequestMapping(value = "/polls/{pollKey}/tallies",
       produces = {"application/json"},
       method = RequestMethod.GET)
-  default ResponseEntity<UrlPager> getTallyUrls(
-      @ApiParam(value = "The pollKey as listed in the PollDetail object.", required = true) @PathVariable("pollKey") String pollKey,
-      @NotNull @ApiParam(value = "The kind of tally element to return.", required = true, allowableValues = "agree, disagree, error, noQuorum, tooClose") @Valid @RequestParam(value = "tally", required = true) String tally,
-      @ApiParam(value = "The page number.") @Valid @RequestParam(value = "page", required = false) Integer page,
-      @ApiParam(value = "The size of the page.") @Valid @RequestParam(value = "size", required = false) Integer size) {
+    default ResponseEntity<UrlPager> getTallyUrls(@ApiParam(value = "The key assigned by the PollManager..",required=true) @PathVariable("pollKey") String pollKey,@NotNull @ApiParam(value = "The kind of tally element to return.", required = true, allowableValues = "agree, disagree, error, noQuorum, tooClose") @Valid @RequestParam(value = "tally", required = true) String tally,@ApiParam(value = "The page number.") @Valid @RequestParam(value = "page", required = false) Integer page,@ApiParam(value = "The size of the page.") @Valid @RequestParam(value = "size", required = false) Integer size) {
     return getDelegate().getTallyUrls(pollKey, tally, page, size);
   }
 
@@ -219,8 +198,7 @@ public interface PollsApi extends SpringLockssBaseApi {
   @RequestMapping(value = "/polls/voter/{pollKey}",
       produces = {"application/json"},
       method = RequestMethod.GET)
-  default ResponseEntity<VoterDetail> getVoterPollDetails(
-      @ApiParam(value = "", required = true) @PathVariable("pollKey") String pollKey) {
+    default ResponseEntity<VoterDetail> getVoterPollDetails(@ApiParam(value = "The key assigned by the PollManager.",required=true) @PathVariable("pollKey") String pollKey) {
     return getDelegate().getVoterPollDetails(pollKey);
   }
 

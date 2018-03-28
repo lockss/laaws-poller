@@ -25,7 +25,6 @@
  */
 package org.lockss.laaws.poller.impl;
 
-import com.sun.jimi.core.util.P;
 import java.net.MalformedURLException;
 import java.util.*;
 import javax.servlet.http.HttpServletRequest;
@@ -107,9 +106,18 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
    */
   @Override
   public ResponseEntity<String> callPoll(PollDesc body) {
+    ArchivalUnit au = null;
     String auId = body.getAuId();
     CachedUriSetSpec spec = body.getCuSetSpec();
-    if (auId == null || auId.isEmpty()) {
+    try {
+      au = getPluginManager().getAuFromId(auId);
+    }
+    catch (Exception e) {
+      if (logger.isDebugEnabled()) {
+        logger.error("No valid au: " + auId);
+      }
+    }
+    if (auId == null || auId.isEmpty() || au == null) {
       return new ResponseEntity<>("Invalid Request", HttpStatus.BAD_REQUEST);
     }
     if (logger.isDebugEnabled()) {
@@ -144,17 +152,21 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
     PollManager pm = getPollManager();
     ArchivalUnit au;
     PollSpec spec = requestMap.remove(psId);
-    if (spec != null) {
-      au = spec.getCachedUrlSet().getArchivalUnit();
-    } else {
-      au = getPluginManager().getAuFromId(psId);
+    try {
+      if (spec != null) {
+        au = spec.getCachedUrlSet().getArchivalUnit();
+      } else {
+        au = getPluginManager().getAuFromId(psId);
+      }
+      Poll poll = pm.stopPoll(au);
+      if (poll != null) {
+        return new ResponseEntity<>(HttpStatus.OK);
+      }
     }
-    Poll poll = pm.stopPoll(au);
-    if (poll != null) {
-      return new ResponseEntity<>(HttpStatus.OK);
-    }
-    if (logger.isDebugEnabled()) {
-      logger.debug("unable to locate poll with id " + psId);
+    catch(Exception e) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("unable to locate poll with id " + psId);
+      }
     }
     return new ResponseEntity<>(HttpStatus.NOT_FOUND);
   }
@@ -173,24 +185,26 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
     }
     PollSpec spec = requestMap.get(psId);
     ArchivalUnit au;
-    if (spec != null) {
-      au = spec.getCachedUrlSet().getArchivalUnit();
-    } else {
-      au = getPluginManager().getAuFromId(psId);
-    }
-    if (au != null) {
-      PollManager pm = getPollManager();
-      Poll poll = pm.getPoll(au.getAuId());
-      if (poll != null) {
-        PollerSummary summary = summarizePollerPoll(poll);
-        return new ResponseEntity<>(summary, HttpStatus.OK);
+    try {
+      if (spec != null) {
+        au = spec.getCachedUrlSet().getArchivalUnit();
+      } else {
+        au = getPluginManager().getAuFromId(psId);
+      }
+      if (au != null) {
+        PollManager pm = getPollManager();
+        Poll poll = pm.getPoll(au.getAuId());
+        if (poll != null) {
+          PollerSummary summary = summarizePollerPoll(poll);
+          return new ResponseEntity<>(summary, HttpStatus.OK);
+        }
+      }
+    } catch(Exception e) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("unable to locate poll with id " + psId);
       }
     }
-    if (logger.isDebugEnabled()) {
-      logger.debug("unable to locate poll with id " + psId);
-    }
     return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-
   }
 
 
@@ -285,7 +299,9 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
               counts = Collections.emptyList();
           }
           if (counts != null) {
-            return getUrlPagerResponseEntity(page, size, baseLink, counts);
+            Page<String> strPage = new Page<>(counts, page, size, baseLink);
+            UrlPager pager = getUrlPager(strPage);
+            return new ResponseEntity<>(pager, strPage.getPageHeaders(), HttpStatus.OK);
           }
         }
       }
@@ -294,23 +310,17 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
   }
 
   /**
-   * Return a UrlPager with headers
+   * Return a UrlPager.
    *
-   * @param page current page.
-   * @param size the size of the current page
-   * @param baseLink the url to use for base
-   * @param strings the collection of strings to page in.
-   * @return a UrlPager with the requested page's urls.
+   * @param urlPage the Page Description
+   * @return a UrlPager from a Page description
    */
-  private ResponseEntity<UrlPager> getUrlPagerResponseEntity(Integer page, Integer size,
-      String baseLink, Collection<String> strings) {
-    Page<String> urlpage = new Page<>(strings, page, size, baseLink);
-    // The page description.
-    PageDesc desc = getPageDesc(urlpage);
+  private UrlPager getUrlPager(Page<String>urlPage) {
+    PageDesc desc = getPageDesc(urlPage);
     UrlPager pager = new UrlPager();
     pager.setPageDesc(desc);
-    pager.setUrls(urlpage.getPageContent());
-    return new ResponseEntity<>(pager, urlpage.getPageHeaders(), HttpStatus.OK);
+    pager.setUrls(urlPage.getPageContent());
+    return pager;
   }
 
 
@@ -347,7 +357,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
           repairList = new ArrayList<>();
       }
       if (repairList != null) {
-        Page<Repair> rpage = new Page(repairList, page, size, baseLink);
+        Page<Repair> rpage = new Page<>(repairList, page, size, baseLink);
         // The page description.
         PageDesc desc = getPageDesc(rpage);
         RepairPager pager = new RepairPager();
@@ -410,7 +420,10 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
           tallySet = new HashSet<String>();
       }
       if (tallySet != null) {
-        return getUrlPagerResponseEntity(page, size, baseLink, tallySet);
+        Page<String> strPage = new Page<>(tallySet, page, size, baseLink);
+        UrlPager pager = getUrlPager(strPage);
+        return new ResponseEntity<>(pager, strPage.getPageHeaders(), HttpStatus.OK);
+
       }
     }
     return new ResponseEntity<>(new UrlPager(), HttpStatus.NOT_FOUND);
@@ -437,16 +450,11 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
     // The page description.
     PageDesc desc = getPageDesc(ppage);
     pager.setPageDesc(desc);
-    // The page content.
-
     if (ppage.hasContent()) {
       List<V3Poller> pollerList = ppage.getPageContent();
       for (V3Poller poll : pollerList) {
         pager.addPollsItem(summarizePollerPoll(poll));
       }
-    }
-    else {
-      pager.setPolls(new ArrayList<PollerSummary>());
     }
     return new ResponseEntity<>(pager, ppage.getPageHeaders(), HttpStatus.OK);
   }
@@ -469,25 +477,22 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
     PollManager pm = getPollManager();
     Collection<V3Voter> voters = pm.getV3Voters();
     String baseLink = request.getRequestURI();
-    Page<V3Voter> vpage = new Page<>(voters, size, page, baseLink);
+    Page<V3Voter> voterPage = new Page<>(voters, size, page, baseLink);
     VoterPager pager = new VoterPager();
     // The page description.
     PageDesc desc = new PageDesc();
-    desc.setTotal(vpage.getTotal());
-    desc.setSize(vpage.getPageSize());
-    desc.setPage(vpage.getPageNum());
-    desc.setNextPage(vpage.getNextLink());
-    desc.setPrevPage(vpage.getPrevLink());
+    desc.setTotal(voterPage.getTotal());
+    desc.setSize(voterPage.getPageSize());
+    desc.setPage(voterPage.getPageNum());
+    desc.setNextPage(voterPage.getNextLink());
+    desc.setPrevPage(voterPage.getPrevLink());
     pager.setPageDesc(desc);
     // The page content.
-    if (vpage.hasContent()) {
-      List<V3Voter> pollerList = vpage.getPageContent();
+    if (voterPage.hasContent()) {
+      List<V3Voter> pollerList = voterPage.getPageContent();
       for (V3Voter poll : pollerList) {
         pager.addPollsItem(summarizeVoterPoll((poll)));
       }
-    }
-    else {
-      pager.setPolls(Collections.EMPTY_LIST);
     }
     return new ResponseEntity<>(pager, HttpStatus.OK);
   }

@@ -28,7 +28,6 @@ package org.lockss.laaws.poller.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import org.springframework.http.HttpHeaders;
 
@@ -46,17 +45,15 @@ public class Page<T> {
   private static final String LINK_TEMPLATE = "%s?page=%d&size=%d";
   private List<T> mContent = new ArrayList<>();
 
-  public Page(Collection<T> content, int page, int size, String linkBase) {
-    if (null == content) {
-      mContent = Collections.EMPTY_LIST;
-      mTotal = 0;
-    } else {
+  public Page(Collection<T> content, Integer page, Integer size, String linkBase) {
+    if (null !=content) {
       mContent.addAll(content);
     }
     mLinkBase = linkBase;
-    mPageSize = size;
+    mPageSize = size == null ? 0 : size;
+    mPageNum = page == null ? 0 : page;
     mTotal = mContent.size();
-    if (mTotal == 0 || size <= 0 || size >= mTotal) {
+    if (mTotal == 0 || mPageSize <= 0 || mPageSize >= mTotal) {
       // we return everything (or nothing)
       mPageNum = 1;
       mLastPage = 1;
@@ -65,11 +62,11 @@ public class Page<T> {
       mPageSize = mTotal;
     } else {
       // we need to calculate
-      mPageNum = page > 0 ? page : 1;
-      mLastPage = mTotal / size + (mTotal % size > 0 ? 1 : 0);
+      mPageNum = mPageNum > 0 ? mPageNum : 1;
+      mLastPage = mTotal / mPageSize + (mTotal % mPageSize > 0 ? 1 : 0);
       mPageNum = mPageNum > mLastPage ? mLastPage : mPageNum;
-      mFirstItem = (mPageNum - 1) * size;
-      mLastItem = mFirstItem + size;
+      mFirstItem = (mPageNum - 1) * mPageSize;
+      mLastItem = mFirstItem + mPageSize;
       if (mLastItem > mTotal) {
         mLastItem = mTotal;
       }

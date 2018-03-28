@@ -56,7 +56,7 @@ class TestPage {
     initList(mStrList, BIG_TEST_SIZE);
     mPage = new Page<>(mStrList, DEFAULT_PAGE, DEFAULT_SIZE, BASE_URI);
     Assertions.assertTrue(mPage.hasContent());
-    mPage = new Page<>(new ArrayList(), 1, DEFAULT_SIZE, BASE_URI);
+    mPage = new Page<>(new ArrayList<String>(), 1, DEFAULT_SIZE, BASE_URI);
     Assertions.assertFalse(mPage.hasContent());
 
   }

@@ -26,38 +26,27 @@
 
 package org.lockss.laaws.poller.impl;
 
-import static org.mockito.Mockito.when;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import javax.servlet.http.HttpServletRequest;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import org.lockss.laaws.poller.PollerApplication;
 import org.lockss.laaws.poller.model.*;
-import org.lockss.plugin.PluginManager;
-import org.lockss.poller.PollManager;
+import org.lockss.config.Tdb;
+import org.lockss.plugin.Plugin;
 import org.lockss.poller.PollSpec;
+import org.lockss.poller.TestPollManager;
 import org.lockss.rs.status.ApiStatus;
-import org.lockss.test.SpringLockssTestCase;
 
-class TestPollsApiServiceImpl extends SpringLockssTestCase {
+class TestPollsApiServiceImpl extends TestPollManager {
 
-  @Spy
-  PollManager pollManager;
-  @Spy
-  PluginManager pluginManager;
   @Mock
   HashMap<String, PollSpec> requestMap;
   @Mock
@@ -65,50 +54,67 @@ class TestPollsApiServiceImpl extends SpringLockssTestCase {
   @InjectMocks
   PollsApiServiceImpl pollsApiServiceImpl;
 
-  /* The identifier of an AU that exists in the test system. */
-  String goodAuid = "org|lockss|plugin|pensoft|oai|PensoftOaiPlugin"
-      + "&au_oai_date~2014&au_oai_set~biorisk"
-      + "&base_url~http%3A%2F%2Fbiorisk%2Epensoft%2Enet%2F";
+  private static String[] rooturls = {"http://www.test.org",
+      "http://www.test1.org",
+      "http://www.test2.org"};
 
-  /* The name of an AU that exists in the test system. */
-  String goodAuName = "BioRisk Volume 2014";
+  private static String urlstr = "http://www.test3.org";
+  private static String lwrbnd = "test1.doc";
+  private static String uprbnd = "test3.doc";
+
+  private Tdb tdb;
+  private Plugin plugin;
 
   @BeforeEach
-  void initAll() {
+  public void setUp() throws Exception {
+    super.setUp();
     MockitoAnnotations.initMocks(this);
+  }
 
-    initDirs();
-    initDaemon();
-    // set up the mock Request object to return the configured host:port.
-    when(request.getRequestURI()).thenReturn("http://localhost:49520");
+  @AfterEach
+  public void tearDown() throws Exception {
+    super.tearDown();
   }
 
   @Test
   void testGetApiStatus() {
     ApiStatus result = pollsApiServiceImpl.getApiStatus();
-    Assertions.assertTrue(result.isReady());
+    Assertions.assertFalse(result.isReady());
     Assertions.assertEquals("1.0.0", result.getVersion());
   }
 
   @Test
-  void testCallQueryCancelPoll() {
+  void testCallPoll() {
     PollDesc desc = new PollDesc();
+    String auId = testau.getAuId();
     // straight forward request to start a poll.
-    desc.setAuId(goodAuid);
+    desc.setAuId(testau.getAuId());
     ResponseEntity<String> result = pollsApiServiceImpl.callPoll(desc);
-    Assertions.assertEquals(goodAuid, result.getBody());
+    Assertions.assertEquals(auId, result.getBody());
     Assertions.assertEquals(HttpStatus.ACCEPTED, result.getStatusCode());
+  }
 
-    // check the status of the poll.
-    ResponseEntity<PollerSummary> summaryResponse = pollsApiServiceImpl.getPollStatus(goodAuid);
+  @Test
+  void testGetPollStatus() throws Exception {
+    ResponseEntity<PollerSummary> summaryResponse;
+    String auId = "bogus";
+    // check the status of bogus au name.
+    summaryResponse =  pollsApiServiceImpl.getPollStatus(auId);
     PollerSummary summary = summaryResponse.getBody();
-    Assertions.assertNotNull(summary);
-
-    // now cancel it.
-    pollsApiServiceImpl.cancelPoll(goodAuid);
-    // check the status of the poll.
-    summaryResponse = pollsApiServiceImpl.getPollStatus(goodAuid);
+    Assertions.assertNull(summary);
     Assertions.assertEquals(HttpStatus.NOT_FOUND, summaryResponse.getStatusCode());
+    testGetV3PollStatus();
+    auId = testau.getAuId();
+    summaryResponse = pollsApiServiceImpl.getPollStatus(auId);
+    summary = summaryResponse.getBody();
+  }
+
+  @Test
+  void testCancelPoll() throws Exception {
+    String auId = testau.getAuId();
+    super.testGetV3PollStatus();
+    ResponseEntity<Void> result = pollsApiServiceImpl.cancelPoll(auId);
+    Assertions.assertNull(result.getBody());
   }
 
   @Test
@@ -127,12 +133,15 @@ class TestPollsApiServiceImpl extends SpringLockssTestCase {
   }
 
   @Test
-  void testGetPollsAsPoller() {
+  void testGetPollsAsPoller() throws Exception {
     ResponseEntity<PollerPager> result = pollsApiServiceImpl
         .getPollsAsPoller(20, 1);
     PollerPager pager = result.getBody();
-    Assertions.assertEquals(0, pager.getPolls().size());
+    Assertions.assertEquals(null, pager.getPolls());
     Assertions.assertEquals(HttpStatus.OK, result.getStatusCode());
+    testPollQueue();
+    result = pollsApiServiceImpl.getPollsAsPoller(20, 1);
+    pager = result.getBody();
   }
 
   @Test
@@ -145,39 +154,5 @@ class TestPollsApiServiceImpl extends SpringLockssTestCase {
   }
 
 
-  private void initDaemon() {
-    // Specify the command line parameters to be used for the tests.
-    List<String> cmdLineArgs = new ArrayList<String>();
-    cmdLineArgs.add("-p");
-    cmdLineArgs.add("config/common.xml");
-    cmdLineArgs.add("-p");
-    cmdLineArgs.add("config/lockss.txt");
-    cmdLineArgs.add("-p");
-    cmdLineArgs.add("test/config/lockss.txt");
-    cmdLineArgs.add("-p");
-    cmdLineArgs.add("test/config/lockss.opt");
-    cmdLineArgs.add("-b");
-    cmdLineArgs.add(getPlatformDiskSpaceConfigPath());
-    cmdLineArgs.add("-p");
-    cmdLineArgs.add("test/config/pollerApiControllerTestAuthOn.opt");
-    PollerApplication app = new PollerApplication();
-    app.run(cmdLineArgs.toArray(new String[cmdLineArgs.size()]));
-  }
-
-  private void initDirs() {
-    // Set up the temporary directory where the test data will reside.
-
-    try {
-      setUpTempDirectory(PollsApiServiceImpl.class.getCanonicalName());
-      // Copy the necessary files to the test temporary directory.
-      File srcTree = new File(new File("test"), "cache");
-      copyToTempDir(srcTree);
-      srcTree = new File(new File("test"), "tdbxml");
-      copyToTempDir(srcTree);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-
-  }
 }
 

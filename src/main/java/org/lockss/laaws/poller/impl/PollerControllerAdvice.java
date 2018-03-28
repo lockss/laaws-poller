@@ -26,17 +26,19 @@
 
 package org.lockss.laaws.poller.impl;
 
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.VndErrors;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.*;
+
+import org.lockss.laaws.poller.api.NotFoundException;
 
 @ControllerAdvice
+@RequestMapping(produces = "application/vnd.error+json")
 public class PollerControllerAdvice {
 
   private static Logger logger = LoggerFactory.getLogger(PollsApiServiceImpl.class);
@@ -51,11 +53,33 @@ public class PollerControllerAdvice {
   @ExceptionHandler(Exception.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   @ResponseBody
-  public VndErrors onException(Exception e) {
+  public ResponseEntity<VndErrors> onException(Exception e) {
     logger.error("Caught exception while handling a request", e);
     String ref = e.getClass().getSimpleName();
     String msg = getExceptionMessage(e);
-    return new VndErrors(ref, msg);
+    return  new ResponseEntity<>(new VndErrors(ref, msg),HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+
+  @ExceptionHandler(IllegalArgumentException.class)
+  public ResponseEntity<VndErrors> assertionException(final IllegalArgumentException e) {
+    return error(e, HttpStatus.NOT_FOUND, getExceptionMessage(e));
+  }
+
+  @ExceptionHandler(NotFoundException.class)
+  public ResponseEntity<VndErrors> assertionException(final NotFoundException e) {
+    return error(e, HttpStatus.NOT_FOUND, getExceptionMessage(e));
+  }
+
+  @ExceptionHandler(NullPointerException.class)
+  public ResponseEntity<VndErrors> assertionException(final NullPointerException e) {
+    return error(e, HttpStatus.NOT_FOUND, getExceptionMessage(e));
+  }
+
+  private ResponseEntity<VndErrors> error(
+      final Exception exception, final HttpStatus httpStatus, final String logRef) {
+    final String message =
+        Optional.of(exception.getMessage()).orElse(exception.getClass().getSimpleName());
+    return new ResponseEntity<>(new VndErrors(logRef, message), httpStatus);
   }
 
   private String getExceptionMessage(Exception e) {
