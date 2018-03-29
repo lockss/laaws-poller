@@ -55,14 +55,13 @@ public class PollerControllerAdvice {
   @ResponseBody
   public ResponseEntity<VndErrors> onException(Exception e) {
     logger.error("Caught exception while handling a request", e);
-    String ref = e.getClass().getSimpleName();
-    String msg = getExceptionMessage(e);
-    return  new ResponseEntity<>(new VndErrors(ref, msg),HttpStatus.INTERNAL_SERVER_ERROR);
+    return error(e, HttpStatus.INTERNAL_SERVER_ERROR,getExceptionMessage(e));
   }
 
   @ExceptionHandler(IllegalArgumentException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
   public ResponseEntity<VndErrors> assertionException(final IllegalArgumentException e) {
-    return error(e, HttpStatus.NOT_FOUND, getExceptionMessage(e));
+    return error(e, HttpStatus.BAD_REQUEST, getExceptionMessage(e));
   }
 
   @ExceptionHandler(NotFoundException.class)
@@ -71,8 +70,9 @@ public class PollerControllerAdvice {
   }
 
   @ExceptionHandler(NullPointerException.class)
+  @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   public ResponseEntity<VndErrors> assertionException(final NullPointerException e) {
-    return error(e, HttpStatus.NOT_FOUND, getExceptionMessage(e));
+    return error(e, HttpStatus.INTERNAL_SERVER_ERROR, getExceptionMessage(e));
   }
 
   private ResponseEntity<VndErrors> error(

@@ -59,6 +59,7 @@ import org.lockss.protocol.psm.PsmState;
 import org.lockss.rs.status.ApiStatus;
 import org.lockss.rs.status.SpringLockssBaseApiController;
 import org.lockss.util.ByteArray;
+import org.lockss.util.StringUtil;
 import org.lockss.util.UrlUtil;
 
 /**
@@ -72,7 +73,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
   private static final String API_VERSION = "1.0.0";
   private PollManager pollManager;
   private PluginManager pluginManager;
-  private HashMap<String, PollSpec> requestMap = new HashMap<>();
+  private LockssDaemon daemon;
   @Autowired
   private HttpServletRequest request;
   private static final String DETAIL_UNAVAILABLE = "Unable to add details link.";
@@ -107,33 +108,34 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
   @Override
   public ResponseEntity<String> callPoll(PollDesc body) {
     ArchivalUnit au = null;
-    String auId = body.getAuId();
-    CachedUriSetSpec spec = body.getCuSetSpec();
+    final String auId = body.getAuId();
+    final CachedUriSetSpec cuSetSpec = body.getCuSetSpec();
+    if (logger.isDebugEnabled()) {
+      logger.debug("request to start a poll for au: " + auId);
+    }
     try {
-      au = getPluginManager().getAuFromId(auId);
+      if(!StringUtil.isNullString(auId )) {
+        au = getPluginManager().getAuFromId(auId);
+      }
     }
     catch (Exception e) {
       if (logger.isDebugEnabled()) {
         logger.error("No valid au: " + auId);
       }
     }
-    if (auId == null || auId.isEmpty() || au == null) {
-      return new ResponseEntity<>("Invalid Request", HttpStatus.BAD_REQUEST);
+    if (au != null) {
+      PollSpec ps = pollSpecFromDesc(au, cuSetSpec);
+      PollManager pm = getPollManager();
+      try {
+        pm.requestPoll(ps);
+      } catch (NotEligibleException e) {
+        logger.error(e.getMessage());
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
+      }
+      return new ResponseEntity<>(auId, HttpStatus.ACCEPTED);
     }
-    if (logger.isDebugEnabled()) {
-      logger.debug("request to start a poll for au: " + auId);
-    }
-    PollSpec ps = pollSpecFromDesc(body);
-    PollManager pm = getPollManager();
-    try {
-      pm.requestPoll(ps);
-    } catch (NotEligibleException e) {
-      logger.error(e.getMessage());
-      return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
-    }
-    auId = ps.getAuId();
-    requestMap.put(auId, ps);
-    return new ResponseEntity<>(auId, HttpStatus.ACCEPTED);
+    return new ResponseEntity<>("No valid au: " + auId, HttpStatus.NOT_FOUND);
+
   }
 
 
@@ -151,13 +153,8 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
     }
     PollManager pm = getPollManager();
     ArchivalUnit au;
-    PollSpec spec = requestMap.remove(psId);
     try {
-      if (spec != null) {
-        au = spec.getCachedUrlSet().getArchivalUnit();
-      } else {
-        au = getPluginManager().getAuFromId(psId);
-      }
+      au = getPluginManager().getAuFromId(psId);
       Poll poll = pm.stopPoll(au);
       if (poll != null) {
         return new ResponseEntity<>(HttpStatus.OK);
@@ -183,14 +180,9 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
     if (logger.isDebugEnabled()) {
       logger.debug("request poll info for " + psId);
     }
-    PollSpec spec = requestMap.get(psId);
     ArchivalUnit au;
     try {
-      if (spec != null) {
-        au = spec.getCachedUrlSet().getArchivalUnit();
-      } else {
-        au = getPluginManager().getAuFromId(psId);
-      }
+      au = getPluginManager().getAuFromId(psId);
       if (au != null) {
         PollManager pm = getPollManager();
         Poll poll = pm.getPoll(au.getAuId());
@@ -428,6 +420,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
     }
     return new ResponseEntity<>(new UrlPager(), HttpStatus.NOT_FOUND);
   }
+
   /*  -------------------Poller methods. --------------------------- */
 
   /**
@@ -500,20 +493,17 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
   /* ------------------ DTO Mappings ---------------------- */
 
   /**
-   * Convert a Poller Service PollSpec DTO into a PollManager PollSpec.
-   *
-   * @param pollDesc the description to convert.
-   * @return a PollSpec.
+   * Convert a Poller Service  DTO into a PollManager PollSpec.
+   * @param au the ArchivalUnit for the auId in request
+   * @param spec the CachedUriSetSpec that defines the polls scope.
+   * @return a PollManager PollSpec.
    */
-  private PollSpec pollSpecFromDesc(PollDesc pollDesc) {
-    String auId = pollDesc.getAuId();
-    CachedUriSetSpec spec = pollDesc.getCuSetSpec();
-
+  private PollSpec pollSpecFromDesc(ArchivalUnit au, CachedUriSetSpec spec) {
     if (spec == null) {
-      CachedUrlSet cus = getPluginManager().getAuFromId(auId).getAuCachedUrlSet();
+      CachedUrlSet cus = au.getAuCachedUrlSet();
       return new PollSpec(cus, org.lockss.poller.Poll.V3_POLL);
     } else {
-      return new PollSpec(auId, spec.getUrlPrefix(), spec.getLowerBound(),
+      return new PollSpec(au.getAuId(), spec.getUrlPrefix(), spec.getLowerBound(),
           spec.getUpperBound(), org.lockss.poller.Poll.V3_POLL);
     }
   }
@@ -549,18 +539,20 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
     if (inPoll instanceof V3Poller) {
       V3Poller v3poller = (V3Poller) inPoll;
       PollerStateBean psb = v3poller.getPollerStateBean();
-      summary.setPollKey(psb.getPollKey());
-      summary.setAuId(psb.getAuId());
-      summary.setStatus(V3Poller.POLLER_STATUS_STRINGS[psb.getStatus()]);
-      summary.setStart(psb.getCreateTime());
-      summary.setVariant(psb.getPollVariant().shortName());
-      summary.setDeadline(psb.getPollDeadline());
+      summary.setPollKey(v3poller.getKey());
+      summary.setAuId(v3poller.getAu().getAuId());
+      summary.setStatus(V3Poller.POLLER_STATUS_STRINGS[v3poller.getStatus()]);
+      summary.setStart(v3poller.getCreateTime());
+      summary.setVariant(v3poller.getPollVariant().shortName());
+      summary.setDeadline(v3poller.getDuration());
       summary.setPollEnd(psb.getPollEnd());
+      summary.setParticipants(v3poller.getParticipants().size());
       TallyStatus ts = psb.getTallyStatus();
-      summary.setNumTalliedUrls(ts.getTalliedUrlCount());
-      summary.setParticipants(psb.votedPeerCount());
-      summary.setNumAgreeUrls(ts.getAgreedUrlCount());
-      summary.setNumHashErrors(ts.getErrorUrlCount());
+      if(ts != null) {
+        summary.setNumTalliedUrls(ts.getTalliedUrlCount());
+        summary.setNumAgreeUrls(ts.getAgreedUrlCount());
+        summary.setNumHashErrors(ts.getErrorUrlCount());
+      }
       summary.setNumCompletedRepairs(v3poller.getCompletedRepairs().size());
       summary.setDetailLink(makeDetailLink("poller/" + psb.getPollKey()));
     }
@@ -578,12 +570,12 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
     if (inPoll instanceof V3Voter) {
       V3Voter v3Voter = (V3Voter) inPoll;
       VoterUserData userData = v3Voter.getVoterUserData();
-      summary.setAuId(userData.getAuId());
-      summary.setCaller(userData.getPollerId().getIdString());
-      summary.setDeadline(userData.getDeadline());
-      summary.setPollKey(userData.getPollKey());
-      summary.setStart(userData.getCreateTime());
-      summary.setStatus(userData.getStatusString());
+      summary.setAuId(v3Voter.getAu().getAuId());
+      summary.setCaller(v3Voter.getPollerId().getIdString());
+      summary.setDeadline(v3Voter.getDeadline().getExpirationTime());
+      summary.setPollKey(v3Voter.getKey());
+      summary.setStart(v3Voter.getCreateTime());
+      summary.setStatus(v3Voter.getStatusString());
       summary.setDetailLink(makeDetailLink("voter/" + userData.getPollKey()));
     }
     return summary;
@@ -901,13 +893,24 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
   */
 
   /**
+   * Provides the Lockss daemon instance
+   * @return the LockssDaemon
+   */
+  private LockssDaemon getLockssDaemon() {
+    if (daemon == null) {
+      daemon = LockssDaemon.getLockssDaemon();
+    }
+    return daemon;
+  }
+
+  /**
    * Provides the poll manager.
    *
-   * @return a MetadataManager with the metadata manager.
+   * @return the current Lockss PollManager.
    */
   private PollManager getPollManager() {
     if (pollManager == null) {
-      pollManager = LockssDaemon.getLockssDaemon().getPollManager();
+      pollManager = getLockssDaemon().getPollManager();
     }
     return pollManager;
   }
@@ -915,11 +918,11 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
   /**
    * Provides the plugin manager.
    *
-   * @return a MetadataManager with the metadata manager.
+   * @return the current Lockss PluginManager.
    */
   private PluginManager getPluginManager() {
     if (pluginManager == null) {
-      pluginManager = LockssDaemon.getLockssDaemon().getPluginManager();
+      pluginManager = getLockssDaemon().getPluginManager();
     }
     return pluginManager;
   }

@@ -135,6 +135,7 @@ public class Page<T> {
 
   public HttpHeaders getPageHeaders() {
     HttpHeaders headers = new HttpHeaders();
+    headers.add(HttpHeaders.CONTENT_TYPE, "application/json; charset=UTF-8");
     headers.add("X-Page-Count", "" + mLastPage);
     headers.add("X-Page-Number", "" + mPageNum);
     headers.add("X-Page-Size", "" + mPageSize);

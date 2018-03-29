@@ -28,11 +28,11 @@ package org.lockss.laaws.poller.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 
-class TestPage {
+public class TestPage {
 
   private static final int BIG_TEST_SIZE = 100;
   private static final int SMALL_TEST_SIZE = 7;
@@ -44,7 +44,7 @@ class TestPage {
   private List<String> mStrList = new ArrayList<>();
 
   @Test
-  void testGetPageContent() {
+  public void testGetPageContent() {
     // get mPage content (returns all contents
     initList(mStrList, BIG_TEST_SIZE);
     mPage = new Page<>(mStrList, DEFAULT_PAGE, DEFAULT_SIZE, BASE_URI);
@@ -52,7 +52,7 @@ class TestPage {
   }
 
   @Test
-  void testHasContent() {
+  public void testHasContent() {
     initList(mStrList, BIG_TEST_SIZE);
     mPage = new Page<>(mStrList, DEFAULT_PAGE, DEFAULT_SIZE, BASE_URI);
     Assertions.assertTrue(mPage.hasContent());
@@ -62,7 +62,7 @@ class TestPage {
   }
 
   @Test
-  void testGetNextLink() {
+  public void testGetNextLink() {
     // first mPage next link is 2nd mPage.
     initList(mStrList, BIG_TEST_SIZE);
     mPage = new Page<>(mStrList, DEFAULT_PAGE, DEFAULT_SIZE, BASE_URI);
@@ -81,7 +81,7 @@ class TestPage {
   }
 
   @Test
-  void testGetPrevLink() {
+  public void testGetPrevLink() {
     // first mPage prev link is null.
     initList(mStrList, BIG_TEST_SIZE);
     mPage = new Page<>(mStrList, DEFAULT_PAGE, DEFAULT_SIZE, BASE_URI);
@@ -100,7 +100,7 @@ class TestPage {
   }
 
   @Test
-  void testGetFirstLink() {
+  public void testGetFirstLink() {
     initList(mStrList, BIG_TEST_SIZE);
     mPage = new Page<>(mStrList, 3, DEFAULT_SIZE, BASE_URI);
     String expected = BASE_URI + "?page=1&size=10";
@@ -115,7 +115,7 @@ class TestPage {
   }
 
   @Test
-  void testGetLastLink() {
+  public void testGetLastLink() {
     initList(mStrList, BIG_TEST_SIZE);
     mPage = new Page<>(mStrList, 3, DEFAULT_SIZE, BASE_URI);
     String result = mPage.getLastLink();
@@ -131,7 +131,7 @@ class TestPage {
   }
 
   @Test
-  void testGetPageHeaders() {
+  public void testGetPageHeaders() {
     initList(mStrList, BIG_TEST_SIZE);
     mPage = new Page<>(mStrList, 3, DEFAULT_SIZE, BASE_URI);
     HttpHeaders headers = mPage.getPageHeaders();
@@ -151,7 +151,7 @@ class TestPage {
   }
 
   @Test
-  void testUndefinedListSize() {
+  public void testUndefinedListSize() {
     initList(mStrList, BIG_TEST_SIZE);
     mPage = new Page<>(mStrList, 3, -1, BASE_URI);
     Assertions.assertEquals(1, mPage.getPageNum());
@@ -161,7 +161,7 @@ class TestPage {
   }
 
   @Test
-  void testUndefinedPageNum() {
+  public void testUndefinedPageNum() {
     initList(mStrList, BIG_TEST_SIZE);
     mPage = new Page<>(mStrList, -1, DEFAULT_SIZE, BASE_URI);
     Assertions.assertEquals(1, mPage.getPageNum());
@@ -172,7 +172,7 @@ class TestPage {
   }
 
   @Test
-  void testNullorEmpty() {
+  public void testNullorEmpty() {
     // Null
     mPage = new Page<>(null, 0, 0, BASE_URI);
     Assertions.assertEquals(1, mPage.getPageNum());
