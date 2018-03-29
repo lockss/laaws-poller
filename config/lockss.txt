@@ -80,7 +80,7 @@ org.lockss.poll.v3.enableV3Voter=true
 #org.lockss.ws.enabled=false
 
 # No Repository Manager.
-org.lockss.plugin.auContentFromWs=true
+#org.lockss.plugin.auContentFromWs=true
 
 org.lockss.ui.port=49521
 

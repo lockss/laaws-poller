@@ -61,5 +61,4 @@ public class PollerControllerAdvice {
   private String getExceptionMessage(Exception e) {
     return StringUtils.hasText(e.getMessage()) ? e.getMessage() : e.getClass().getSimpleName();
   }
-
 }

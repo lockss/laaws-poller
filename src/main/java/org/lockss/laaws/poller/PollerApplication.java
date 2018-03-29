@@ -28,10 +28,12 @@ package org.lockss.laaws.poller;
 
 import static org.lockss.app.LockssApp.PARAM_START_PLUGINS;
 import static org.lockss.app.ManagerDescs.ACCOUNT_MANAGER_DESC;
+import static org.lockss.app.ManagerDescs.CRAWL_MANAGER_DESC;
 import static org.lockss.app.ManagerDescs.HASH_SERVICE_DESC;
 import static org.lockss.app.ManagerDescs.IDENTITY_MANAGER_DESC;
 import static org.lockss.app.ManagerDescs.PLUGIN_MANAGER_DESC;
 import static org.lockss.app.ManagerDescs.POLL_MANAGER_DESC;
+import static org.lockss.app.ManagerDescs.REPOSITORY_MANAGER_DESC;
 import static org.lockss.app.ManagerDescs.ROUTER_MANAGER_DESC;
 import static org.lockss.app.ManagerDescs.SCHED_SERVICE_DESC;
 import static org.lockss.app.ManagerDescs.STREAM_COMM_MANAGER_DESC;
@@ -67,6 +69,8 @@ public class PollerApplication extends BaseSpringBootApplication implements Comm
       HASH_SERVICE_DESC,
       ROUTER_MANAGER_DESC,
       STREAM_COMM_MANAGER_DESC,
+      REPOSITORY_MANAGER_DESC,
+      CRAWL_MANAGER_DESC,
       POLL_MANAGER_DESC
   };
 
