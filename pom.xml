@@ -27,6 +27,7 @@ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
 ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+<<<<<<< HEAD
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -61,12 +62,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <!-- The main class to start by executing java -jar -->
     <start-class>org.lockss.laaws.poller.PollerApplication</start-class>
     <loglevel>info</loglevel>
+    <skip.stf.tests>true</skip.stf.tests>
+    <run.classpath.file>${basedir}/target/run-classpath</run.classpath.file>
+    <test.classpath.file>${basedir}/target/test-classpath</test.classpath.file>
   </properties>
 
-
-
   <dependencies>
-  
     <dependency>
       <groupId>org.lockss</groupId>
       <artifactId>lockss-junit4-bundle</artifactId>
@@ -81,19 +82,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
       <version>${lockss.spring.bundleVersion}</version>
       <type>pom</type>
     </dependency>
-
     <dependency>
       <groupId>org.lockss</groupId>
       <artifactId>lockss-core-bundle</artifactId>
       <version>${lockss.core.bundleVersion}</version>
       <type>pom</type>
     </dependency>
-
-        <dependency>
+    <dependency>
           <groupId>org.springframework.hateoas</groupId>
           <artifactId>spring-hateoas</artifactId>
           <version>0.23.0.RELEASE</version>
-        </dependency>
+    </dependency>
 
     <!-- LOCKSS daemon support -->
     <dependency>
@@ -102,6 +101,78 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
       <version>20180327</version>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.0.2</version>
+        <executions>
+          <execution>
+            <id>build-classpath</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>build-classpath</goal>
+            </goals>
+            <configuration>
+              <includeScope>runtime</includeScope>
+              <outputFile>${run.classpath.file}</outputFile>
+            </configuration>
+          </execution>
+          <execution>
+            <id>build-test-classpath</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>build-classpath</goal>
+            </goals>
+            <configuration>
+              <includeScope>test</includeScope>
+              <outputFile>${test.classpath.file}</outputFile>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>1.6.0</version>
+        <executions>
+          <execution>
+            <id>jar symlink</id>
+            <phase>package</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>ln</executable>
+              <arguments>
+                <argument>-fnsv</argument>
+                <argument>laaws-poller-${project.version}.jar</argument>
+                <argument>target/poller.jar</argument>
+              </arguments>
+            </configuration>
+          </execution>
+          <execution>
+            <id>run-stf</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <skip>${skip.stf.tests}</skip>
+              <executable>python</executable>
+              <workingDirectory>scripts/run_stf</workingDirectory>
+              <arguments>
+                <argument>testsuite.py</argument>
+                <argument>verifyTests</argument>
+              </arguments>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 
   <repositories>
     <repository>

@@ -73,7 +73,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
   private static final String API_VERSION = "1.0.0";
   private PollManager pollManager;
   private PluginManager pluginManager;
-  private LockssDaemon daemon;
+  private LockssDaemon theDaemon;
   @Autowired
   private HttpServletRequest request;
   private static final String DETAIL_UNAVAILABLE = "Unable to add details link.";
@@ -840,7 +840,6 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
       return ldesc;
     } catch (MalformedURLException e) {
       logger.error(DETAIL_UNAVAILABLE);
-      // throw and ErrorDesc.
     }
     return null;
   }
@@ -897,10 +896,10 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
    * @return the LockssDaemon
    */
   private LockssDaemon getLockssDaemon() {
-    if (daemon == null) {
-      daemon = LockssDaemon.getLockssDaemon();
+    if (theDaemon == null) {
+      theDaemon = LockssDaemon.getLockssDaemon();
     }
-    return daemon;
+    return theDaemon;
   }
 
   /**

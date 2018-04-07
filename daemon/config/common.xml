@@ -88,10 +88,6 @@ in this Software without prior written authorization from Stanford University.
 	 .*Plugin -->
     <property name="plugin.registry">
       <list>
-	<value>edu.cornell.library.epr.EPRPlugin2001</value>
-	<value>edu.cornell.library.epr.EPRPlugin2002On</value>
-	<value>edu.nyu.plugin.heplwebzine.HEPLwebzine</value>
-	<value>org.lockss.plugin.janushead.JanusHeadPluginLegacy</value>
 	<value>org.lockss.plugin.simulated.SimulatedPlugin</value>
       </list>
     </property>

@@ -29,9 +29,9 @@ package org.lockss.laaws.poller.impl;
 import static org.mockito.Mockito.when;
 
 import javax.servlet.http.HttpServletRequest;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.jupiter.api.Assertions;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -39,18 +39,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import org.lockss.laaws.poller.model.*;
-import org.lockss.config.Tdb;
-import org.lockss.plugin.Plugin;
 import org.lockss.poller.TestPollManager;
 import org.lockss.rs.status.ApiStatus;
 
 public class TestPollsApiServiceImpl extends TestPollManager {
 
   @Mock
-  HttpServletRequest request;
+  private HttpServletRequest request;
 
   @InjectMocks
-  PollsApiServiceImpl pollsApiServiceImpl;
+  private PollsApiServiceImpl pollsApiServiceImpl;
 
   private static String[] rooturls = {"http://www.test.org",
       "http://www.test1.org",
@@ -60,9 +58,6 @@ public class TestPollsApiServiceImpl extends TestPollManager {
   private static String lwrbnd = "test1.doc";
   private static String uprbnd = "test3.doc";
 
-  private Tdb tdb;
-  private Plugin plugin;
-
   @Before
   public void setUp() throws Exception {
     super.setUp();
@@ -70,11 +65,12 @@ public class TestPollsApiServiceImpl extends TestPollManager {
     when(request.getRequestURI()).thenReturn(urlstr);
   }
 
+
   @Test
   public void testGetApiStatus() {
     ApiStatus result = pollsApiServiceImpl.getApiStatus();
-    Assertions.assertFalse(result.isReady());
-    Assertions.assertEquals("1.0.0", result.getVersion());
+    Assert.assertFalse(result.isReady());
+    Assert.assertEquals("1.0.0", result.getVersion());
   }
 
   @Test
@@ -84,8 +80,8 @@ public class TestPollsApiServiceImpl extends TestPollManager {
     // straight forward request to start a poll.
     desc.setAuId(testau.getAuId());
     ResponseEntity<String> result = pollsApiServiceImpl.callPoll(desc);
-    Assertions.assertEquals(auId, result.getBody());
-    Assertions.assertEquals(HttpStatus.ACCEPTED, result.getStatusCode());
+    Assert.assertEquals(auId, result.getBody());
+    Assert.assertEquals(HttpStatus.ACCEPTED, result.getStatusCode());
   }
 
   @Test
@@ -93,10 +89,10 @@ public class TestPollsApiServiceImpl extends TestPollManager {
     ResponseEntity<PollerSummary> summaryResponse;
     String auId = "bogus";
     // check the status of bogus au name.
-    summaryResponse =  pollsApiServiceImpl.getPollStatus(auId);
+    summaryResponse = pollsApiServiceImpl.getPollStatus(auId);
     PollerSummary summary = summaryResponse.getBody();
-    Assertions.assertNull(summary);
-    Assertions.assertEquals(HttpStatus.NOT_FOUND, summaryResponse.getStatusCode());
+    Assert.assertNull(summary);
+    Assert.assertEquals(HttpStatus.NOT_FOUND, summaryResponse.getStatusCode());
     testGetV3PollStatus();
     auId = testau.getAuId();
     summaryResponse = pollsApiServiceImpl.getPollStatus(auId);
@@ -108,7 +104,7 @@ public class TestPollsApiServiceImpl extends TestPollManager {
     String auId = testau.getAuId();
     super.testGetV3PollStatus();
     ResponseEntity<Void> result = pollsApiServiceImpl.cancelPoll(auId);
-    Assertions.assertNull(result.getBody());
+    Assert.assertNull(result.getBody());
   }
 
   @Test
@@ -117,27 +113,27 @@ public class TestPollsApiServiceImpl extends TestPollManager {
     // get details of the non-existent poll.
     ResponseEntity<UrlPager> peersVoteUrls = pollsApiServiceImpl
         .getPollPeerVoteUrls("pollKey", "peerId", "urls", 1, 20);
-    Assertions.assertEquals(HttpStatus.NOT_FOUND, peersVoteUrls.getStatusCode());
+    Assert.assertEquals(HttpStatus.NOT_FOUND, peersVoteUrls.getStatusCode());
     ResponseEntity<RepairPager> repairData = pollsApiServiceImpl
         .getRepairQueueData("pollKey", "repair", 1, 20);
-    Assertions.assertEquals(HttpStatus.NOT_FOUND, repairData.getStatusCode());
+    Assert.assertEquals(HttpStatus.NOT_FOUND, repairData.getStatusCode());
     ResponseEntity<UrlPager> tallyUrls = pollsApiServiceImpl
         .getTallyUrls("pollKey", "tally", 1, 20);
-    Assertions.assertEquals(HttpStatus.NOT_FOUND, repairData.getStatusCode());
+    Assert.assertEquals(HttpStatus.NOT_FOUND, repairData.getStatusCode());
   }
 
- @Test
+  @Test
   public void testGetPollsAsPoller() throws Exception {
     ResponseEntity<PollerPager> result = pollsApiServiceImpl
         .getPollsAsPoller(20, 1);
     PollerPager pager = result.getBody();
-    Assertions.assertNull(pager.getPolls());
-    Assertions.assertEquals(HttpStatus.OK, result.getStatusCode());
+    Assert.assertNull(pager.getPolls());
+    Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
     testGetV3PollStatus();
     result = pollsApiServiceImpl.getPollsAsPoller(20, 1);
     pager = result.getBody();
-    Assertions.assertNotNull(pager.getPolls());
-    Assertions.assertEquals(HttpStatus.OK, result.getStatusCode());
+    Assert.assertNotNull(pager.getPolls());
+    Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
   }
 
   @Test
@@ -145,9 +141,10 @@ public class TestPollsApiServiceImpl extends TestPollManager {
     ResponseEntity<VoterPager> result = pollsApiServiceImpl
         .getPollsAsVoter(20, 1);
     VoterPager pager = result.getBody();
-    Assertions.assertEquals(null, pager.getPolls());
-    Assertions.assertEquals(HttpStatus.OK, result.getStatusCode());
+    Assert.assertEquals(null, pager.getPolls());
+    Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
   }
+
 
 }
 

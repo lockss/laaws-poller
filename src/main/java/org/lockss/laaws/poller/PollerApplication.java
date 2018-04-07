@@ -28,11 +28,11 @@ package org.lockss.laaws.poller;
 
 import static org.lockss.app.LockssApp.PARAM_START_PLUGINS;
 import static org.lockss.app.ManagerDescs.ACCOUNT_MANAGER_DESC;
-import static org.lockss.app.ManagerDescs.CRAWL_MANAGER_DESC;
 import static org.lockss.app.ManagerDescs.HASH_SERVICE_DESC;
 import static org.lockss.app.ManagerDescs.IDENTITY_MANAGER_DESC;
 import static org.lockss.app.ManagerDescs.PLUGIN_MANAGER_DESC;
 import static org.lockss.app.ManagerDescs.POLL_MANAGER_DESC;
+import static org.lockss.app.ManagerDescs.PSM_MANAGER_DESC;
 import static org.lockss.app.ManagerDescs.REPOSITORY_MANAGER_DESC;
 import static org.lockss.app.ManagerDescs.ROUTER_MANAGER_DESC;
 import static org.lockss.app.ManagerDescs.SCHED_SERVICE_DESC;
@@ -58,21 +58,22 @@ public class PollerApplication extends BaseSpringBootApplication implements Comm
   private static final Logger logger =
       LoggerFactory.getLogger(PollerApplication.class);
 
+  LockssApp lockssApp;
+
   // Manager descriptors.  The order of this table determines the order in
   // which managers are initialized and started.
   private static final ManagerDesc[] myManagerDescs = {
-      ACCOUNT_MANAGER_DESC,
       PLUGIN_MANAGER_DESC,
-      IDENTITY_MANAGER_DESC,
       SCHED_SERVICE_DESC,
-      SYSTEM_METRICS_DESC,
       HASH_SERVICE_DESC,
-      ROUTER_MANAGER_DESC,
-      STREAM_COMM_MANAGER_DESC,
+      SYSTEM_METRICS_DESC,
+      ACCOUNT_MANAGER_DESC,
+      IDENTITY_MANAGER_DESC,
+      PSM_MANAGER_DESC,
+      POLL_MANAGER_DESC,
       REPOSITORY_MANAGER_DESC,
-      CRAWL_MANAGER_DESC,
-      POLL_MANAGER_DESC
-  };
+      STREAM_COMM_MANAGER_DESC,
+      ROUTER_MANAGER_DESC};
 
   public static void main(String[] args) {
     logger.info("Starting the  Poller REST service...");
@@ -82,15 +83,26 @@ public class PollerApplication extends BaseSpringBootApplication implements Comm
 
   @Override
   public void run(String... args) {
+    // Check whether there are command line arguments available.
     if (args != null && args.length > 0) {
       logger.info("Starting the LOCKSS daemon");
-      AppSpec spec = new AppSpec()
-          .setName("Poller Service")
-          .setArgs(args)
-          .setAppManagers(myManagerDescs)
-          .addAppConfig(PARAM_START_PLUGINS, "true")
-          .addAppConfig(PluginManager.PARAM_START_ALL_AUS, "true");
-      LockssApp.startStatic(LockssDaemon.class, spec);
+      try {
+        AppSpec spec = new AppSpec()
+            .setName("Poller Service")
+            .setArgs(args)
+            .setAppManagers(myManagerDescs)
+            .addAppConfig(PARAM_START_PLUGINS, "true")
+            .addAppConfig(PluginManager.PARAM_START_ALL_AUS, "true");
+        logger.info("Calling LockssApp.startStatic...");
+        lockssApp = LockssApp.startStatic(LockssDaemon.class, spec);
+      } catch (Exception ex) {
+        logger.error("LockssApp.startStatic failed: ", ex);
+      }
+    }
+    else {
+      // No: Do nothing. This happens when a test is started and before the
+      // test setup has got a chance to inject the appropriate command line
+      // parameters.
     }
   }
 }
