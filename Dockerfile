@@ -1,24 +1,13 @@
-FROM ubuntu:latest
+FROM openjdk:8-jre
 
 MAINTAINER "Daniel Vargas" <dlvargas@stanford.edu>
 
-# Install build tools
-RUN apt-get update
-RUN apt-get -y install git subversion ant gettext openjdk-8-jdk-headless maven locales
+ENTRYPOINT ["/usr/bin/java", "-jar", "/opt/lockss/spring-app.jar"]
 
-# Set LANG (needed for msginit -- called by lockss-daemon build.xml)
-ENV LANG en_US.UTF-8
-RUN locale-gen ${LANG}
+EXPOSE 25250
 
-# Add LAAWS Poller source
-ADD . /laaws-poller
+ARG JAR_FILE
 
-# Build LOCKSS daemon JARs
-WORKDIR /laaws-poller
-RUN mvn clean package
+WORKDIR /opt/lockss
 
-# XXX Clean up 
-RUN apt-get clean
-RUN rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-CMD ["/bin/sh", "/laaws-poller/buildAndRun", "-Dswarm.http.port=8888", "-Djava.net.preferIPv4Stack=true"]
+ADD ${JAR_FILE} /opt/lockss/spring-app.jar

@@ -37,7 +37,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   <parent>
     <groupId>org.lockss</groupId>
     <artifactId>lockss-parent-pom</artifactId>
-    <version>1.7.0</version>
+    <version>1.8.0-SNAPSHOT</version>
   </parent>
 
   <groupId>org.lockss.laaws</groupId>
@@ -65,6 +65,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <skip.stf.tests>true</skip.stf.tests>
     <run.classpath.file>${basedir}/target/run-classpath</run.classpath.file>
     <test.classpath.file>${basedir}/target/test-classpath</test.classpath.file>
+    <skipDocker>false</skipDocker>
   </properties>
 
   <dependencies>
