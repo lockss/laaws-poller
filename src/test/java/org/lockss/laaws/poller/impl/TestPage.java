@@ -28,11 +28,13 @@ package org.lockss.laaws.poller.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.Assert;
 import org.junit.Test;
-import org.junit.jupiter.api.Assertions;
 import org.springframework.http.HttpHeaders;
 
-public class TestPage {
+import org.lockss.test.LockssTestCase4;
+
+public class TestPage extends LockssTestCase4 {
 
   private static final int BIG_TEST_SIZE = 100;
   private static final int SMALL_TEST_SIZE = 7;
@@ -48,16 +50,16 @@ public class TestPage {
     // get mPage content (returns all contents
     initList(mStrList, BIG_TEST_SIZE);
     mPage = new Page<>(mStrList, DEFAULT_PAGE, DEFAULT_SIZE, BASE_URI);
-    Assertions.assertEquals(mStrList, mPage.getPageContent());
+    Assert.assertEquals(mStrList, mPage.getPageContent());
   }
 
   @Test
   public void testHasContent() {
     initList(mStrList, BIG_TEST_SIZE);
     mPage = new Page<>(mStrList, DEFAULT_PAGE, DEFAULT_SIZE, BASE_URI);
-    Assertions.assertTrue(mPage.hasContent());
-    mPage = new Page<>(new ArrayList<String>(), 1, DEFAULT_SIZE, BASE_URI);
-    Assertions.assertFalse(mPage.hasContent());
+    Assert.assertTrue(mPage.hasContent());
+    mPage = new Page<>(new ArrayList(), 1, DEFAULT_SIZE, BASE_URI);
+    Assert.assertFalse(mPage.hasContent());
 
   }
 
@@ -67,17 +69,17 @@ public class TestPage {
     initList(mStrList, BIG_TEST_SIZE);
     mPage = new Page<>(mStrList, DEFAULT_PAGE, DEFAULT_SIZE, BASE_URI);
     String expected = BASE_URI + "?page=2&size=10";
-    Assertions.assertEquals(expected, mPage.getNextLink());
+    Assert.assertEquals(expected, mPage.getNextLink());
 
     // last mPage next link is null
     mPage = new Page<>(mStrList, 10, DEFAULT_SIZE, BASE_URI);
-    Assertions.assertNull(mPage.getNextLink());
+    Assert.assertNull(mPage.getNextLink());
 
     // one mPage list has null next.
     mStrList.clear();
     initList(mStrList, SMALL_TEST_SIZE);
     mPage = new Page<>(mStrList, DEFAULT_PAGE, DEFAULT_SIZE, BASE_URI);
-    Assertions.assertNull(mPage.getNextLink());
+    Assert.assertNull(mPage.getNextLink());
   }
 
   @Test
@@ -85,18 +87,18 @@ public class TestPage {
     // first mPage prev link is null.
     initList(mStrList, BIG_TEST_SIZE);
     mPage = new Page<>(mStrList, DEFAULT_PAGE, DEFAULT_SIZE, BASE_URI);
-    Assertions.assertNull(mPage.getPrevLink());
+    Assert.assertNull(mPage.getPrevLink());
 
     // last mPage prev link is 9
     mPage = new Page<>(mStrList, 10, DEFAULT_SIZE, BASE_URI);
     String expected = BASE_URI + "?page=9&size=10";
-    Assertions.assertEquals(expected, mPage.getPrevLink());
+    Assert.assertEquals(expected, mPage.getPrevLink());
 
     // one mPage list has null prev.
     mStrList.clear();
     initList(mStrList, SMALL_TEST_SIZE);
     mPage = new Page<>(mStrList, DEFAULT_PAGE, DEFAULT_SIZE, BASE_URI);
-    Assertions.assertNull(mPage.getPrevLink());
+    Assert.assertNull(mPage.getPrevLink());
   }
 
   @Test
@@ -104,14 +106,14 @@ public class TestPage {
     initList(mStrList, BIG_TEST_SIZE);
     mPage = new Page<>(mStrList, 3, DEFAULT_SIZE, BASE_URI);
     String expected = BASE_URI + "?page=1&size=10";
-    Assertions.assertEquals(expected, mPage.getFirstLink());
+    Assert.assertEquals(expected, mPage.getFirstLink());
 
     // one mPage list -  first mPage = first mPage
     mStrList.clear();
     initList(mStrList, SMALL_TEST_SIZE);
     mPage = new Page<>(mStrList, DEFAULT_PAGE, DEFAULT_SIZE, BASE_URI);
     expected = BASE_URI + "?page=1&size=" + SMALL_TEST_SIZE;
-    Assertions.assertEquals(expected, mPage.getFirstLink());
+    Assert.assertEquals(expected, mPage.getFirstLink());
   }
 
   @Test
@@ -120,14 +122,14 @@ public class TestPage {
     mPage = new Page<>(mStrList, 3, DEFAULT_SIZE, BASE_URI);
     String result = mPage.getLastLink();
     String expected = BASE_URI + "?page=10&size=10";
-    Assertions.assertEquals(expected, result);
+    Assert.assertEquals(expected, result);
 
     // one mPage list  first mPage = last mPage
     mStrList.clear();
     initList(mStrList, SMALL_TEST_SIZE);
     mPage = new Page<>(mStrList, DEFAULT_PAGE, DEFAULT_SIZE, BASE_URI);
     expected = BASE_URI + "?page=1&size=" + SMALL_TEST_SIZE;
-    Assertions.assertEquals(expected, mPage.getLastLink());
+    Assert.assertEquals(expected, mPage.getLastLink());
   }
 
   @Test
@@ -135,39 +137,39 @@ public class TestPage {
     initList(mStrList, BIG_TEST_SIZE);
     mPage = new Page<>(mStrList, 3, DEFAULT_SIZE, BASE_URI);
     HttpHeaders headers = mPage.getPageHeaders();
-    Assertions.assertEquals("10", headers.get("X-Page-Count").get(0));
-    Assertions.assertEquals("3", headers.get("X-Page-Number").get(0));
-    Assertions.assertEquals("10", headers.get("X-Page-Size").get(0));
-    Assertions.assertEquals("100", headers.get("X-Total-Count").get(0));
+    Assert.assertEquals("10", headers.get("X-Page-Count").get(0));
+    Assert.assertEquals("3", headers.get("X-Page-Number").get(0));
+    Assert.assertEquals("10", headers.get("X-Page-Size").get(0));
+    Assert.assertEquals("100", headers.get("X-Total-Count").get(0));
 
     mStrList.clear();
     initList(mStrList, SMALL_TEST_SIZE);
     mPage = new Page<>(mStrList, DEFAULT_PAGE, DEFAULT_SIZE, BASE_URI);
     headers = mPage.getPageHeaders();
-    Assertions.assertEquals("1", headers.get("X-Page-Count").get(0));
-    Assertions.assertEquals("1", headers.get("X-Page-Number").get(0));
-    Assertions.assertEquals("7", headers.get("X-Page-Size").get(0));
-    Assertions.assertEquals("7", headers.get("X-Total-Count").get(0));
+    Assert.assertEquals("1", headers.get("X-Page-Count").get(0));
+    Assert.assertEquals("1", headers.get("X-Page-Number").get(0));
+    Assert.assertEquals("7", headers.get("X-Page-Size").get(0));
+    Assert.assertEquals("7", headers.get("X-Total-Count").get(0));
   }
 
   @Test
   public void testUndefinedListSize() {
     initList(mStrList, BIG_TEST_SIZE);
     mPage = new Page<>(mStrList, 3, -1, BASE_URI);
-    Assertions.assertEquals(1, mPage.getPageNum());
-    Assertions.assertEquals(BIG_TEST_SIZE, mPage.getPageSize());
-    Assertions.assertNull(mPage.getNextLink());
-    Assertions.assertNull(mPage.getPrevLink());
+    Assert.assertEquals(1, mPage.getPageNum());
+    Assert.assertEquals(BIG_TEST_SIZE, mPage.getPageSize());
+    Assert.assertNull(mPage.getNextLink());
+    Assert.assertNull(mPage.getPrevLink());
   }
 
   @Test
   public void testUndefinedPageNum() {
     initList(mStrList, BIG_TEST_SIZE);
     mPage = new Page<>(mStrList, -1, DEFAULT_SIZE, BASE_URI);
-    Assertions.assertEquals(1, mPage.getPageNum());
-    Assertions.assertEquals(10, mPage.getPageSize());
-    Assertions.assertEquals(BASE_URI + "?page=2&size=10", mPage.getNextLink());
-    Assertions.assertNull(mPage.getPrevLink());
+    Assert.assertEquals(1, mPage.getPageNum());
+    Assert.assertEquals(10, mPage.getPageSize());
+    Assert.assertEquals(BASE_URI + "?page=2&size=10", mPage.getNextLink());
+    Assert.assertNull(mPage.getPrevLink());
 
   }
 
@@ -175,23 +177,23 @@ public class TestPage {
   public void testNullorEmpty() {
     // Null
     mPage = new Page<>(null, 0, 0, BASE_URI);
-    Assertions.assertEquals(1, mPage.getPageNum());
-    Assertions.assertEquals(0, mPage.getPageSize());
-    Assertions.assertEquals(0, mPage.getTotal());
-    Assertions.assertNull(mPage.getNextLink());
-    Assertions.assertNull(mPage.getPrevLink());
-    Assertions.assertNotNull(mPage.getPageContent());
-    Assertions.assertFalse(mPage.hasContent());
+    Assert.assertEquals(1, mPage.getPageNum());
+    Assert.assertEquals(0, mPage.getPageSize());
+    Assert.assertEquals(0, mPage.getTotal());
+    Assert.assertNull(mPage.getNextLink());
+    Assert.assertNull(mPage.getPrevLink());
+    Assert.assertNotNull(mPage.getPageContent());
+    Assert.assertFalse(mPage.hasContent());
 
     // Empty List
     mPage = new Page<>(mStrList, 0, 0, BASE_URI);
-    Assertions.assertEquals(1, mPage.getPageNum());
-    Assertions.assertEquals(0, mPage.getPageSize());
-    Assertions.assertEquals(0, mPage.getTotal());
-    Assertions.assertNull(mPage.getNextLink());
-    Assertions.assertNull(mPage.getPrevLink());
-    Assertions.assertNotNull(mPage.getPageContent());
-    Assertions.assertFalse(mPage.hasContent());
+    Assert.assertEquals(1, mPage.getPageNum());
+    Assert.assertEquals(0, mPage.getPageSize());
+    Assert.assertEquals(0, mPage.getTotal());
+    Assert.assertNull(mPage.getNextLink());
+    Assert.assertNull(mPage.getPrevLink());
+    Assert.assertNotNull(mPage.getPageContent());
+    Assert.assertFalse(mPage.hasContent());
   }
 
   private void initList(List<String> szList, int size) {

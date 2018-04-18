@@ -173,7 +173,7 @@ paths:
         in: path
         required: true
         type: string
-        description: The key assigned by the PollManager..
+        description: The pollKey as listed in the PollDetail object.
   '/polls/{pollKey}/repairs':
     get:
       tags:
@@ -229,7 +229,7 @@ paths:
         in: path
         required: true
         type: string
-        description: The key assigned by the PollManager..
+        description: The pollKey as listed in the PollDetail object.
   '/polls/{pollKey}/peer/{peerId}':
     get:
       tags:
@@ -286,7 +286,7 @@ paths:
         in: path
         required: true
         type: string
-        description: The key assigned by the PollManager.
+        description: The pollKey from the PollDetail
       - name: peerId
         in: path
         required: true
@@ -345,6 +345,7 @@ paths:
       tags:
         - "poller-polls"
       summary: PollerDetails
+      
       operationId: getPollerPollDetails
       produces:
         - application/json
@@ -366,7 +367,6 @@ paths:
         in: path
         required: true
         type: string
-        description: The key assigned by the PollManager.
   /polls/voter:
     get:
       tags:
@@ -441,7 +441,6 @@ paths:
         in: path
         required: true
         type: string
-        description: The key assigned by the PollManager.
 securityDefinitions:
   basicAuth:
     description: HTTP Basic Authentication. Works over `HTTP` and `HTTPS`
@@ -592,19 +591,15 @@ definitions:
       numAgree:
         type: integer
         format: int32
-        description: The number of urls with agreement.
       numDisagree:
         type: integer
         format: int32
-        description: The number of urls with disagreement.
       numPollerOnly:
         type: integer
         format: int32
-        description: The number of urls found by only the poller.
       numVoterOnly:
         type: integer
         format: int32
-        description: The number of urls found by only a voter.
       errorDetails:
         type: string
         description: The error which caused the poll to fail.
@@ -693,31 +688,26 @@ definitions:
       numAgree:
         type: integer
         format: int32
-        description: The number of urls with agreement.
       agreeLink:
         $ref: '#/definitions/LinkDesc'
       numDisagree:
         type: integer
         format: int32
-        description: The number of urls with disagreement.
       disagreeLink:
         $ref: '#/definitions/LinkDesc'
       numTooClose:
         type: integer
         format: int32
-        description: The number of urls too close.
       tooCloseLink:
         $ref: '#/definitions/LinkDesc'
       numNoQuorum:
         type: integer
         format: int32
-        description: The number of urls without enough voters.
       noQuorumLink:
         $ref: '#/definitions/LinkDesc'
       numError:
         type: integer
         format: int32
-        description: The number of urls without errors.
       errorLink:
         $ref: '#/definitions/LinkDesc'
       wtAgreed:
@@ -853,23 +843,18 @@ definitions:
       participants:
         type: integer
         format: int32
-        description: The number of participants voting.
       numTalliedUrls:
         type: integer
         format: int32
-        description: The number of tallied urls.
       numHashErrors:
         type: integer
         format: int32
-        description: The number of hash errors.
       numCompletedRepairs:
         type: integer
         format: int32
-        description: The number of completed repairs.
       numAgreeUrls:
         type: integer
         format: int32
-        description: The number of urls with agreement.
       start:
         type: integer
         format: int64

@@ -49,7 +49,7 @@ public class PollerPager {
 
   @JsonProperty("polls")
   @Valid
-  private List<PollerSummary> polls = null;
+  private List<PollerSummary> polls = new ArrayList<>();
 
   public PollerPager pageDesc(PageDesc pageDesc) {
     this.pageDesc = pageDesc;

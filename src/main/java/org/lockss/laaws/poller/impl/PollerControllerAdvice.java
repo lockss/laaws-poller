@@ -55,7 +55,7 @@ public class PollerControllerAdvice {
   @ResponseBody
   public ResponseEntity<VndErrors> onException(Exception e) {
     logger.error("Caught exception while handling a request", e);
-    return error(e, HttpStatus.INTERNAL_SERVER_ERROR,getExceptionMessage(e));
+    return error(e, HttpStatus.INTERNAL_SERVER_ERROR, getExceptionMessage(e));
   }
 
   @ExceptionHandler(IllegalArgumentException.class)
@@ -85,5 +85,4 @@ public class PollerControllerAdvice {
   private String getExceptionMessage(Exception e) {
     return StringUtils.hasText(e.getMessage()) ? e.getMessage() : e.getClass().getSimpleName();
   }
-
 }

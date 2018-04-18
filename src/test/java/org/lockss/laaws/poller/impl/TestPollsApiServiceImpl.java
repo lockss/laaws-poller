@@ -31,7 +31,6 @@ import static org.mockito.Mockito.when;
 import javax.servlet.http.HttpServletRequest;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -66,14 +65,14 @@ public class TestPollsApiServiceImpl extends TestPollManager {
   }
 
 
-  @Test
+  @org.junit.Test
   public void testGetApiStatus() {
     ApiStatus result = pollsApiServiceImpl.getApiStatus();
     Assert.assertFalse(result.isReady());
     Assert.assertEquals("1.0.0", result.getVersion());
   }
 
-  @Test
+  @org.junit.Test
   public void testCallPoll() {
     PollDesc desc = new PollDesc();
     String auId = testau.getAuId();
@@ -84,7 +83,7 @@ public class TestPollsApiServiceImpl extends TestPollManager {
     Assert.assertEquals(HttpStatus.ACCEPTED, result.getStatusCode());
   }
 
-  @Test
+  @org.junit.Test
   public void testGetPollStatus() throws Exception {
     ResponseEntity<PollerSummary> summaryResponse;
     String auId = "bogus";
@@ -99,7 +98,7 @@ public class TestPollsApiServiceImpl extends TestPollManager {
     summary = summaryResponse.getBody();
   }
 
-  @Test
+  @org.junit.Test
   public void testCancelPoll() throws Exception {
     String auId = testau.getAuId();
     super.testGetV3PollStatus();
@@ -107,7 +106,7 @@ public class TestPollsApiServiceImpl extends TestPollManager {
     Assert.assertNull(result.getBody());
   }
 
-  @Test
+  @org.junit.Test
   public void testGetPollAndDetails() {
     // no  poll
     // get details of the non-existent poll.
@@ -122,12 +121,12 @@ public class TestPollsApiServiceImpl extends TestPollManager {
     Assert.assertEquals(HttpStatus.NOT_FOUND, repairData.getStatusCode());
   }
 
-  @Test
+  @org.junit.Test
   public void testGetPollsAsPoller() throws Exception {
     ResponseEntity<PollerPager> result = pollsApiServiceImpl
         .getPollsAsPoller(20, 1);
     PollerPager pager = result.getBody();
-    Assert.assertNull(pager.getPolls());
+    Assert.assertEquals(0, pager.getPolls().size());
     Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
     testGetV3PollStatus();
     result = pollsApiServiceImpl.getPollsAsPoller(20, 1);
@@ -136,15 +135,13 @@ public class TestPollsApiServiceImpl extends TestPollManager {
     Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
   }
 
-  @Test
+  @org.junit.Test
   public void testGetPollsAsVoter() {
     ResponseEntity<VoterPager> result = pollsApiServiceImpl
         .getPollsAsVoter(20, 1);
     VoterPager pager = result.getBody();
-    Assert.assertEquals(null, pager.getPolls());
+    Assert.assertEquals(0, pager.getPolls().size());
     Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
   }
-
-
 }
 

@@ -100,6 +100,7 @@ public class PollerApplication extends BaseSpringBootApplication implements Comm
       }
     }
     else {
+      logger.info("No args provided, daemon not started.");
       // No: Do nothing. This happens when a test is started and before the
       // test setup has got a chance to inject the appropriate command line
       // parameters.

@@ -25,7 +25,7 @@
 #
 # Don't make local changes in this file; put local settings in lockss.opt
 
-org.lockss.log.default.level=Error
+org.lockss.log.default.level=debug
 
 org.lockss.ui.access.ip.logForbidden=true
 org.lockss.proxy.access.ip.logForbidden=true
@@ -91,7 +91,7 @@ org.lockss.blockHasher.ignoreFilesOutsideCrawlSpec=true
 org.lockss.baseau.minFetchDelay=3000
 org.lockss.plugin.restartAusWithNewPlugin=true
 
-# Disable crawler, poller and voter
+# Disable crawler
 org.lockss.crawler.enabled=false
 org.lockss.poll.v3.enableV3Poller=true
 org.lockss.poll.v3.enableV3Voter=true

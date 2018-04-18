@@ -111,14 +111,13 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
     final String auId = body.getAuId();
     final CachedUriSetSpec cuSetSpec = body.getCuSetSpec();
     if (logger.isDebugEnabled()) {
-      logger.debug("request to start a poll for au: " + auId);
+      logger.debug("request to start a poll for au: %s", auId);
     }
     try {
-      if(!StringUtil.isNullString(auId )) {
+      if (!StringUtil.isNullString(auId)) {
         au = getPluginManager().getAuFromId(auId);
       }
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       if (logger.isDebugEnabled()) {
         logger.error("No valid au: " + auId);
       }
@@ -159,8 +158,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
       if (poll != null) {
         return new ResponseEntity<>(HttpStatus.OK);
       }
-    }
-    catch(Exception e) {
+    } catch (Exception e) {
       if (logger.isDebugEnabled()) {
         logger.debug("unable to locate poll with id " + psId);
       }
@@ -191,7 +189,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
           return new ResponseEntity<>(summary, HttpStatus.OK);
         }
       }
-    } catch(Exception e) {
+    } catch (Exception e) {
       if (logger.isDebugEnabled()) {
         logger.debug("unable to locate poll with id " + psId);
       }
@@ -307,7 +305,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
    * @param urlPage the Page Description
    * @return a UrlPager from a Page description
    */
-  private UrlPager getUrlPager(Page<String>urlPage) {
+  private UrlPager getUrlPager(Page<String> urlPage) {
     PageDesc desc = getPageDesc(urlPage);
     UrlPager pager = new UrlPager();
     pager.setPageDesc(desc);
@@ -420,7 +418,6 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
     }
     return new ResponseEntity<>(new UrlPager(), HttpStatus.NOT_FOUND);
   }
-
   /*  -------------------Poller methods. --------------------------- */
 
   /**
@@ -494,6 +491,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
 
   /**
    * Convert a Poller Service  DTO into a PollManager PollSpec.
+   *
    * @param au the ArchivalUnit for the auId in request
    * @param spec the CachedUriSetSpec that defines the polls scope.
    * @return a PollManager PollSpec.
@@ -548,7 +546,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
       summary.setPollEnd(psb.getPollEnd());
       summary.setParticipants(v3poller.getParticipants().size());
       TallyStatus ts = psb.getTallyStatus();
-      if(ts != null) {
+      if (ts != null) {
         summary.setNumTalliedUrls(ts.getTalliedUrlCount());
         summary.setNumAgreeUrls(ts.getAgreedUrlCount());
         summary.setNumHashErrors(ts.getErrorUrlCount());
@@ -893,6 +891,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
 
   /**
    * Provides the Lockss daemon instance
+   *
    * @return the LockssDaemon
    */
   private LockssDaemon getLockssDaemon() {

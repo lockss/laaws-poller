@@ -70,7 +70,6 @@ public class TestPollerApplication extends SpringLockssTestCase {
   private PollsApiController controller;
 
 
-
   private static final Logger logger =
       LoggerFactory.getLogger(TestPollerApplication.class);
 
@@ -90,8 +89,9 @@ public class TestPollerApplication extends SpringLockssTestCase {
     setUpTempDirectory(PollerApplication.class.getCanonicalName());
     // Copy the necessary files to the test temporary directory.
     File srcTree = new File(new File("test"), "cache");
-    if (logger.isDebugEnabled())
+    if (logger.isDebugEnabled()) {
       logger.debug("srcTree = " + srcTree.getAbsolutePath());
+    }
 
     copyToTempDir(srcTree);
     runAuthenticated();
@@ -99,22 +99,16 @@ public class TestPollerApplication extends SpringLockssTestCase {
 
   @After
   public void tearDown() throws Exception {
-    if(controller != null ) {
+    if (controller != null) {
       LockssDaemon daemon = LockssDaemon.getLockssDaemon();
-      if(daemon != null) {
-        if(daemon.getPollManager() != null) {
-          daemon.getPollManager().stopService();
-        }
-        if(daemon.getPollManager() != null) {
-          daemon.getPollManager().stopService();
-        }
-        if(daemon.getIdentityManager() != null) {
+      if (daemon != null) {
+        if (daemon.getIdentityManager() != null) {
           daemon.getIdentityManager().stopService();
         }
-        if(daemon.getHashService()  != null) {
+        if (daemon.getHashService() != null) {
           daemon.getHashService().stopService();
         }
-        if(daemon.getRouterManager()  != null) {
+        if (daemon.getRouterManager() != null) {
           daemon.getRouterManager().stopService();
         }
       }
@@ -125,7 +119,7 @@ public class TestPollerApplication extends SpringLockssTestCase {
 
   @Test
   public void contextLoads() {
-    logger.info("context -loaded");
+    logger.info("context-loaded");
     assertNotNull(controller);
   }
 
@@ -135,14 +129,14 @@ public class TestPollerApplication extends SpringLockssTestCase {
    * @throws Exception if there are problems.
    */
   @Test
-  public void testGetSwaggerDocs()  throws Exception {
+  public void testGetSwaggerDocs() throws Exception {
     if (logger.isDebugEnabled()) {
       logger.debug("Get Swagger Docs....");
     }
     TestRestTemplate restTemplate = new TestRestTemplate();
 
     ResponseEntity<String> response = restTemplate.
-        getForEntity(getTestUrlTemplate("/v2/api-docs"),String.class);
+        getForEntity(getTestUrlTemplate("/v2/api-docs"), String.class);
 
     assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
     String expectedBody = "{'swagger':'2.0',"
@@ -160,7 +154,7 @@ public class TestPollerApplication extends SpringLockssTestCase {
   public void testGetStatus() throws Exception {
     TestRestTemplate restTemplate = new TestRestTemplate();
     ResponseEntity<String> response = restTemplate.
-        getForEntity(getTestUrlTemplate("/status"),String.class);
+        getForEntity(getTestUrlTemplate("/status"), String.class);
 
     assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
 
