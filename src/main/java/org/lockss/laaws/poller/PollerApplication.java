@@ -50,7 +50,7 @@ import org.lockss.app.LockssApp.AppSpec;
 import org.lockss.app.LockssApp.ManagerDesc;
 import org.lockss.app.LockssDaemon;
 import org.lockss.plugin.PluginManager;
-import org.lockss.rs.base.BaseSpringBootApplication;
+import org.lockss.spring.base.BaseSpringBootApplication;
 
 @SpringBootApplication
 public class PollerApplication extends BaseSpringBootApplication implements CommandLineRunner {

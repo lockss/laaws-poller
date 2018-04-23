@@ -30,7 +30,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 
-import org.lockss.rs.auth.SpringSecurityConfigurer;
+import org.lockss.spring.auth.SpringSecurityConfigurer;
 
 /**
  * Custom Spring security configurator.

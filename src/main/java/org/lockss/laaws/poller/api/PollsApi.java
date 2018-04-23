@@ -38,8 +38,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import org.lockss.laaws.poller.model.*;
-import org.lockss.rs.status.ApiStatus;
-import org.lockss.rs.status.SpringLockssBaseApi;
+import org.lockss.laaws.status.model.ApiStatus;
+import org.lockss.spring.status.SpringLockssBaseApi;
 
 @Api(value = "polls", description = "the polls API")
 public interface PollsApi extends SpringLockssBaseApi {

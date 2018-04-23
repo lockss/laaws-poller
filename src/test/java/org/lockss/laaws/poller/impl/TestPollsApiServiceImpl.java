@@ -39,7 +39,7 @@ import org.springframework.http.ResponseEntity;
 
 import org.lockss.laaws.poller.model.*;
 import org.lockss.poller.TestPollManager;
-import org.lockss.rs.status.ApiStatus;
+import org.lockss.laaws.status.model.ApiStatus;
 
 public class TestPollsApiServiceImpl extends TestPollManager {
 

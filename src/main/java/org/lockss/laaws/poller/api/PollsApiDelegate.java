@@ -36,7 +36,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import org.lockss.laaws.poller.model.*;
-import org.lockss.rs.status.ApiStatus;
+import org.lockss.laaws.status.model.ApiStatus;
 
 /**
  * A delegate to be called by the {@link PollsApiController}}.
