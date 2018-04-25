@@ -38,8 +38,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import org.lockss.laaws.poller.model.*;
-import org.lockss.poller.TestPollManager;
 import org.lockss.laaws.status.model.ApiStatus;
+import org.lockss.poller.TestPollManager;
 
 public class TestPollsApiServiceImpl extends TestPollManager {
 
@@ -126,7 +126,7 @@ public class TestPollsApiServiceImpl extends TestPollManager {
     ResponseEntity<PollerPager> result = pollsApiServiceImpl
         .getPollsAsPoller(20, 1);
     PollerPager pager = result.getBody();
-    Assert.assertEquals(0, pager.getPolls().size());
+    Assert.assertEquals(null, pager.getPolls());
     Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
     testGetV3PollStatus();
     result = pollsApiServiceImpl.getPollsAsPoller(20, 1);
@@ -140,7 +140,7 @@ public class TestPollsApiServiceImpl extends TestPollManager {
     ResponseEntity<VoterPager> result = pollsApiServiceImpl
         .getPollsAsVoter(20, 1);
     VoterPager pager = result.getBody();
-    Assert.assertEquals(0, pager.getPolls().size());
+    Assert.assertEquals(null, pager.getPolls());
     Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
   }
 }

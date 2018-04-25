@@ -40,6 +40,7 @@ import org.lockss.laaws.poller.api.PollsApiDelegate;
 import org.lockss.laaws.poller.model.*;
 import org.lockss.laaws.poller.model.PollDesc.VariantEnum;
 import org.lockss.laaws.poller.model.RepairData.ResultEnum;
+import org.lockss.laaws.status.model.ApiStatus;
 import org.lockss.app.LockssApp;
 import org.lockss.app.LockssDaemon;
 import org.lockss.plugin.ArchivalUnit;
@@ -56,7 +57,6 @@ import org.lockss.poller.v3.PollerStateBean.TallyStatus;
 import org.lockss.protocol.PeerIdentity;
 import org.lockss.protocol.psm.PsmInterp;
 import org.lockss.protocol.psm.PsmState;
-import org.lockss.laaws.status.model.ApiStatus;
 import org.lockss.spring.status.SpringLockssBaseApiController;
 import org.lockss.util.ByteArray;
 import org.lockss.util.StringUtil;
@@ -111,7 +111,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
     final String auId = body.getAuId();
     final CachedUriSetSpec cuSetSpec = body.getCuSetSpec();
     if (logger.isDebugEnabled()) {
-      logger.debug("request to start a poll for au: %s", auId);
+      logger.debug("request to start a poll for au: " + auId);
     }
     try {
       if (!StringUtil.isNullString(auId)) {
@@ -305,7 +305,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
    * @param urlPage the Page Description
    * @return a UrlPager from a Page description
    */
-  private UrlPager getUrlPager(Page<String> urlPage) {
+  private UrlPager getUrlPager(Page<String>urlPage) {
     PageDesc desc = getPageDesc(urlPage);
     UrlPager pager = new UrlPager();
     pager.setPageDesc(desc);

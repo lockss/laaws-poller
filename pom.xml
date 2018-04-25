@@ -95,37 +95,6 @@ in this Software without prior written authorization from Stanford University.
 
   <build>
     <plugins>
-<!--
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <version>3.0.2</version>
-        <executions>
-          <execution>
-            <id>build-classpath</id>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>build-classpath</goal>
-            </goals>
-            <configuration>
-              <includeScope>runtime</includeScope>
-              <outputFile>${run.classpath.file}</outputFile>
-            </configuration>
-          </execution>
-          <execution>
-            <id>build-test-classpath</id>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>build-classpath</goal>
-            </goals>
-            <configuration>
-              <includeScope>test</includeScope>
-              <outputFile>${test.classpath.file}</outputFile>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
--->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
