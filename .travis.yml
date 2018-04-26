@@ -1,12 +1,21 @@
 language: java
-jdk: openjdk8
+
 sudo: false
+
+jdk:
+  - oraclejdk8
 
 branches:
   only:
   - master
   - develop
 
+os:
+  - linux
+
 cache:
   directories:
   - $HOME/.m2
+
+notifications:
+  email: github-snafl@lists.lockss.org
