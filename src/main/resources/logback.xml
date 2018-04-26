@@ -34,7 +34,7 @@
   <!-- Need appender to write to file -->
   <appender name="FILE" class="ch.qos.logback.core.FileAppender">
     <!-- Name of the file where the log messages are written -->
-    <file>logs/mdq.log</file>
+    <file>logs/poller.log</file>
     <encoder>
       <pattern>%date [%thread] %-5level %logger{36}.%M\(\): %msg%n</pattern>
     </encoder>
