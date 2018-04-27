@@ -42,7 +42,7 @@ in this Software without prior written authorization from Stanford University.
   <version>1.0.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
-  <name>laaws-poller-service</name>
+  <name>laaws-poller</name>
   <description>LAAWS Poller REST service</description>
 
   <!-- Must be in every lockss-parent-pom/lockss-spring-parent-pom descendant -->
