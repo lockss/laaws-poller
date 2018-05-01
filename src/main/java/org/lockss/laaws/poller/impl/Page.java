@@ -45,7 +45,7 @@ public class Page<T> {
   private static final String LINK_TEMPLATE = "%s?page=%d&size=%d";
   private List<T> mContent = new ArrayList<>();
 
-  public Page(Collection<T> content, int page, int size, String linkBase) {
+  public Page(Collection<T> content, Integer page, Integer size, String linkBase) {
     if (null == content) {
       mTotal = 0;
     } else {

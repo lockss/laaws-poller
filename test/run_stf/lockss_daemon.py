@@ -179,9 +179,9 @@ class LockssDaemon:
                 pairs = [('-b' if x.endswith('local.txt') else '-p', x) for x in self.configList]
                 self.configList = [y for z in pairs for y in z]
             if self.isRest:
+                self.jarfile = os.path.abspath("lib/current.jar");
                 self.daemon = subprocess.Popen(
-                    (self.javaBin, '-jar', '-cp', self.classpath, '-Dorg.lockss.defaultLogLevel=debug',
-                     'lib/current.jar') + tuple(self.configList),
+                    (self.javaBin, '-jar', self.jarfile, '-Drun.arguments=') + tuple(self.configList),
                     stdout=self.logfile, stderr=self.logfile, cwd=self.daemonDir)
             else:
                 self.daemon = subprocess.Popen(
@@ -243,7 +243,7 @@ class Framework:
         self.password = lockss_util.config.get('password', 'lockss-p')
         self.logLevel = lockss_util.config.get('daemonLogLevel', 'debug')
         self.hostname = lockss_util.config.get('hostname', 'localhost')
-        self.restid = lockss_util.config.get('restid', -1)
+        self.restid = int(lockss_util.config.get('restid', -1))
 
         self.clientList = []  # Ordered list of clients
         self.daemonList = []  # Ordered list of daemons
@@ -287,7 +287,7 @@ class Framework:
                                   self.__makeClasspath(),
                                   urlList + (localConfigFile, isrest) if urlList else (
                                   globalConfigFile, localConfigFile, extraConfigFile),
-                                  (daemon_index == self.restid))
+                                  isrest)
             self.daemonList.append(daemon)
             # create client for this daemon
             self.clientList.append(

@@ -435,18 +435,18 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
     PollManager pm = getPollManager();
     Collection<V3Poller> pollers = pm.getV3Pollers();
     String baseLink = request.getRequestURI();
-    Page<V3Poller> ppage = new Page<>(pollers, size, page, baseLink);
+    Page<V3Poller> pollerPage = new Page<>(pollers, size, page, baseLink);
     PollerPager pager = new PollerPager();
     // The page description.
-    PageDesc desc = getPageDesc(ppage);
+    PageDesc desc = getPageDesc(pollerPage);
     pager.setPageDesc(desc);
-    if (ppage.hasContent()) {
-      List<V3Poller> pollerList = ppage.getPageContent();
+    if (pollerPage.hasContent()) {
+      List<V3Poller> pollerList = pollerPage.getPageContent();
       for (V3Poller poll : pollerList) {
         pager.addPollsItem(summarizePollerPoll(poll));
       }
     }
-    return new ResponseEntity<>(pager, ppage.getPageHeaders(), HttpStatus.OK);
+    return new ResponseEntity<>(pager, pollerPage.getPageHeaders(), HttpStatus.OK);
   }
 
 
@@ -894,7 +894,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
    *
    * @return the LockssDaemon
    */
-  private LockssDaemon getLockssDaemon() {
+  LockssDaemon getLockssDaemon() {
     if (theDaemon == null) {
       theDaemon = LockssDaemon.getLockssDaemon();
     }
@@ -906,7 +906,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
    *
    * @return the current Lockss PollManager.
    */
-  private PollManager getPollManager() {
+  PollManager getPollManager() {
     if (pollManager == null) {
       pollManager = getLockssDaemon().getPollManager();
     }
@@ -918,7 +918,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
    *
    * @return the current Lockss PluginManager.
    */
-  private PluginManager getPluginManager() {
+  PluginManager getPluginManager() {
     if (pluginManager == null) {
       pluginManager = getLockssDaemon().getPluginManager();
     }

@@ -10,7 +10,7 @@
 # daemonCount = 4
 
 ## Log level for the daemon
-daemonLogLevel = debug
+daemonLogLevel = info
 
 ## Log level for the script
 # scriptLogLevel = info
@@ -18,7 +18,7 @@ daemonLogLevel = debug
 ## projectDir is a top-level lockss-daemon project (if
 ## none is provided, walk up the path from current directory
 ## trying to find build.xml)
-# projectDir = ../../..
+projectDir = ../..
 
 ## Top level work directory
 # workDir = ./

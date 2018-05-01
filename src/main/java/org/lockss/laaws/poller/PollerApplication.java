@@ -27,17 +27,7 @@
 package org.lockss.laaws.poller;
 
 import static org.lockss.app.LockssApp.PARAM_START_PLUGINS;
-import static org.lockss.app.ManagerDescs.ACCOUNT_MANAGER_DESC;
-import static org.lockss.app.ManagerDescs.HASH_SERVICE_DESC;
-import static org.lockss.app.ManagerDescs.IDENTITY_MANAGER_DESC;
-import static org.lockss.app.ManagerDescs.PLUGIN_MANAGER_DESC;
-import static org.lockss.app.ManagerDescs.POLL_MANAGER_DESC;
-import static org.lockss.app.ManagerDescs.PSM_MANAGER_DESC;
-import static org.lockss.app.ManagerDescs.REPOSITORY_MANAGER_DESC;
-import static org.lockss.app.ManagerDescs.ROUTER_MANAGER_DESC;
-import static org.lockss.app.ManagerDescs.SCHED_SERVICE_DESC;
-import static org.lockss.app.ManagerDescs.STREAM_COMM_MANAGER_DESC;
-import static org.lockss.app.ManagerDescs.SYSTEM_METRICS_DESC;
+import static org.lockss.app.ManagerDescs.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,11 +59,19 @@ public class PollerApplication extends BaseSpringBootApplication implements Comm
       SYSTEM_METRICS_DESC,
       ACCOUNT_MANAGER_DESC,
       IDENTITY_MANAGER_DESC,
+      CRAWL_MANAGER_DESC,
       PSM_MANAGER_DESC,
       POLL_MANAGER_DESC,
       REPOSITORY_MANAGER_DESC,
       STREAM_COMM_MANAGER_DESC,
-      ROUTER_MANAGER_DESC};
+      ROUTER_MANAGER_DESC,
+      SERVLET_MANAGER_DESC,
+      REMOTE_API_DESC,
+      PLATFORM_CONFIG_STATUS_DESC,
+      CONFIG_STATUS_DESC,
+      ARCHIVAL_UNIT_STATUS_DESC,
+      OVERVIEW_STATUS_DESC
+  };
 
   public static void main(String[] args) {
     logger.info("Starting the  Poller REST service...");

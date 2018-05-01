@@ -92,7 +92,7 @@ org.lockss.baseau.minFetchDelay=3000
 org.lockss.plugin.restartAusWithNewPlugin=true
 
 # Disable crawler
-org.lockss.crawler.enabled=false
+org.lockss.crawler.enabled=true
 org.lockss.poll.v3.enableV3Poller=true
 org.lockss.poll.v3.enableV3Voter=true
 
@@ -102,4 +102,4 @@ org.lockss.ws.enabled=false
 # No Repository Manager.
 org.lockss.plugin.auContentFromWs=false
 
-org.lockss.ui.port=54421
+org.lockss.ui.port=25251

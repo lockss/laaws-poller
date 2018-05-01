@@ -28,9 +28,15 @@ package org.lockss.laaws.poller.impl;
 
 import static org.mockito.Mockito.when;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Properties;
 import javax.servlet.http.HttpServletRequest;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -39,9 +45,21 @@ import org.springframework.http.ResponseEntity;
 
 import org.lockss.laaws.poller.model.*;
 import org.lockss.laaws.status.model.ApiStatus;
-import org.lockss.poller.TestPollManager;
+import org.lockss.config.Tdb;
+import org.lockss.plugin.PluginTestUtil;
+import org.lockss.poller.Poll;
+import org.lockss.poller.PollManager;
+import org.lockss.poller.PollSpec;
+import org.lockss.poller.PollTestPlugin.PTArchivalUnit;
+import org.lockss.poller.v3.V3Poller;
+import org.lockss.protocol.*;
+import org.lockss.protocol.IdentityManager.MalformedIdentityKeyException;
+import org.lockss.repository.RepositoryManager;
+import org.lockss.test.*;
+import org.lockss.util.ByteArray;
+import org.lockss.util.TimeBase;
 
-public class TestPollsApiServiceImpl extends TestPollManager {
+public class TestPollsApiServiceImpl extends LockssTestCase4 {
 
   @Mock
   private HttpServletRequest request;
@@ -53,37 +71,65 @@ public class TestPollsApiServiceImpl extends TestPollManager {
       "http://www.test1.org",
       "http://www.test2.org"};
 
-  private static String urlstr = "http://www.test3.org";
-  private static String lwrbnd = "test1.doc";
-  private static String uprbnd = "test3.doc";
+  protected static MockArchivalUnit mTestAu;
+  private MockLockssDaemon theDaemon;
+
+  protected PeerIdentity testID;
+  protected V3LcapMessage[] v3Testmsg;
+  protected MyPollManager mPollManager;
+  protected IdentityManager mIdManager;
+  private File tempDir;
+  private Tdb tdb;
 
   @Before
   public void setUp() throws Exception {
     super.setUp();
     MockitoAnnotations.initMocks(this);
+    String tempDirPath = setUpDiskSpace();
+    ConfigurationUtil.addFromArgs(
+        IdentityManager.PARAM_IDDB_DIR, tempDirPath + "iddb",
+        IdentityManager.PARAM_LOCAL_IP, "127.1.2.3",
+        LcapDatagramComm.PARAM_ENABLED, "false");
+    TimeBase.setSimulated();
+    initRequiredServices();
+    initTestAddr();
+    initTestMsg();
+    setErrorIfTimerThrows(false);
+    tdb = new Tdb();
+    String urlstr = "http://www.test3.org";
     when(request.getRequestURI()).thenReturn(urlstr);
   }
 
+  @After
+  public void tearDown() throws Exception {
+    TimeBase.setReal();
+    mPollManager.stopService();
+    mIdManager.stopService();
+    theDaemon.getLockssRepository(mTestAu).stopService();
+    theDaemon.getHashService().stopService();
+    theDaemon.getRouterManager().stopService();
+    super.tearDown();
+  }
 
-  @org.junit.Test
+  @Test
   public void testGetApiStatus() {
     ApiStatus result = pollsApiServiceImpl.getApiStatus();
     Assert.assertFalse(result.isReady());
     Assert.assertEquals("1.0.0", result.getVersion());
   }
 
-  @org.junit.Test
+  @Test
   public void testCallPoll() {
     PollDesc desc = new PollDesc();
-    String auId = testau.getAuId();
+    String auId = mTestAu.getAuId();
     // straight forward request to start a poll.
-    desc.setAuId(testau.getAuId());
+    desc.setAuId(auId);
     ResponseEntity<String> result = pollsApiServiceImpl.callPoll(desc);
     Assert.assertEquals(auId, result.getBody());
     Assert.assertEquals(HttpStatus.ACCEPTED, result.getStatusCode());
   }
 
-  @org.junit.Test
+  @Test
   public void testGetPollStatus() throws Exception {
     ResponseEntity<PollerSummary> summaryResponse;
     String auId = "bogus";
@@ -92,21 +138,23 @@ public class TestPollsApiServiceImpl extends TestPollManager {
     PollerSummary summary = summaryResponse.getBody();
     Assert.assertNull(summary);
     Assert.assertEquals(HttpStatus.NOT_FOUND, summaryResponse.getStatusCode());
-    testGetV3PollStatus();
-    auId = testau.getAuId();
+    addV3Polls();
+    auId = mTestAu.getAuId();
     summaryResponse = pollsApiServiceImpl.getPollStatus(auId);
     summary = summaryResponse.getBody();
+
   }
 
-  @org.junit.Test
+  @Test
   public void testCancelPoll() throws Exception {
-    String auId = testau.getAuId();
-    super.testGetV3PollStatus();
+    String auId = mTestAu.getAuId();
+    addV3Polls();
     ResponseEntity<Void> result = pollsApiServiceImpl.cancelPoll(auId);
     Assert.assertNull(result.getBody());
+    // todo: check the poll queue for the poll
   }
 
-  @org.junit.Test
+  @Test
   public void testGetPollAndDetails() {
     // no  poll
     // get details of the non-existent poll.
@@ -121,27 +169,142 @@ public class TestPollsApiServiceImpl extends TestPollManager {
     Assert.assertEquals(HttpStatus.NOT_FOUND, repairData.getStatusCode());
   }
 
-  @org.junit.Test
+  @Test
   public void testGetPollsAsPoller() throws Exception {
     ResponseEntity<PollerPager> result = pollsApiServiceImpl
         .getPollsAsPoller(20, 1);
     PollerPager pager = result.getBody();
     Assert.assertEquals(null, pager.getPolls());
     Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
-    testGetV3PollStatus();
-    result = pollsApiServiceImpl.getPollsAsPoller(20, 1);
-    pager = result.getBody();
-    Assert.assertNotNull(pager.getPolls());
-    Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
+    //todo: Add polls to poll queue
   }
 
-  @org.junit.Test
+  
+  @Test
   public void testGetPollsAsVoter() {
     ResponseEntity<VoterPager> result = pollsApiServiceImpl
         .getPollsAsVoter(20, 1);
     VoterPager pager = result.getBody();
     Assert.assertEquals(null, pager.getPolls());
     Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
+    //todo: Add polls to poll queue
   }
+
+  private void initRequiredServices() {
+    theDaemon = getMockLockssDaemon();
+    mPollManager = new MyPollManager();
+    mPollManager.initService(theDaemon);
+    theDaemon.setPollManager(mPollManager);
+    mIdManager = theDaemon.getIdentityManager();
+    theDaemon.getPluginManager();
+    mTestAu = PTArchivalUnit.createFromListOfRootUrls(rooturls);
+    mTestAu.setPlugin(new MockPlugin(theDaemon));
+    PluginTestUtil.registerArchivalUnit(mTestAu);
+    RepositoryManager repoMgr = theDaemon.getRepositoryManager();
+    repoMgr.startService();
+    Properties p = new Properties();
+    addRequiredConfig(p);
+    ConfigurationUtil.setCurrentConfigFromProps(p);
+    theDaemon.getSchedService().startService();
+    theDaemon.getHashService().startService();
+    theDaemon.getRouterManager().startService();
+    theDaemon.getActivityRegulator(mTestAu).startService();
+    theDaemon.setHistoryRepository(new MockHistoryRepository(), mTestAu);
+    mPollManager.startService();
+    mIdManager.startService();
+  }
+
+  private void addRequiredConfig(Properties p) {
+    String tempDirPath = null;
+
+    try {
+      tempDirPath = this.getTempDir().getAbsolutePath() + File.separator;
+    } catch (IOException var4) {
+      fail("unable to create a temporary directory");
+    }
+
+    p.setProperty("org.lockss.id.database.dir", tempDirPath + "iddb");
+    p.setProperty("org.lockss.platform.diskSpacePaths", tempDirPath);
+    p.setProperty("org.lockss.localIPAddress", "127.0.0.1");
+    p.setProperty("org.lockss.comm.enabled", "false");
+    p.setProperty("org.lockss.repository.v2Repository", "volatile:foo");
+  }
+
+  private void initTestAddr() {
+    try {
+      this.testID = this.theDaemon.getIdentityManager().stringToPeerIdentity("127.0.0.1");
+    } catch (MalformedIdentityKeyException var2) {
+      fail("can't open test host");
+    }
+
+  }
+
+  private void initTestMsg() throws Exception {
+    this.v3Testmsg = new V3LcapMessage[1];
+    this.v3Testmsg[0] = new V3LcapMessage(mTestAu.getAuId(),"testpollid",
+        "2", ByteArray.makeRandomBytes(20),
+        ByteArray.makeRandomBytes(20), 10, 12345678L,
+        this.testID, this.tempDir, this.theDaemon);
+    this.v3Testmsg[0].setArchivalId(mTestAu.getAuId());
+  }
+
+  public void addV3Polls() throws Exception {
+    String auId = mTestAu.getAuId();
+    addCompletedV3Poll(100000L, 0.99f);
+    addCompletedV3Poll(987654321L, 1.0f);
+    addCompletedV3Poll(1000L, 0.25f);
+  }
+
+  private void addCompletedV3Poll(long timestamp,
+      float agreement) throws Exception {
+    String lwrbnd = "test1.doc";
+    String uprbnd = "test3.doc";
+    PollSpec spec = new MockPollSpec(mTestAu, rooturls[0], lwrbnd, uprbnd,
+        Poll.V3_POLL);
+    V3Poller poll = new V3Poller(spec, theDaemon, testID, "akeyforthispoll",
+        1234567, "SHA-1");
+    mPollManager.addPoll(poll);
+    //poll.stopPoll();
+    mPollManager.finishPoll(poll);
+    PollManager.V3PollStatusAccessor v3status =
+        mPollManager.getV3Status();
+    v3status.incrementNumPolls(mTestAu.getAuId());
+    v3status.setAgreement(mTestAu.getAuId(), agreement);
+    v3status.setLastPollTime(mTestAu.getAuId(), timestamp);
+  }
+
+  static class MyPollManager extends PollManager {
+    private HashMap<String, Poll> thePolls =
+        new HashMap<>();
+    private HashMap<String, Poll> theRecentPolls =
+        new HashMap<String, Poll>();
+    MyPollManager() {
+    }
+
+    void addPoll(Poll poll) {
+      if (thePolls.containsKey(poll.getKey())) {
+        throw new IllegalArgumentException("Poll " + poll.getAu().getAuId() +
+            " is already in the EntryManager.");
+      }
+      thePolls.put(poll.getKey(), poll);
+    }
+
+    void finishPoll(Poll poll)
+    {
+      String key = poll.getKey();
+      if (thePolls.containsKey(key)) {
+        theRecentPolls.put(key, thePolls.remove(key));
+      }
+    }
+
+    boolean isPollActive(String key) {
+      return (thePolls.containsKey(key));
+    }
+
+    boolean isPollClosed(String key) {
+      return theRecentPolls.containsKey(key);
+    }
+  }
+
 }
 
