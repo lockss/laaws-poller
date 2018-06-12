@@ -1,3 +1,5 @@
+#!/usr/bin/env python2
+
 """Utility functions and classes used by testsuite and lockss_daemon"""
 
 import cgi  # urlparse for Python 2.6+

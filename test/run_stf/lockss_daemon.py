@@ -1,3 +1,5 @@
+#!/usr/bin/env python2
+
 """LOCKSS daemon interface library."""
 
 # $Id$

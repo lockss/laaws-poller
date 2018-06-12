@@ -19,7 +19,7 @@ log_file=log.txt
 
 trap "exit 1" 2 
 
-python testsuite.py $test_type > $log_file 2>&1 
+python2 testsuite.py $test_type > $log_file 2>&1 
 mail -s "Test finished on $host" $address < $log_file
 echo "run finished, removing log files"
 rm  $log_file

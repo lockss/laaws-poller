@@ -340,7 +340,7 @@ class SimpleV2RepoV3TestCase( V3TestCases ):
     def __init__( self, methodName = 'runTest' ):
         V3TestCases.__init__( self, methodName )
         self.simulated_AU_parameters = { 'depth': 1, 'branch': 2, 'numFiles': 3 }
-	self.local_configuration = {
+        self.local_configuration = {
             'org.lockss.repository.v2Repository': 'volatile:foo',
             'org.lockss.blockHasher.enableLocalHash': 'false',
         }

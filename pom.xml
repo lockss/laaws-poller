@@ -107,7 +107,7 @@ in this Software without prior written authorization from Stanford University.
             </goals>
             <configuration>
               <skip>${skip.stf.tests}</skip>
-              <executable>python</executable>
+              <executable>python2</executable>
               <workingDirectory>test/run_stf</workingDirectory>
               <arguments>
                 <argument>testsuite.py</argument>
