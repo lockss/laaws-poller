@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (c) 2018 Board of Trustees of Leland Stanford Jr. University,
-  ~ all rights reserved.
-  ~
+Copyright (c) 2018 Board of Trustees of Leland Stanford Jr. University,
+all rights reserved.
+
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -23,7 +23,6 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Except as contained in this notice, the name of Stanford University shall not
 be used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from Stanford University.
-
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -56,6 +55,7 @@ in this Software without prior written authorization from Stanford University.
     <!-- GitHub project does not match artifactId -->
     <gitProjectId>laaws-poller</gitProjectId>
     <skipSpringBootRepackage>false</skipSpringBootRepackage>
+    <springServicePort>25250</springServicePort>
     <!-- The main class to start by executing java -jar -->
     <start-class>org.lockss.laaws.poller.PollerApplication</start-class>
     <loglevel>info</loglevel>
