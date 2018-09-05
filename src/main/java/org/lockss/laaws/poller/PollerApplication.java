@@ -70,7 +70,8 @@ public class PollerApplication extends BaseSpringBootApplication implements Comm
       PLATFORM_CONFIG_STATUS_DESC,
       CONFIG_STATUS_DESC,
       ARCHIVAL_UNIT_STATUS_DESC,
-      OVERVIEW_STATUS_DESC
+      OVERVIEW_STATUS_DESC,
+      SUBSCRIPTION_MANAGER_DESC,
   };
 
   public static void main(String[] args) {
