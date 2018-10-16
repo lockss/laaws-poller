@@ -182,9 +182,9 @@ public class TestPollerApplication extends SpringLockssTestCase {
     List<String> cmdLineArgs = new ArrayList<String>();
 
     cmdLineArgs.add("-p");
-    cmdLineArgs.add("daemon/config/common.xml");
+    cmdLineArgs.add("config/common.xml");
     cmdLineArgs.add("-p");
-    cmdLineArgs.add("daemon/config/lockss.txt");
+    cmdLineArgs.add("config/lockss.txt");
     cmdLineArgs.add("-b");
     cmdLineArgs.add(getPlatformDiskSpaceConfigPath());
     cmdLineArgs.add("-p");
