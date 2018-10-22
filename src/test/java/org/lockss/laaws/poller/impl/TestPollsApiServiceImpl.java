@@ -30,35 +30,50 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Properties;
+import java.util.HashMap;
+
 import javax.servlet.http.HttpServletRequest;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-
-import org.lockss.laaws.poller.model.*;
-import org.lockss.laaws.status.model.ApiStatus;
 import org.lockss.config.Tdb;
+import org.lockss.laaws.poller.model.PollDesc;
+import org.lockss.laaws.poller.model.PollerPager;
+import org.lockss.laaws.poller.model.PollerSummary;
+import org.lockss.laaws.poller.model.RepairPager;
+import org.lockss.laaws.poller.model.UrlPager;
+import org.lockss.laaws.poller.model.VoterPager;
+import org.lockss.laaws.status.model.ApiStatus;
 import org.lockss.plugin.PluginTestUtil;
 import org.lockss.poller.Poll;
 import org.lockss.poller.PollManager;
 import org.lockss.poller.PollSpec;
 import org.lockss.poller.PollTestPlugin.PTArchivalUnit;
 import org.lockss.poller.v3.V3Poller;
-import org.lockss.protocol.*;
+import org.lockss.protocol.IdentityManager;
 import org.lockss.protocol.IdentityManager.MalformedIdentityKeyException;
+import org.lockss.protocol.LcapDatagramComm;
+import org.lockss.protocol.PeerIdentity;
+import org.lockss.protocol.V3LcapMessage;
 import org.lockss.repository.RepositoryManager;
-import org.lockss.test.*;
+import org.lockss.test.ConfigurationUtil;
+import org.lockss.test.LockssTestCase4;
+import org.lockss.test.MockArchivalUnit;
+import org.lockss.test.MockHistoryRepository;
+import org.lockss.test.MockLockssDaemon;
+import org.lockss.test.MockPlugin;
+import org.lockss.test.MockPollSpec;
 import org.lockss.util.ByteArray;
 import org.lockss.util.TimeBase;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
+/** @noinspection TestShouldMockAllTestedDependenciesInspection*/
 public class TestPollsApiServiceImpl extends LockssTestCase4 {
 
   @Mock
@@ -249,7 +264,6 @@ public class TestPollsApiServiceImpl extends LockssTestCase4 {
   }
 
   public void addV3Polls() throws Exception {
-    String auId = mTestAu.getAuId();
     addCompletedV3Poll(100000L, 0.99f);
     addCompletedV3Poll(987654321L, 1.0f);
     addCompletedV3Poll(1000L, 0.25f);
@@ -277,7 +291,7 @@ public class TestPollsApiServiceImpl extends LockssTestCase4 {
     private HashMap<String, Poll> thePolls =
         new HashMap<>();
     private HashMap<String, Poll> theRecentPolls =
-        new HashMap<String, Poll>();
+        new HashMap<>();
     MyPollManager() {
     }
 
