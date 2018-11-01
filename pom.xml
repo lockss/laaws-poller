@@ -84,6 +84,13 @@ in this Software without prior written authorization from Stanford University.
       <version>${lockss.core.bundleVersion}</version>
       <type>pom</type>
     </dependency>
+    <dependency>
+      <groupId>org.lockss</groupId>
+      <artifactId>lockss-core-tests-bundle</artifactId>
+      <version>${lockss.core.bundleVersion}</version>
+      <type>pom</type>
+      <scope>test</scope>
+    </dependency>
     <!-- LOCKSS daemon support -->
     <dependency>
       <groupId>org.lockss</groupId>
