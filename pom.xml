@@ -55,7 +55,7 @@ in this Software without prior written authorization from Stanford University.
     <!-- GitHub project does not match artifactId -->
     <gitProjectId>laaws-poller</gitProjectId>
     <skipSpringBootRepackage>false</skipSpringBootRepackage>
-    <springServicePort>25250</springServicePort>
+    <springServicePort>24630</springServicePort>
     <!-- The main class to start by executing java -jar -->
     <start-class>org.lockss.laaws.poller.PollerApplication</start-class>
     <loglevel>info</loglevel>
