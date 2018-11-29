@@ -58,6 +58,7 @@ public class PollerApplication extends BaseSpringBootApplication implements Comm
       HASH_SERVICE_DESC,
       SYSTEM_METRICS_DESC,
       ACCOUNT_MANAGER_DESC,
+      CONFIG_DB_MANAGER_DESC,
       IDENTITY_MANAGER_DESC,
       CRAWL_MANAGER_DESC,
       PSM_MANAGER_DESC,
