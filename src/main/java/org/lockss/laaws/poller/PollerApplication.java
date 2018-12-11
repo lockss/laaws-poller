@@ -54,6 +54,7 @@ public class PollerApplication extends BaseSpringBootApplication implements Comm
   // which managers are initialized and started.
   private static final ManagerDesc[] myManagerDescs = {
       PLUGIN_MANAGER_DESC,
+      STATE_MANAGER_DESC,
       SCHED_SERVICE_DESC,
       HASH_SERVICE_DESC,
       SYSTEM_METRICS_DESC,
