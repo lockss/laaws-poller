@@ -58,6 +58,10 @@ import org.lockss.test.SpringLockssTestCase;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class TestPollerApplication extends SpringLockssTestCase {
 
+  private static final String UI_PORT_CONFIGURATION_TEMPLATE =
+      "UiPortConfigTemplate.txt";
+  private static final String UI_PORT_CONFIGURATION_FILE = "UiPort.txt";
+
   // The port that Tomcat is using during this test.
   @LocalServerPort
   private int port;
@@ -94,6 +98,10 @@ public class TestPollerApplication extends SpringLockssTestCase {
     }
 
     copyToTempDir(srcTree);
+
+    // Set up the UI port.
+    setUpUiPort(UI_PORT_CONFIGURATION_TEMPLATE, UI_PORT_CONFIGURATION_FILE);
+
     runAuthenticated();
   }
 
@@ -189,6 +197,8 @@ public class TestPollerApplication extends SpringLockssTestCase {
     cmdLineArgs.add(getPlatformDiskSpaceConfigPath());
     cmdLineArgs.add("-p");
     cmdLineArgs.add("test/config/pollerApiControllerTestAuthOn.opt");
+    cmdLineArgs.add("-p");
+    cmdLineArgs.add(getUiPortConfigFile().getAbsolutePath());
 
     CommandLineRunner runner = appCtx.getBean(CommandLineRunner.class);
     runner.run(cmdLineArgs.toArray(new String[cmdLineArgs.size()]));
