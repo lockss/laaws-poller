@@ -58,10 +58,6 @@ import org.lockss.test.SpringLockssTestCase;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class TestPollerApplication extends SpringLockssTestCase {
 
-  private static final String UI_PORT_CONFIGURATION_TEMPLATE =
-      "UiPortConfigTemplate.txt";
-  private static final String UI_PORT_CONFIGURATION_FILE = "UiPort.txt";
-
   // The port that Tomcat is using during this test.
   @LocalServerPort
   private int port;
