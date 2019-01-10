@@ -286,3 +286,6 @@ daemon/v3state/
 export/
 remoteCopy/
 test/run_stf/testcase-*/
+
+*.pyc
+*.pyo
