@@ -38,12 +38,9 @@ org.lockss.ui.port=${LOCKSS_UI_PORT}
 # SYSTEM-LEVEL
 #
 
-# Enable JMS
-org.lockss.plugin.jms.enable=true
+# Enable polling
+org.lockss.scomm.enabled=true
 
 # Enable crawls of all but plugin registries
 org.lockss.crawler.enabled=true
 org.lockss.crawler.crawlPriorituAuidMap=RegitryPlugin,-10000;.,1
-
-# Enable polling
-org.lockss.scomm.enabled=true
