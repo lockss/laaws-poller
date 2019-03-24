@@ -39,6 +39,7 @@ import org.lockss.app.LockssApp;
 import org.lockss.app.LockssApp.AppSpec;
 import org.lockss.app.LockssApp.ManagerDesc;
 import org.lockss.app.LockssDaemon;
+import org.lockss.app.ServiceDescr;
 import org.lockss.plugin.PluginManager;
 import org.lockss.spring.base.BaseSpringBootApplication;
 
@@ -89,6 +90,7 @@ public class PollerApplication extends BaseSpringBootApplication implements Comm
       logger.info("Starting the LOCKSS daemon");
       try {
         AppSpec spec = new AppSpec()
+            .setService(ServiceDescr.SVC_POLLER)
             .setName("Poller Service")
             .setArgs(args)
             .setAppManagers(myManagerDescs)

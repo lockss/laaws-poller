@@ -61,7 +61,6 @@ import org.lockss.repository.RepositoryManager;
 import org.lockss.test.ConfigurationUtil;
 import org.lockss.test.LockssTestCase4;
 import org.lockss.test.MockArchivalUnit;
-import org.lockss.test.MockHistoryRepository;
 import org.lockss.test.MockLockssDaemon;
 import org.lockss.test.MockPlugin;
 import org.lockss.test.MockPollSpec;
@@ -224,7 +223,6 @@ public class TestPollsApiServiceImpl extends LockssTestCase4 {
     theDaemon.getHashService().startService();
     theDaemon.getRouterManager().startService();
     theDaemon.getActivityRegulator(mTestAu).startService();
-    theDaemon.setHistoryRepository(new MockHistoryRepository(), mTestAu);
     mPollManager.startService();
     mIdManager.startService();
   }
