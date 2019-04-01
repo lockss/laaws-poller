@@ -27,6 +27,20 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-/*
-!/docker/
-!/target/*-with-deps.jar
+#
+# SERVICE-LEVEL
+#
+
+# Set the UI port
+org.lockss.ui.port=${LOCKSS_UI_PORT}
+
+#
+# SYSTEM-LEVEL
+#
+
+# Enable polling
+org.lockss.scomm.enabled=true
+
+# Enable crawls of all but plugin registries
+org.lockss.crawler.enabled=true
+org.lockss.crawler.crawlPriorityAuidMap=RegistryPlugin,-10000
