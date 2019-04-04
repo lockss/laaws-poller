@@ -54,7 +54,6 @@ import org.lockss.poller.PollTestPlugin.PTArchivalUnit;
 import org.lockss.poller.v3.V3Poller;
 import org.lockss.protocol.IdentityManager;
 import org.lockss.protocol.IdentityManager.MalformedIdentityKeyException;
-import org.lockss.protocol.LcapDatagramComm;
 import org.lockss.protocol.PeerIdentity;
 import org.lockss.protocol.V3LcapMessage;
 import org.lockss.repository.RepositoryManager;
@@ -102,8 +101,7 @@ public class TestPollsApiServiceImpl extends LockssTestCase4 {
     String tempDirPath = setUpDiskSpace();
     ConfigurationUtil.addFromArgs(
         IdentityManager.PARAM_IDDB_DIR, tempDirPath + "iddb",
-        IdentityManager.PARAM_LOCAL_IP, "127.1.2.3",
-        LcapDatagramComm.PARAM_ENABLED, "false");
+        IdentityManager.PARAM_LOCAL_IP, "127.1.2.3");
     TimeBase.setSimulated();
     initRequiredServices();
     initTestAddr();
@@ -119,7 +117,6 @@ public class TestPollsApiServiceImpl extends LockssTestCase4 {
     TimeBase.setReal();
     mPollManager.stopService();
     mIdManager.stopService();
-    theDaemon.getLockssRepository(mTestAu).stopService();
     theDaemon.getHashService().stopService();
     theDaemon.getRouterManager().stopService();
     super.tearDown();
@@ -222,7 +219,6 @@ public class TestPollsApiServiceImpl extends LockssTestCase4 {
     theDaemon.getSchedService().startService();
     theDaemon.getHashService().startService();
     theDaemon.getRouterManager().startService();
-    theDaemon.getActivityRegulator(mTestAu).startService();
     mPollManager.startService();
     mIdManager.startService();
   }
