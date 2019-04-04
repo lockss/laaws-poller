@@ -289,3 +289,4 @@ test/run_stf/testcase-*/
 
 *.pyc
 *.pyo
+/TAGS
