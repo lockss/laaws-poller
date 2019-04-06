@@ -129,7 +129,8 @@ public class TestPollsApiServiceImpl extends LockssTestCase4 {
   public void testGetApiStatus() {
     ApiStatus result = pollsApiServiceImpl.getApiStatus();
     Assert.assertFalse(result.isReady());
-    Assert.assertEquals("1.0.0", result.getVersion());
+    Assert.assertEquals("1.0.0", result.getApiVersion()); // FIXME
+    // FIXME add more
   }
 
   @Test

@@ -36,6 +36,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.json.JSONObject;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.slf4j.Logger;
@@ -162,9 +163,14 @@ public class TestPollerApplication extends SpringLockssTestCase {
 
     assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
 
-    String expectedBody = "{\"version\":\"1.0.0\",\"ready\":true}}";
+    JSONObject expected = new JSONObject().put("apiVersion", "1.0.0")
+                                          .put("componentName", JSONObject.NULL)
+                                          .put("componentVersion", JSONObject.NULL)
+                                          .put("lockssVersion", JSONObject.NULL)
+                                          .put("ready", true)
+                                          .put("serviceName", JSONObject.NULL);
 
-    JSONAssert.assertEquals(expectedBody, response.getBody(), JSONCompareMode.LENIENT);
+    JSONAssert.assertEquals(expected.toString(), response.getBody(), false);
   }
 
   @Test
