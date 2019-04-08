@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Board of Trustees of Leland Stanford Jr. University,
+ * Copyright (c) 2018-2019 Board of Trustees of Leland Stanford Jr. University,
  * all rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -70,7 +70,6 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
     implements PollsApiDelegate {
 
   private static Logger logger = LoggerFactory.getLogger(PollsApiServiceImpl.class);
-  private static final String API_VERSION = "1.0.0";
   private PollManager pollManager;
   private PluginManager pluginManager;
   private LockssDaemon theDaemon;
@@ -86,8 +85,7 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
 
   @Override
   public ApiStatus getApiStatus() {
-    return new ApiStatus()
-        .setVersion(API_VERSION)
+    return new ApiStatus("swagger/swagger.yaml")
         .setReady(LockssApp.getLockssApp().isAppRunning());
   }
 
