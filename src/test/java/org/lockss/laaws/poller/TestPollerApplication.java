@@ -163,12 +163,12 @@ public class TestPollerApplication extends SpringLockssTestCase {
 
     assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
 
-    JSONObject expected = new JSONObject().put("apiVersion", "1.0.0")
-                                          .put("componentName", JSONObject.NULL)
-                                          .put("componentVersion", JSONObject.NULL)
-                                          .put("lockssVersion", JSONObject.NULL)
+    JSONObject expected = new JSONObject().put("apiVersion", "2.0.0")
+                                          .put("componentName", "laaws-poller")
+                                          .put("componentVersion", "1.0.0-SNAPSHOT")
+                                          .put("lockssVersion", "1.75.0")
                                           .put("ready", true)
-                                          .put("serviceName", JSONObject.NULL);
+                                          .put("serviceName", "LOCKSS Poller Service REST API");
 
     JSONAssert.assertEquals(expected.toString(), response.getBody(), false);
   }

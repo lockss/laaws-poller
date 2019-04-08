@@ -129,8 +129,11 @@ public class TestPollsApiServiceImpl extends LockssTestCase4 {
   public void testGetApiStatus() {
     ApiStatus result = pollsApiServiceImpl.getApiStatus();
     Assert.assertFalse(result.isReady());
-    Assert.assertEquals("1.0.0", result.getApiVersion()); // FIXME
-    // FIXME add more
+    Assert.assertEquals("2.0.0", result.getApiVersion());
+    Assert.assertEquals("laaws-poller", result.getComponentName());
+    Assert.assertEquals("LOCKSS Poller Service REST API", result.getServiceName());
+    Assert.assertEquals("1.75.0", result.getLockssVersion());
+    Assert.assertEquals("1.0.0-SNAPSHOT", result.getComponentVersion());
   }
 
   @Test
