@@ -28,3 +28,5 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 FROM lockss/lockss-spring:2.4
+
+EXPOSE 9729
