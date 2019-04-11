@@ -42,8 +42,10 @@ import org.lockss.app.LockssDaemon;
 import org.lockss.app.ServiceDescr;
 import org.lockss.plugin.PluginManager;
 import org.lockss.spring.base.BaseSpringBootApplication;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @SpringBootApplication
+@EnableSwagger2
 public class PollerApplication extends BaseSpringBootApplication implements CommandLineRunner {
 
   private static final Logger logger =
