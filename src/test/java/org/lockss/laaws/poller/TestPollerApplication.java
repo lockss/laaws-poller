@@ -145,7 +145,7 @@ public class TestPollerApplication extends SpringLockssTestCase {
 
     assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
     String expectedBody = "{'swagger':'2.0',"
-        + "'info':{'description':'REST API for handling poller tasks '}}";
+        + "'info':{'description':'REST API of the LOCKSS Poller Service'}}";
     JSONAssert.assertEquals(expectedBody, response.getBody(), JSONCompareMode.LENIENT);
   }
 
