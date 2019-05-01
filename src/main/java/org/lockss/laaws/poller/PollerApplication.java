@@ -77,6 +77,10 @@ public class PollerApplication extends BaseSpringBootApplication implements Comm
       ARCHIVAL_UNIT_STATUS_DESC,
       OVERVIEW_STATUS_DESC,
       SUBSCRIPTION_MANAGER_DESC,
+      CONTENT_SERVLET_MANAGER_DESC,
+      PROXY_MANAGER_DESC,
+      AUDIT_PROXY_MANAGER_DESC,
+      ICP_MANAGER_DESC,
   };
 
   public static void main(String[] args) {
