@@ -84,7 +84,7 @@ public class PollerApplication extends BaseSpringBootApplication implements Comm
   };
 
   public static void main(String[] args) {
-    logger.info("Starting the  Poller REST service...");
+    logger.info("Starting the Poller REST service...");
     configure();
     SpringApplication.run(PollerApplication.class, args);
   }
