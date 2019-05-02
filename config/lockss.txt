@@ -25,7 +25,7 @@
 #
 # Don't make local changes in this file; put local settings in lockss.opt
 
-org.lockss.log.default.level=debug
+#org.lockss.log.default.level=debug
 
 org.lockss.ui.access.ip.logForbidden=true
 org.lockss.proxy.access.ip.logForbidden=true
@@ -36,7 +36,6 @@ org.lockss.config.reloadInterval = 5m
 org.lockss.ui.allowPluginConfig=true
 
 org.lockss.ui.start=yes
-org.lockss.proxy.start=no
 
 # Turn off V1 -- This will be the default some day.
 org.lockss.comm.enabled=false
@@ -72,9 +71,6 @@ org.lockss.poll.v3.messageDir=/tmp
 org.lockss.metrics.slowest.hashrate=250
 org.lockss.state.recall.delay=5m
 
-# Turn on ICP on port 3131
-org.lockss.proxy.icp.enabled=true
-org.lockss.proxy.icp.port=3131
 org.lockss.crawler.crawlPriorityAuidMap=RegistryPlugin,-10000
 
 # Crawl starter interval
