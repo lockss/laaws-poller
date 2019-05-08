@@ -1,156 +1,155 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+Copyright (c) 2000-2019, Board of Trustees of Leland Stanford Jr. University
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice,
+this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+this list of conditions and the following disclaimer in the documentation
+and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its contributors
+may be used to endorse or promote products derived from this software without
+specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.lockss</groupId>
+    <artifactId>lockss-parent-pom</artifactId>
+    <version>1.10.0</version>
+    <relativePath />
+  </parent>
+
   <groupId>org.lockss.laaws</groupId>
   <artifactId>laaws-poller</artifactId>
+  <version>2.0.0.0</version>
   <packaging>jar</packaging>
+
   <name>laaws-poller</name>
-  <version>1.0.0-SNAPSHOT</version>
-  <description>LOCKSS Poller REST service wrapper</description>
-  <parent>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-parent</artifactId>
-    <version>1.5.9.RELEASE</version>
-  </parent>
+  <description>LOCKSS Poller Service</description>
+
   <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <java.version>1.8</java.version>
-    <maven.compiler.source>${java.version}</maven.compiler.source>
-    <maven.compiler.target>${java.version}</maven.compiler.target>
-    <springfox-version>2.7.0</springfox-version>
-    <start-class>org.lockss.laaws.poller.PollerApplication</start-class>
-    <loglevel>info</loglevel>
-    <outputtofile>true</outputtofile>
-    <trimstack>false</trimstack>
+    <build.java.spring.skip>false</build.java.spring.skip>
+    <build.java.package>org.lockss.laaws.poller</build.java.package>
+    <build.java.mainClass>${build.java.package}.PollerApplication</build.java.mainClass>
+
+    <!-- Is a Docker project -->
+    <build.docker.skip>false</build.docker.skip>
+    <build.docker.dockerBuild.restPort>24630</build.docker.dockerBuild.restPort>
+    <build.docker.dockerBuild.uiPort>24631</build.docker.dockerBuild.uiPort>
+    
+    <!-- Needs lockss-legacy repository for lockss-plugins -->
+    <repository.enabled.lockss-legacy>true</repository.enabled.lockss-legacy>
+
+    <skipStf>true</skipStf><!-- alias -->
+    <build.java.runStf.skip>${skipStf}</build.java.runStf.skip><!-- property -->
+
+    <stfSuite>pollerTests</stfSuite><!-- alias -->
+    <build.java.runStf.suite>${stfSuite}</build.java.runStf.suite><!-- property -->
   </properties>
 
-  <build>
-    <sourceDirectory>src/main/java</sourceDirectory>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <includes>
-            <include>**/*Tests.java</include>
-            <include>**/*Test.java</include>
-          </includes>
-          <excludes>
-            <exclude>**/Abstract*.java</exclude>
-          </excludes>
-          <redirectTestOutputToFile>${outputtofile}</redirectTestOutputToFile>
-          <reuseForks>false</reuseForks>
-          <trimStackTrace>${trimstack}</trimStackTrace>
-          <systemPropertyVariables>
-            <org.lockss.unitTesting>true</org.lockss.unitTesting>
-            <org.lockss.defaultLogLevel>${loglevel}</org.lockss.defaultLogLevel>
-            <org.lockss.defaultLogTarget>org.lockss.util.StdErrTarget</org.lockss.defaultLogTarget>
-          </systemPropertyVariables>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>repackage</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
-
   <dependencies>
+  
     <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.springframework.boot</groupId>
-          <artifactId>spring-boot-starter-logging</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-activemq</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-integration</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-web</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.springframework.boot</groupId>
-          <artifactId>spring-boot-starter-logging</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-tomcat</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-test</artifactId>
+      <groupId>org.lockss</groupId>
+      <artifactId>lockss-junit4-bundle</artifactId>
+      <version>${version.lockss.lockss-junit4-bundle}</version>
+      <type>pom</type>
       <scope>test</scope>
     </dependency>
+  
     <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-security</artifactId>
+      <groupId>org.lockss</groupId>
+      <artifactId>lockss-spring-bundle</artifactId>
+      <version>${version.lockss.lockss-spring-bundle}</version>
     </dependency>
-    <!--SpringFox dependencies -->
+    
     <dependency>
-      <groupId>io.springfox</groupId>
-      <artifactId>springfox-swagger2</artifactId>
-      <version>${springfox-version}</version>
+      <groupId>org.lockss</groupId>
+      <artifactId>lockss-core-bundle</artifactId>
+      <version>${version.lockss.lockss-core-bundle}</version>
+      <type>pom</type>
     </dependency>
+    
     <dependency>
-      <groupId>io.springfox</groupId>
-      <artifactId>springfox-swagger-ui</artifactId>
-      <version>${springfox-version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.fasterxml.jackson.datatype</groupId>
-      <artifactId>jackson-datatype-jsr310</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.modelmapper</groupId>
-      <artifactId>modelmapper</artifactId>
-      <version>1.1.0</version>
-    </dependency>
-    <!-- Bean Validation API support -->
-    <dependency>
-      <groupId>javax.validation</groupId>
-      <artifactId>validation-api</artifactId>
+      <groupId>org.lockss</groupId>
+      <artifactId>lockss-core-tests-bundle</artifactId>
+      <version>${version.lockss.lockss-core-bundle}</version>
+      <type>pom</type>
+      <scope>test</scope>
     </dependency>
 
     <!-- LOCKSS daemon support -->
     <dependency>
-      <groupId>org.lockss.laaws</groupId>
-      <artifactId>lockss-core</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
-      <exclusions>
-        <exclusion>
-          <groupId>log4j</groupId>
-          <artifactId>log4j</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-log4j12</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
       <groupId>org.lockss</groupId>
       <artifactId>lockss-plugins</artifactId>
-      <version>20180112</version>
+      <version>${version.lockss.lockss-plugins}</version>
     </dependency>
   </dependencies>
+
+  <build>
+  
+    <plugins>
+    
+      <!-- BEGIN plugin exec-maven-plugin -->
+      
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>${version.plugin.exec-maven-plugin}</version>
+        <executions>
+
+          <!-- BEGIN step runStf -->
+
+          <execution><!-- FIXME can this be refactored? -->
+            <id>runStf</id>
+            <phase>integration-test</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <skip>${build.java.runStf.skip}</skip>
+              <workingDirectory>test/run_stf</workingDirectory><!-- note: no 'frameworks/' -->
+              <executable>python2</executable>
+              <arguments>
+                <argument>testsuite.py</argument>
+                <argument>${build.java.runStf.suite}</argument>
+              </arguments>
+            </configuration>
+          </execution>
+
+          <!-- END step runStf -->
+
+        </executions>
+      </plugin>
+
+      <!-- END plugin exec-maven-plugin -->
+      
+    </plugins>
+  
+  </build>
+
 </project>

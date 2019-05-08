@@ -1,3 +1,4 @@
+
 # Copyright (c) 2017 Board of Trustees of Leland Stanford Jr. University,
 # all rights reserved.
 #
@@ -24,16 +25,17 @@
 #
 # Don't make local changes in this file; put local settings in lockss.opt
 
-org.lockss.log.default.level=debug
+#org.lockss.log.default.level=debug
 
 org.lockss.ui.access.ip.logForbidden=true
 org.lockss.proxy.access.ip.logForbidden=true
 
+org.lockss.platform.diskSpacePaths=./daemon
+org.lockss.cache.location=./daemon
 org.lockss.config.reloadInterval = 5m
 org.lockss.ui.allowPluginConfig=true
 
 org.lockss.ui.start=yes
-org.lockss.proxy.start=no
 
 # Turn off V1 -- This will be the default some day.
 org.lockss.comm.enabled=false
@@ -42,16 +44,34 @@ org.lockss.comm.enabled=false
 org.lockss.platform.v3.identity=TCP:[127.0.0.1]:9720
 
 # Comm settings
+org.lockss.comm.enabled=false
+org.lockss.scomm.enabled=true
 org.lockss.scomm.maxMessageSize=33554430
+org.lockss.scomm.timeout.connect=15s
 
 # Poller settings
-org.lockss.poll.v3.quorum=2
-org.lockss.poll.v3.pollStarterInitialDelay=5m
-org.lockss.poll.v3.pollStarterInterval=5m
+org.lockss.poll.pollStarterInitialDelay=1m
+org.lockss.poll.queueEmptySleep=30s
+org.lockss.poll.queueRecalcInterval=30s
+org.lockss.poll.v3.maxSimultaneousV3Pollers=1
+org.lockss.poll.v3.maxSimultaneousV3Voters=100
+org.lockss.poll.v3.deleteExtraFiles=true
+org.lockss.poll.v3.quorum=4
+arg.lockss.poll.v3.minNominationSize=0
+org.lockss.poll.v3.maxNominationSize=0
+org.lockss.poll.v3.voteDurationPadding=30s
+org.lockss.poll.v3.tallyDurationPadding=30s
+org.lockss.poll.v3.voteDurationMultiplier=3
+org.lockss.poll.v3.tallyDurationMultiplier=3
+org.lockss.poll.v3.receiptPadding=30s
 
-# Turn on ICP on port 3131
-org.lockss.proxy.icp.enabled=true
-org.lockss.proxy.icp.port=3131
+# Set the v3 poll state dir to /tmp
+org.lockss.poll.v3.messageDir=/tmp
+
+org.lockss.metrics.slowest.hashrate=250
+org.lockss.state.recall.delay=5m
+
+org.lockss.crawler.crawlPriorityAuidMap=RegistryPlugin,-10000
 
 # Crawl starter interval
 org.lockss.crawler.startCrawlsInterval=5m
@@ -68,8 +88,8 @@ org.lockss.blockHasher.ignoreFilesOutsideCrawlSpec=true
 org.lockss.baseau.minFetchDelay=3000
 org.lockss.plugin.restartAusWithNewPlugin=true
 
-# Disable crawler, poller and voter
-org.lockss.crawler.enabled=false
+# Disable crawler
+org.lockss.crawler.enabled=true
 org.lockss.poll.v3.enableV3Poller=true
 org.lockss.poll.v3.enableV3Voter=true
 
@@ -77,6 +97,6 @@ org.lockss.poll.v3.enableV3Voter=true
 org.lockss.ws.enabled=false
 
 # No Repository Manager.
-org.lockss.plugin.auContentFromWs=true
+org.lockss.plugin.auContentFromWs=false
 
-org.lockss.ui.port=54421
+org.lockss.ui.port=24631

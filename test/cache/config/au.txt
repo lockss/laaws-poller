@@ -1,9 +1,14 @@
 #AU Configuration
-#Fri Jul 21 14:18:06 HST 2017
-org.lockss.au.org|lockss|plugin|pensoft|oai|PensoftOaiPlugin.au_oai_date~2014&au_oai_set~biorisk&base_url~http%3A%2F%2Fbiorisk%2Epensoft%2Enet%2F.au_oai_date=2014
-org.lockss.au.org|lockss|plugin|pensoft|oai|PensoftOaiPlugin.au_oai_date~2014&au_oai_set~biorisk&base_url~http%3A%2F%2Fbiorisk%2Epensoft%2Enet%2F.au_oai_set=biorisk
-org.lockss.au.org|lockss|plugin|pensoft|oai|PensoftOaiPlugin.au_oai_date~2014&au_oai_set~biorisk&base_url~http%3A%2F%2Fbiorisk%2Epensoft%2Enet%2F.base_url=http\://biorisk.pensoft.net/
-org.lockss.au.org|lockss|plugin|pensoft|oai|PensoftOaiPlugin.au_oai_date~2014&au_oai_set~biorisk&base_url~http%3A%2F%2Fbiorisk%2Epensoft%2Enet%2F.reserved.disabled=false
-org.lockss.au.org|lockss|plugin|pensoft|oai|PensoftOaiPlugin.au_oai_date~2014&au_oai_set~biorisk&base_url~http%3A%2F%2Fbiorisk%2Epensoft%2Enet%2F.reserved.displayName=BioRisk Volume 2014
-org.lockss.au.org|lockss|plugin|pensoft|oai|PensoftOaiPlugin.au_oai_date~2014&au_oai_set~biorisk&base_url~http%3A%2F%2Fbiorisk%2Epensoft%2Enet%2F.reserved.repository=local\:./cache
+#Mon Mar 26 02:19:39 PDT 2018
 org.lockss.config.fileVersion.au=1
+org.lockss.au.org|lockss|plugin|simulated|SimulatedPlugin.root~simContent.base_url=http\://www.example.com/
+org.lockss.au.org|lockss|plugin|simulated|SimulatedPlugin.root~simContent.binFileSize=1024
+org.lockss.au.org|lockss|plugin|simulated|SimulatedPlugin.root~simContent.binRandomSeed=1522055979
+org.lockss.au.org|lockss|plugin|simulated|SimulatedPlugin.root~simContent.branch=0
+org.lockss.au.org|lockss|plugin|simulated|SimulatedPlugin.root~simContent.depth=0
+org.lockss.au.org|lockss|plugin|simulated|SimulatedPlugin.root~simContent.fileTypes=17
+org.lockss.au.org|lockss|plugin|simulated|SimulatedPlugin.root~simContent.numFiles=3
+org.lockss.au.org|lockss|plugin|simulated|SimulatedPlugin.root~simContent.reserved.disabled=false
+org.lockss.au.org|lockss|plugin|simulated|SimulatedPlugin.root~simContent.reserved.displayName=Simulated Content\: simContent
+org.lockss.au.org|lockss|plugin|simulated|SimulatedPlugin.root~simContent.reserved.repository=local\:/Users/claire/code/github/lockss/lockss-poller/cache/
+org.lockss.au.org|lockss|plugin|simulated|SimulatedPlugin.root~simContent.root=simContent

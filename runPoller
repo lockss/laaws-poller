@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-mvn clean package
-if [ -f "target/laaws-poller-1.0.0-SNAPSHOT.jar" ]
-then
-  mvn spring-boot:run -Drun.arguments="-p,config/common.xml,-x,tdbxml/prod,-p,config/lockss.txt,-p,config/lockss.opt"
-else
-  echo Not running service: Build did not create JAR file.
-fi
