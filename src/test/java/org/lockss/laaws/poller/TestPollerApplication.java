@@ -165,8 +165,8 @@ public class TestPollerApplication extends SpringLockssTestCase {
 
     JSONObject expected = new JSONObject().put("apiVersion", "2.0.0")
                                           .put("componentName", "laaws-poller")
-                                          .put("componentVersion", "1.0.0-SNAPSHOT")
-                                          .put("lockssVersion", "1.75.0")
+                                          .put("componentVersion", "2.0.0.0")
+                                          .put("lockssVersion", "2.0-alpha")
                                           .put("ready", true)
                                           .put("serviceName", "LOCKSS Poller Service REST API");
 
