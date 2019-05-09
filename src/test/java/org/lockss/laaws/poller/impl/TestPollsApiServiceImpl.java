@@ -129,8 +129,8 @@ public class TestPollsApiServiceImpl extends LockssTestCase4 {
     Assert.assertEquals("2.0.0", result.getApiVersion());
     Assert.assertEquals("laaws-poller", result.getComponentName());
     Assert.assertEquals("LOCKSS Poller Service REST API", result.getServiceName());
-    Assert.assertEquals("2.0-alpha", result.getLockssVersion());
-    Assert.assertEquals("2.0.0.0", result.getComponentVersion());
+    Assert.assertEquals("2.0-beta", result.getLockssVersion());
+    Assert.assertEquals("3.0.1.0-SNAPSHOT", result.getComponentVersion());
   }
 
   @Test
