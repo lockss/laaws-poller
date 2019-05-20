@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Board of Trustees of Leland Stanford Jr. University,
+ * Copyright (c) 2018-2019 Board of Trustees of Leland Stanford Jr. University,
  * all rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,6 +28,7 @@ package org.lockss.laaws.poller.impl;
 
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
@@ -122,15 +123,20 @@ public class TestPollsApiServiceImpl extends LockssTestCase4 {
     super.tearDown();
   }
 
+  /**
+   * Runs the status-related test.
+   * 
+   * @throws JsonProcessingException
+   *           if there are problems getting the expected status in JSON format.
+   */
   @Test
-  public void testGetApiStatus() {
+  public void testGetApiStatus() throws JsonProcessingException {
     ApiStatus result = pollsApiServiceImpl.getApiStatus();
-    Assert.assertFalse(result.isReady());
-    Assert.assertEquals("2.0.0", result.getApiVersion());
-    Assert.assertEquals("laaws-poller", result.getComponentName());
-    Assert.assertEquals("LOCKSS Poller Service REST API", result.getServiceName());
-    Assert.assertEquals("2.0-beta", result.getLockssVersion());
-    Assert.assertEquals("2.0.1.0-SNAPSHOT", result.getComponentVersion());
+
+    // Get the expected result.
+    ApiStatus expected = new ApiStatus("swagger/swagger.yaml");
+
+    Assert.assertEquals(expected.toJson(), result.toJson());
   }
 
   @Test
