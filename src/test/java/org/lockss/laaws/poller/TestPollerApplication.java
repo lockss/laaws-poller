@@ -87,7 +87,7 @@ public class TestPollerApplication extends SpringLockssTestCase {
       logger.debug("port = " + port);
     }
     // Set up the temporary directory where the test data will reside.
-    setUpTempDirectory(PollerApplication.class.getCanonicalName());
+    setUpTempDirectory(TestPollerApplication.class.getCanonicalName());
     // Copy the necessary files to the test temporary directory.
     File srcTree = new File(new File("test"), "cache");
     if (logger.isDebugEnabled()) {

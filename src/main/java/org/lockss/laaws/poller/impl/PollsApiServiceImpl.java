@@ -28,14 +28,12 @@ package org.lockss.laaws.poller.impl;
 import java.net.MalformedURLException;
 import java.util.*;
 import javax.servlet.http.HttpServletRequest;
-import org.lockss.app.LockssApp;
 import org.lockss.app.LockssDaemon;
 import org.lockss.laaws.poller.api.PollsApi;
 import org.lockss.laaws.poller.api.PollsApiDelegate;
 import org.lockss.laaws.poller.model.*;
 import org.lockss.laaws.poller.model.PollDesc.VariantEnum;
 import org.lockss.laaws.poller.model.RepairData.ResultEnum;
-import org.lockss.laaws.status.model.ApiStatus;
 import org.lockss.plugin.ArchivalUnit;
 import org.lockss.plugin.CachedUrlSet;
 import org.lockss.plugin.PluginManager;
@@ -50,7 +48,6 @@ import org.lockss.poller.v3.PollerStateBean.TallyStatus;
 import org.lockss.protocol.PeerIdentity;
 import org.lockss.protocol.psm.PsmInterp;
 import org.lockss.protocol.psm.PsmState;
-import org.lockss.spring.status.SpringLockssBaseApiController;
 import org.lockss.util.ByteArray;
 import org.lockss.util.StringUtil;
 import org.lockss.util.UrlUtil;
@@ -65,8 +62,7 @@ import org.springframework.stereotype.Service;
  * The Polls api service.
  */
 @Service
-public class PollsApiServiceImpl extends SpringLockssBaseApiController
-    implements PollsApiDelegate {
+public class PollsApiServiceImpl implements PollsApiDelegate {
 
   private static Logger logger = LoggerFactory
       .getLogger(PollsApiServiceImpl.class);
@@ -76,18 +72,6 @@ public class PollsApiServiceImpl extends SpringLockssBaseApiController
   @Autowired
   private HttpServletRequest request;
   private static final String DETAIL_UNAVAILABLE = "Unable to add details link.";
-
-
-  /* ------------------------------------------------------------------------
-        SpringLockssBaseApiController implementation.
-       ------------------------------------------------------------------------
-    */
-
-  @Override
-  public ApiStatus getApiStatus() {
-    return new ApiStatus("swagger/swagger.yaml")
-        .setReady(LockssApp.getLockssApp().isAppRunning());
-  }
 
   /* ------------------------------------------------------------------------
       PollsApiDelegate implementation.

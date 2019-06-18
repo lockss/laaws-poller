@@ -28,7 +28,6 @@ package org.lockss.laaws.poller.impl;
 
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
@@ -46,7 +45,6 @@ import org.lockss.laaws.poller.model.PollerSummary;
 import org.lockss.laaws.poller.model.RepairPager;
 import org.lockss.laaws.poller.model.UrlPager;
 import org.lockss.laaws.poller.model.VoterPager;
-import org.lockss.laaws.status.model.ApiStatus;
 import org.lockss.plugin.PluginTestUtil;
 import org.lockss.poller.Poll;
 import org.lockss.poller.PollManager;
@@ -121,22 +119,6 @@ public class TestPollsApiServiceImpl extends LockssTestCase4 {
     theDaemon.getHashService().stopService();
     theDaemon.getRouterManager().stopService();
     super.tearDown();
-  }
-
-  /**
-   * Runs the status-related test.
-   * 
-   * @throws JsonProcessingException
-   *           if there are problems getting the expected status in JSON format.
-   */
-  @Test
-  public void testGetApiStatus() throws JsonProcessingException {
-    ApiStatus result = pollsApiServiceImpl.getApiStatus();
-
-    // Get the expected result.
-    ApiStatus expected = new ApiStatus("swagger/swagger.yaml");
-
-    Assert.assertEquals(expected.toJson(), result.toJson());
   }
 
   @Test

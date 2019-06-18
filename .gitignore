@@ -292,6 +292,7 @@ fabric.properties
 /.classpath
 /.project
 /simContent/
+daemon/db/
 daemon/plugins/
 daemon/tfile/
 daemon/v3state/
