@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Board of Trustees of Leland Stanford Jr. University,
+ * Copyright (c) 2018-2019 Board of Trustees of Leland Stanford Jr. University,
  * all rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -36,7 +36,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.json.JSONObject;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.slf4j.Logger;
@@ -147,30 +146,6 @@ public class TestPollerApplication extends SpringLockssTestCase {
     String expectedBody = "{'swagger':'2.0',"
         + "'info':{'description':'REST API of the LOCKSS Poller Service'}}";
     JSONAssert.assertEquals(expectedBody, response.getBody(), JSONCompareMode.LENIENT);
-  }
-
-  /**
-   * Runs the status-related tests.
-   *
-   * @throws Exception if there are problems.
-   */
-
-  @Test
-  public void testGetStatus() throws Exception {
-    TestRestTemplate restTemplate = new TestRestTemplate();
-    ResponseEntity<String> response = restTemplate.
-        getForEntity(getTestUrlTemplate("/status"), String.class);
-
-    assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
-
-    JSONObject expected = new JSONObject().put("apiVersion", "2.0.0")
-                                          .put("componentName", "laaws-poller")
-                                          .put("componentVersion", "2.0.1.0-SNAPSHOT")
-                                          .put("lockssVersion", "2.0-beta")
-                                          .put("ready", true)
-                                          .put("serviceName", "LOCKSS Poller Service REST API");
-
-    JSONAssert.assertEquals(expected.toString(), response.getBody(), false);
   }
 
   @Test
