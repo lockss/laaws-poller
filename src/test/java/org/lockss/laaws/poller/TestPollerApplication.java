@@ -134,18 +134,7 @@ public class TestPollerApplication extends SpringLockssTestCase {
    */
   @Test
   public void testGetSwaggerDocs() throws Exception {
-    if (logger.isDebugEnabled()) {
-      logger.debug("Get Swagger Docs....");
-    }
-    TestRestTemplate restTemplate = new TestRestTemplate();
-
-    ResponseEntity<String> response = restTemplate.
-        getForEntity(getTestUrlTemplate("/v2/api-docs"), String.class);
-
-    assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
-    String expectedBody = "{'swagger':'2.0',"
-        + "'info':{'description':'REST API of the LOCKSS Poller Service'}}";
-    JSONAssert.assertEquals(expectedBody, response.getBody(), JSONCompareMode.LENIENT);
+    runGetSwaggerDocsTest(getTestUrlTemplate("/v2/api-docs"));
   }
 
   @Test
