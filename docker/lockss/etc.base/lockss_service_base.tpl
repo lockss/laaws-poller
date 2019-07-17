@@ -37,6 +37,7 @@
 # SYSTEM-LEVEL
 #
 
+# FIXME move to AppSpec
 # Enable polling
 org.lockss.scomm.enabled=true
 
