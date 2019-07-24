@@ -42,9 +42,10 @@ import org.lockss.app.LockssDaemon;
 import org.lockss.app.ServiceDescr;
 import org.lockss.plugin.PluginManager;
 import org.lockss.spring.base.BaseSpringBootApplication;
+import org.springframework.boot.autoconfigure.solr.SolrAutoConfiguration;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
-@SpringBootApplication
+@SpringBootApplication(exclude = {SolrAutoConfiguration.class})
 @EnableSwagger2
 public class PollerApplication extends BaseSpringBootApplication implements CommandLineRunner {
 
