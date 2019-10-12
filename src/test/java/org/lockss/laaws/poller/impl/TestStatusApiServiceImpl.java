@@ -32,7 +32,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.lockss.laaws.status.model.ApiStatus;
+import org.lockss.util.rest.status.ApiStatus;
 import org.lockss.protocol.IdentityManager;
 import org.lockss.protocol.PeerIdentity;
 import org.lockss.protocol.V3LcapMessage;
