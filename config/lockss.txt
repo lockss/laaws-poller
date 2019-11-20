@@ -100,3 +100,6 @@ org.lockss.ws.enabled=false
 org.lockss.plugin.auContentFromWs=false
 
 org.lockss.ui.port=24631
+
+#org.lockss.platform.ui.passwordfile=auth/RestClientPwd.txt
+#org.lockss.restAuth.authenticationType=basic
