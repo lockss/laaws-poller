@@ -98,7 +98,7 @@ public class PollerApplication extends BaseSpringBootApplication implements Comm
       try {
         AppSpec spec = new AppSpec()
             .setService(ServiceDescr.SVC_POLLER)
-            .setName("Poller Service")
+            .setName("Poller/Crawler Service")
             .setArgs(args)
             .setAppManagers(myManagerDescs)
             .addAppConfig(PARAM_START_PLUGINS, "true")
