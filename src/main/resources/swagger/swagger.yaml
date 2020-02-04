@@ -1,4 +1,4 @@
-# Copyright (c) 2000-2018, Board of Trustees of Leland Stanford Jr. University
+# Copyright (c) 2000-2020, Board of Trustees of Leland Stanford Jr. University
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -470,6 +470,83 @@ paths:
         required: true
         type: string
         description: The key assigned by the PollManager.
+  /aus/{auid}/export:
+    get:
+      tags:
+        - export
+      summary: "Export artifacts in an Archival Unit"
+      description: "Export artifacts in an Archival Unit as a group of archives"
+      operationId: getExportFiles
+      produces:
+        - multipart/form-data
+      parameters:
+        - name: "auid"
+          in: "path"
+          required: true
+          type: "string"
+          description: "Identifier of the Archival Unit containing the\
+            \ artifacts"
+        - name: "fileType"
+          in: "query"
+          required: false
+          type: "string"
+          enum: ["WARC_RESPONSE", "WARC_RESOURCE", "ARC_RESPONSE", "ARC_RESOURCE", "ZIP"]
+          default: "WARC_RESPONSE"
+          description: "The type of archive to create"
+        - name: "isCompress"
+          in: "query"
+          required: false
+          type: "boolean"
+          default: "true"
+          description: "Indication of whether contents should be compressed"
+        - name: "isExcludeDirNodes"
+          in: "query"
+          required: false
+          type: "boolean"
+          default: "true"
+          description: "Indication of whether directories should be excluded"
+        - name: "xlateFilenames"
+          in: "query"
+          required: false
+          type: "string"
+          enum: ["XLATE_NONE", "XLATE_WINDOWS", "XLATE_MAC"]
+          default: "XLATE_NONE"
+          description: "Type of filename translation to be done"
+        - name: "filePrefix"
+          in: "query"
+          required: false
+          type: "string"
+          default: "lockss_export"
+          description: "The prefix to be used to name the exported file"
+        - name: "maxSize"
+          in: "query"
+          required: false
+          type: "integer"
+          format: "int64"
+          default: -1
+          description: "The maximum size of the exported file"
+        - name: "maxVersions"
+          in: "query"
+          required: false
+          type: "integer"
+          default: -1
+          description: "The maximum number of versions of an artifact to be\
+            \ exported"
+      responses:
+        200:
+          description: The archives with the requested artifacts
+          schema:
+            type: file
+        401:
+          description: Unauthorized request
+        403:
+          description: Client not authorized to retrieve data
+        404:
+          description: Collection not found
+        406:
+          description: Not Acceptable
+        500:
+          description: Internal Server Error
 securityDefinitions:
   basicAuth:
     description: HTTP Basic Authentication. Works over `HTTP` and `HTTPS`
