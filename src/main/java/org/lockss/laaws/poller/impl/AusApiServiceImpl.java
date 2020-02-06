@@ -27,7 +27,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 package org.lockss.laaws.poller.impl;
 
 import static org.lockss.config.RestConfigClient.CONFIG_PART_NAME;
@@ -95,6 +94,8 @@ implements AusApiDelegate {
     this.request = request;
   }
 
+  // TODO: Move the following endpoint handler to some other service. It is here
+  // only for expediency.
   /**
    * GET /aus/{auid}/export: Export the Archival Unit artifacts as a group of
    * archives.
@@ -143,6 +144,7 @@ implements AusApiDelegate {
 	    errorMessage, parsedRequest);
       }
 
+      // Initialize the appropriate type of exporter.
       Exporter exp = null;
 
       switch (fileType) {
@@ -160,8 +162,18 @@ implements AusApiDelegate {
           break;
         case "ZIP":
           exp = Type.ZIP.makeExporter(daemon, au);
+          break;
+        default:
+          String errorMessage = "Invalid fileType '" + fileType
+              + "': It must be one of 'WARC_RESPONSE', 'ARC_RESPONSE', "
+              + "'WARC_RESOURCE', 'ARC_RESOURCE' or 'ZIP'";
+  	log.warn(errorMessage);
+  	log.warn("Parsed request: {}", parsedRequest);
+  	throw new LockssRestServiceException(HttpStatus.BAD_REQUEST,
+  	    errorMessage, parsedRequest);
       }
 
+      // Validate and specify the directory where to create the exported files.
       File exportdir = new File(configExportDir);
       log.trace("exportdir = {}", exportdir);
 
@@ -173,9 +185,14 @@ implements AusApiDelegate {
       }
 
       exp.setDir(exportdir);
+
+      // Specify whether the exported files should be compressed.
       exp.setCompress(isCompress);
+
+      // Specify whether the directory nodes should not be exported.
       exp.setExcludeDirNodes(isExcludeDirNodes);
 
+      // Specify any filename translation.
       switch (xlateFilenames) {
 	case "XLATE_MAC":
 	  exp.setFilenameTranslation(FilenameTranslation.XLATE_MAC);
@@ -185,20 +202,34 @@ implements AusApiDelegate {
           break;
 	case "XLATE_NONE":
 	  exp.setFilenameTranslation(FilenameTranslation.XLATE_NONE);
+          break;
+        default:
+          String errorMessage = "Invalid xlateFilenames '" + xlateFilenames
+              + "': It must be one of 'XLATE_MAC', 'XLATE_WINDOWS' or "
+              + "'XLATE_NONE'";
+  	log.warn(errorMessage);
+  	log.warn("Parsed request: {}", parsedRequest);
+  	throw new LockssRestServiceException(HttpStatus.BAD_REQUEST,
+  	    errorMessage, parsedRequest);
       }
 
+      // Specify the export filenames prefix.
       exp.setPrefix(filePrefix);
 
+      // Specify any limit on the size of the exported files.
       if (maxSize > 0) {
         exp.setMaxSize((long)(maxSize * 1024 * 1024));
       }
 
+      // Specify any limit on the number of artifact versions to be exported.
       if (maxVersions > 0) {
         exp.setMaxVersions(maxVersions);
       }
-      
+
+      // Export the files.
       exp.export();
 
+      // Process the created export files.
       List<File> exportFiles = exp.getExportFiles();
       log.trace("exportFiles = {}", exportFiles);
 

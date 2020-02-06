@@ -470,6 +470,8 @@ paths:
         required: true
         type: string
         description: The key assigned by the PollManager.
+  # TODO: Move the following endpoint to some other service. It is here only for
+  # expediency.
   /aus/{auid}/export:
     get:
       tags:
