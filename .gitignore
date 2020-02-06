@@ -292,6 +292,8 @@ fabric.properties
 /.classpath
 /.project
 /simContent/
+daemon/db/
+daemon/iddb/
 daemon/plugins/
 daemon/tfile/
 daemon/v3state/
@@ -302,3 +304,5 @@ test/run_stf/testcase-*/
 *.pyc
 *.pyo
 /TAGS
+logs/
+daemon/

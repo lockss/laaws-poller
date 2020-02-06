@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Board of Trustees of Leland Stanford Jr. University,
+ * Copyright (c) 2018-2019 Board of Trustees of Leland Stanford Jr. University,
  * all rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -45,7 +45,6 @@ import org.lockss.laaws.poller.model.PollerSummary;
 import org.lockss.laaws.poller.model.RepairPager;
 import org.lockss.laaws.poller.model.UrlPager;
 import org.lockss.laaws.poller.model.VoterPager;
-import org.lockss.laaws.status.model.ApiStatus;
 import org.lockss.plugin.PluginTestUtil;
 import org.lockss.poller.Poll;
 import org.lockss.poller.PollManager;
@@ -120,17 +119,6 @@ public class TestPollsApiServiceImpl extends LockssTestCase4 {
     theDaemon.getHashService().stopService();
     theDaemon.getRouterManager().stopService();
     super.tearDown();
-  }
-
-  @Test
-  public void testGetApiStatus() {
-    ApiStatus result = pollsApiServiceImpl.getApiStatus();
-    Assert.assertFalse(result.isReady());
-    Assert.assertEquals("2.0.0", result.getApiVersion());
-    Assert.assertEquals("laaws-poller", result.getComponentName());
-    Assert.assertEquals("LOCKSS Poller Service REST API", result.getServiceName());
-    Assert.assertEquals("2.0-alpha", result.getLockssVersion());
-    Assert.assertEquals("2.0.0.0", result.getComponentVersion());
   }
 
   @Test

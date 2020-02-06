@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (c) 2018 Board of Trustees of Leland Stanford Jr. University,
+# Copyright (c) 2018-2019 Board of Trustees of Leland Stanford Jr. University,
 # all rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,44 +27,10 @@
 
 # Generates code using Swagger.
 #
-API_DELEGATE=src/generated/java/org/lockss/laaws/poller/api/PollsApiDelegate.java
+# Edit StatusApiDelegate.java.
+STATUS_API_DELEGATE=src/generated/java/org/lockss/laaws/poller/api/StatusApiDelegate.java
+sed -i.backup "s/import org.lockss.laaws.poller.model.ApiStatus/import org.lockss.util.rest.status.ApiStatus/" $STATUS_API_DELEGATE && rm $STATUS_API_DELEGATE.backup
 
-TEMPFILE="$(mktemp)"
-sed -e "s/^}$//" $API_DELEGATE > "$TEMPFILE" && cat <<EOF_API_DELEGATE_EDIT >> "$TEMPFILE" && mv "$TEMPFILE" $API_DELEGATE
-    /**
-     * @see PollsApi#getStatus
-     */
-    default ResponseEntity<org.lockss.laaws.status.model.ApiStatus> getStatus() {
-      if (getObjectMapper().isPresent() && getAcceptHeader().isPresent()) {
-        if (getAcceptHeader().get().contains("application/json")) {
-          try {
-            return new ResponseEntity<>(getObjectMapper().get()
-                .readValue("{  \"ready\" : true,  \"version\" : \"version\"}", org.lockss.laaws.status.model.ApiStatus.class),
-                HttpStatus.NOT_IMPLEMENTED);
-          } catch (IOException e) {
-            log.error("Couldn't serialize response for content type application/json", e);
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-          }
-        }
-      } else {
-        log.warn(
-            "ObjectMapper or HttpServletRequest not configured in default StatusApi interface so no example is generated");
-      }
-      return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
-    }
-}
-EOF_API_DELEGATE_EDIT
-
-# Edit PollsApi.java.
-API=src/generated/java/org/lockss/laaws/poller/api/PollsApi.java
-sed -i".bak" -e "s/public interface PollsApi/public interface PollsApi extends org.lockss.spring.status.SpringLockssBaseApi/" $API
-
-TEMPFILE="$(mktemp)"
-sed -e "s/^}$//" $API > "$TEMPFILE" && cat <<EOF_API_EDIT >> "$TEMPFILE" && mv "$TEMPFILE" $API
-    @Override
-    default ResponseEntity<org.lockss.laaws.status.model.ApiStatus> getStatus() {
-      return getDelegate().getStatus();
-    }
-}
-EOF_API_EDIT
-rm $API.bak
+# Edit StatusApi.java.
+STATUS_API=src/generated/java/org/lockss/laaws/poller/api/StatusApi.java
+sed -i.backup "s/import org.lockss.laaws.poller.model.ApiStatus/import org.lockss.util.rest.status.ApiStatus/" $STATUS_API && rm $STATUS_API.backup
