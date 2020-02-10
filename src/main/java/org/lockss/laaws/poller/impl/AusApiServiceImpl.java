@@ -33,6 +33,7 @@ import static org.lockss.config.RestConfigClient.CONFIG_PART_NAME;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
@@ -41,6 +42,7 @@ import org.lockss.app.LockssDaemon;
 import org.lockss.exporter.Exporter;
 import org.lockss.exporter.Exporter.FilenameTranslation;
 import org.lockss.exporter.Exporter.Type;
+import org.lockss.importer.Importer;
 import org.lockss.laaws.error.LockssRestServiceException;
 import org.lockss.laaws.poller.api.AusApiDelegate;
 import org.lockss.laaws.rs.util.NamedInputStreamResource;
@@ -58,6 +60,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Service for accessing the repository artifacts.
@@ -288,6 +291,52 @@ implements AusApiDelegate {
       String errorMessage =
 	  "Unexpected exception caught while attempting to export files";
 
+      log.warn(errorMessage, e);
+      log.warn("Parsed request: {}", parsedRequest);
+
+      throw new LockssRestServiceException(HttpStatus.INTERNAL_SERVER_ERROR,
+	  errorMessage, e, parsedRequest);
+    }
+  }
+
+  // TODO: Move the following endpoint handler to some other service. It is here
+  // only for expediency.
+  /**
+   * PUT /aus/import: Import a file as an artifact in an Archival Unit.
+   *
+   * @param targetBaseUrlPath A String with the base URL path of the target
+   *                          Archival Unit.
+   * @param targetUrl         A String with the target Archival Unit URL.
+   * @param file           A MultipartFile with the content of the file to be
+   *                          imported.
+   * @param userProperties    A {@code List<String>} with the user-specified
+   *                          properties.
+   * @return a {@code ResponseEntity<Void>}.
+   */
+  @Override
+  public ResponseEntity<Void> putImportFile(String targetBaseUrlPath,
+      String targetUrl, MultipartFile file, List<String> userProperties) {
+    String parsedRequest = String.format("targetBaseUrlPath: %s, "
+      + "targetUrl: %s, content.getName(): %s, content.getSize(): %s, "
+      + "userProperties: %s, requestUrl: %s", targetBaseUrlPath, targetUrl,
+      file.getName(), file.getSize(), userProperties,
+      getFullRequestUrl(request));
+    log.debug2("Parsed request: {}", parsedRequest);
+
+    try {
+      new Importer().importFile(file.getInputStream(), targetBaseUrlPath,
+	  targetUrl, userProperties);
+      return new ResponseEntity<Void>(null, null, HttpStatus.OK);
+    } catch (IllegalArgumentException | IllegalStateException
+	| NoSuchAlgorithmException e) {
+      String errorMessage = "Exception caught trying to import file";
+      log.warn(errorMessage, e);
+      log.warn("Parsed request: {}", parsedRequest);
+
+      throw new LockssRestServiceException(HttpStatus.BAD_REQUEST, errorMessage,
+	  e, parsedRequest);
+    } catch (Exception e) {
+      String errorMessage = "Unexpected exception caught trying to import file";
       log.warn(errorMessage, e);
       log.warn("Parsed request: {}", parsedRequest);
 

@@ -479,6 +479,8 @@ paths:
       summary: "Export artifacts in an Archival Unit"
       description: "Export artifacts in an Archival Unit as a group of archives"
       operationId: getExportFiles
+      consumes:
+        - application/json
       produces:
         - multipart/form-data
       parameters:
@@ -539,14 +541,65 @@ paths:
           description: The archives with the requested artifacts
           schema:
             type: file
+        400:
+          description: Bad Request
         401:
-          description: Unauthorized request
+          description: Unauthorized
         403:
-          description: Client not authorized to retrieve data
+          description: Forbidden
         404:
-          description: Collection not found
+          description: Not found
         406:
           description: Not Acceptable
+        500:
+          description: Internal Server Error
+  # TODO: Move the following endpoint to some other service. It is here only for
+  # expediency.
+  /aus/import:
+    put:
+      tags:
+        - import
+      summary: "Import a file into an Archival Unit"
+      description: "Import a file as an artifact in an Archival Unit"
+      operationId: putImportFile
+      consumes:
+        - multipart/form-data
+      produces:
+        - application/json
+      parameters:
+        - name: "targetBaseUrlPath"
+          in: "formData"
+          required: true
+          type: "string"
+          description: "The base URL path of the target AU"
+        - name: "targetUrl"
+          in: "formData"
+          required: true
+          type: "string"
+          description: "The target AU URL"
+        - name: "userProperties"
+          in: "formData"
+          required: false
+          type: array
+          items:
+            type: string
+          description: "The user-specified properties"
+        - name: "file"
+          in: "formData"
+          required: true
+          type: "file"
+          description: "The content of the file to be imported"
+      responses:
+        200:
+          description: OK
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        415:
+          description: Unsupported Media Type
         500:
           description: Internal Server Error
 securityDefinitions:
