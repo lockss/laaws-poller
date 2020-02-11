@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (c) 2018-2019 Board of Trustees of Leland Stanford Jr. University,
+# Copyright (c) 2018-2020 Board of Trustees of Leland Stanford Jr. University,
 # all rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -34,3 +34,19 @@ sed -i.backup "s/import org.lockss.laaws.poller.model.ApiStatus/import org.locks
 # Edit StatusApi.java.
 STATUS_API=src/generated/java/org/lockss/laaws/poller/api/StatusApi.java
 sed -i.backup "s/import org.lockss.laaws.poller.model.ApiStatus/import org.lockss.util.rest.status.ApiStatus/" $STATUS_API && rm $STATUS_API.backup
+
+# Edit PollsApiDelegate.java.
+POLLS_API_DELEGATE=src/generated/java/org/lockss/laaws/poller/api/PollsApiDelegate.java
+sed -i.backup "s/import org.lockss.laaws.poller.model.PollDesc/import org.lockss.util.rest.poller.PollDesc/" $POLLS_API_DELEGATE && rm $POLLS_API_DELEGATE.backup
+
+# Edit PollsApi.java.
+POLLS_API=src/generated/java/org/lockss/laaws/poller/api/PollsApi.java
+sed -i.backup "s/import org.lockss.laaws.poller.model.PollDesc/import org.lockss.util.rest.poller.PollDesc/" $POLLS_API && rm $POLLS_API.backup
+
+# Edit PollerDetail.java.
+POLLER_DETAIL=src/generated/java/org/lockss/laaws/poller/model/PollerDetail.java
+sed -i.backup "s/import org.lockss.laaws.poller.model.PollDesc/import org.lockss.util.rest.poller.PollDesc/" $POLLER_DETAIL && rm $POLLER_DETAIL.backup
+
+# Edit VoterDetail.java.
+VOTER_DETAIL=src/generated/java/org/lockss/laaws/poller/model/VoterDetail.java
+sed -i.backup "s/import org.lockss.laaws.poller.model.PollDesc/import org.lockss.util.rest.poller.PollDesc/" $VOTER_DETAIL && rm $VOTER_DETAIL.backup

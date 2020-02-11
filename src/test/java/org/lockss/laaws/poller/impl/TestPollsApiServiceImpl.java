@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2019 Board of Trustees of Leland Stanford Jr. University,
+ * Copyright (c) 2018-2020 Board of Trustees of Leland Stanford Jr. University,
  * all rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -39,7 +39,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.lockss.config.Tdb;
-import org.lockss.laaws.poller.model.PollDesc;
 import org.lockss.laaws.poller.model.PollerPager;
 import org.lockss.laaws.poller.model.PollerSummary;
 import org.lockss.laaws.poller.model.RepairPager;
@@ -64,6 +63,7 @@ import org.lockss.test.MockPlugin;
 import org.lockss.test.MockPollSpec;
 import org.lockss.util.ByteArray;
 import org.lockss.util.TimeBase;
+import org.lockss.util.rest.poller.PollDesc;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;

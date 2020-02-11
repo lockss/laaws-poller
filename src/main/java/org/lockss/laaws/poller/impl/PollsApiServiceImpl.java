@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2019 Board of Trustees of Leland Stanford Jr. University,
+ * Copyright (c) 2018-2020 Board of Trustees of Leland Stanford Jr. University,
  * all rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -32,7 +32,6 @@ import org.lockss.app.LockssDaemon;
 import org.lockss.laaws.poller.api.PollsApi;
 import org.lockss.laaws.poller.api.PollsApiDelegate;
 import org.lockss.laaws.poller.model.*;
-import org.lockss.laaws.poller.model.PollDesc.VariantEnum;
 import org.lockss.laaws.poller.model.RepairData.ResultEnum;
 import org.lockss.plugin.ArchivalUnit;
 import org.lockss.plugin.CachedUrlSet;
@@ -51,6 +50,9 @@ import org.lockss.protocol.psm.PsmState;
 import org.lockss.util.ByteArray;
 import org.lockss.util.StringUtil;
 import org.lockss.util.UrlUtil;
+import org.lockss.util.rest.poller.CachedUriSetSpec;
+import org.lockss.util.rest.poller.PollDesc;
+import org.lockss.util.rest.poller.PollDesc.VariantEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
