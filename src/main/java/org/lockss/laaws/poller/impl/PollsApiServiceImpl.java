@@ -28,6 +28,9 @@ package org.lockss.laaws.poller.impl;
 import java.net.MalformedURLException;
 import java.util.*;
 import javax.servlet.http.HttpServletRequest;
+import org.josql.Query;
+import org.josql.QueryExecutionException;
+import org.josql.QueryResults;
 import org.lockss.app.LockssDaemon;
 import org.lockss.laaws.poller.api.PollsApi;
 import org.lockss.laaws.poller.api.PollsApiDelegate;
@@ -50,9 +53,11 @@ import org.lockss.protocol.psm.PsmState;
 import org.lockss.util.ByteArray;
 import org.lockss.util.StringUtil;
 import org.lockss.util.UrlUtil;
+import org.lockss.util.josql.JosqlUtil;
 import org.lockss.util.rest.poller.CachedUriSetSpec;
 import org.lockss.util.rest.poller.PollDesc;
 import org.lockss.util.rest.poller.PollDesc.VariantEnum;
+import org.lockss.ws.entities.PollWsResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -490,6 +495,61 @@ public class PollsApiServiceImpl implements PollsApiDelegate {
       }
     }
     return new ResponseEntity<>(pager, HttpStatus.OK);
+  }
+
+  /**
+   * Provides the selected properties of selected polls.
+   * 
+   * @param pollQuery A String with the
+   *                    <a href="package-summary.html#SQL-Like_Query">SQL-like
+   *                    query</a> used to specify what properties to retrieve
+   *                    from which polls.
+   * @return a {@code ResponseEntity<List<PollWsResult>>} with the results.
+   */
+  @Override
+  public ResponseEntity getPolls(String pollQuery) {
+    log.debug("pollQuery = {}", pollQuery);
+
+    PollHelper pollHelper = new PollHelper();
+    List<PollWsResult> results = null;
+
+    try {
+      // Create the full query.
+      String fullQuery = JosqlUtil.createFullQuery(pollQuery,
+	  PollHelper.SOURCE_FQCN, PollHelper.PROPERTY_NAMES,
+	  PollHelper.RESULT_FQCN);
+      log.trace("fullQuery = {}", fullQuery);
+
+      // Create a new JoSQL query.
+      Query q = new Query();
+
+      try {
+	// Parse the SQL-like query.
+	q.parse(fullQuery);
+
+	// Execute the query.
+	QueryResults qr = q.execute(pollHelper.createUniverse());
+
+	// Get the query results.
+	results = (List<PollWsResult>)qr.getResults();
+	log.trace("results.size() = {}" + results.size());
+	log.trace("results = {}", pollHelper.nonDefaultToString(results));
+	return new ResponseEntity<List<PollWsResult>>(results,
+	    HttpStatus.OK);
+      } catch (QueryExecutionException qee) {
+	String message =
+	    "Cannot getTdbTitles() for pollQuery = '" + pollQuery + "'";
+	log.error(message, qee);
+	return new ResponseEntity<String>(message,
+	    HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+    } catch (Exception e) {
+      String message =
+	  "Cannot getTdbTitles() for pollQuery = '" + pollQuery + "'";
+      log.error(message, e);
+      return new ResponseEntity<String>(message,
+	  HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   /* ------------------ DTO Mappings ---------------------- */

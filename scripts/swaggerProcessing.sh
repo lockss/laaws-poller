@@ -38,10 +38,12 @@ sed -i.backup "s/import org.lockss.laaws.poller.model.ApiStatus/import org.locks
 # Edit PollsApiDelegate.java.
 POLLS_API_DELEGATE=src/generated/java/org/lockss/laaws/poller/api/PollsApiDelegate.java
 sed -i.backup "s/import org.lockss.laaws.poller.model.PollDesc/import org.lockss.util.rest.poller.PollDesc/" $POLLS_API_DELEGATE && rm $POLLS_API_DELEGATE.backup
+sed -i.backup "s/import org.lockss.laaws.poller.model.PollWsResult/import org.lockss.ws.entities.PollWsResult/" $POLLS_API_DELEGATE && rm $POLLS_API_DELEGATE.backup
 
 # Edit PollsApi.java.
 POLLS_API=src/generated/java/org/lockss/laaws/poller/api/PollsApi.java
 sed -i.backup "s/import org.lockss.laaws.poller.model.PollDesc/import org.lockss.util.rest.poller.PollDesc/" $POLLS_API && rm $POLLS_API.backup
+sed -i.backup "s/import org.lockss.laaws.poller.model.PollWsResult/import org.lockss.ws.entities.PollWsResult/" $POLLS_API && rm $POLLS_API.backup
 
 # Edit PollerDetail.java.
 POLLER_DETAIL=src/generated/java/org/lockss/laaws/poller/model/PollerDetail.java
@@ -50,3 +52,19 @@ sed -i.backup "s/import org.lockss.laaws.poller.model.PollDesc/import org.lockss
 # Edit VoterDetail.java.
 VOTER_DETAIL=src/generated/java/org/lockss/laaws/poller/model/VoterDetail.java
 sed -i.backup "s/import org.lockss.laaws.poller.model.PollDesc/import org.lockss.util.rest.poller.PollDesc/" $VOTER_DETAIL && rm $VOTER_DETAIL.backup
+
+# Edit PeersApiDelegate.java.
+PEERS_API_DELEGATE=src/generated/java/org/lockss/laaws/poller/api/PeersApiDelegate.java
+sed -i.backup "s/import org.lockss.laaws.poller.model.PeerWsResult/import org.lockss.ws.entities.PeerWsResult/" $PEERS_API_DELEGATE && rm $PEERS_API_DELEGATE.backup
+
+# Edit PeersApi.java.
+PEERS_API=src/generated/java/org/lockss/laaws/poller/api/PeersApi.java
+sed -i.backup "s/import org.lockss.laaws.poller.model.PeerWsResult/import org.lockss.ws.entities.PeerWsResult/" $PEERS_API && rm $PEERS_API.backup
+
+# Edit VotesApiDelegate.java.
+VOTES_API_DELEGATE=src/generated/java/org/lockss/laaws/poller/api/VotesApiDelegate.java
+sed -i.backup "s/import org.lockss.laaws.poller.model.VoteWsResult/import org.lockss.ws.entities.VoteWsResult/" $VOTES_API_DELEGATE && rm $VOTES_API_DELEGATE.backup
+
+# Edit VotesApi.java.
+VOTES_API=src/generated/java/org/lockss/laaws/poller/api/VotesApi.java
+sed -i.backup "s/import org.lockss.laaws.poller.model.VoteWsResult/import org.lockss.ws.entities.VoteWsResult/" $VOTES_API && rm $VOTES_API.backup

@@ -77,6 +77,33 @@ paths:
           description: The descriptor (au) can not be found.
         '500':
           description: Internal Server Error
+    get:
+      tags:
+        - "service"
+      summary: Query for poll properties
+      description: Query for polls that meet a set of specified conditions
+      operationId: getPolls
+      produces:
+        - application/json
+      parameters:
+        - name: 'pollQuery'
+          in: query
+          description: The query that specifies the polls to be returned
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Information about the requested polls
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/pollWsResult'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
   '/polls/{psId}':
     get:
       tags:
@@ -470,6 +497,62 @@ paths:
         required: true
         type: string
         description: The key assigned by the PollManager.
+  '/peers':
+    get:
+      tags:
+        - "service"
+      summary: Query for peer properties
+      description: Query for peers that meet a set of specified conditions
+      operationId: getPeers
+      produces:
+        - application/json
+      parameters:
+        - name: 'peerQuery'
+          in: query
+          description: The query that specifies the peers to be returned
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Information about the requested peers
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/peerWsResult'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+  '/votes':
+    get:
+      tags:
+        - "service"
+      summary: Query for vote properties
+      description: Query for votes that meet a set of specified conditions
+      operationId: getVotes
+      produces:
+        - application/json
+      parameters:
+        - name: 'voteQuery'
+          in: query
+          description: The query that specifies the votes to be returned
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Information about the requested votes
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/voteWsResult'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
   # TODO: Move the following endpoint to some other service. It is here only for
   # expediency.
   /aus/{auid}/export:
@@ -1183,6 +1266,41 @@ definitions:
         type: string
         description: A description of this link
         example: pollerOnly
+  pollWsResult:
+    type: "object"
+    required:
+      - "auId"
+      - "auName"
+    properties:
+      auId:
+        type: "string"
+        description: "The identifier of the Archival Unit"
+      auName:
+        type: "string"
+        description: "The name of the Archival Unit"
+    description: "The properties of a poll"
+  peerWsResult:
+    type: "object"
+    required:
+      - "peerId"
+    properties:
+      peerId:
+        type: "string"
+        description: "The identifier of the Archival Unit"
+    description: "The properties of a peer"
+  voteWsResult:
+    type: "object"
+    required:
+      - "auId"
+      - "auName"
+    properties:
+      auId:
+        type: "string"
+        description: "The identifier of the Archival Unit"
+      auName:
+        type: "string"
+        description: "The name of the Archival Unit"
+    description: "The properties of a vote"
   apiStatus:
     type: "object"
     required:

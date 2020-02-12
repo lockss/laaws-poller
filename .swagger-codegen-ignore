@@ -29,4 +29,7 @@ src/generated/java/org/lockss/laaws/*/api/ApiException.java
 src/generated/java/org/lockss/laaws/*/api/NotFoundException.java
 src/generated/java/org/lockss/laaws/*/model/ApiStatus.java
 src/generated/java/org/lockss/laaws/*/model/CachedUriSetSpec.java
+src/generated/java/org/lockss/laaws/*/model/PeerWsResult.java
 src/generated/java/org/lockss/laaws/*/model/PollDesc.java
+src/generated/java/org/lockss/laaws/*/model/PollWsResult.java
+src/generated/java/org/lockss/laaws/*/model/VoteWsResult.java
