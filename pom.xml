@@ -61,9 +61,6 @@ POSSIBILITY OF SUCH DAMAGE.
     <build.docker.dockerBuild.restPort>24630</build.docker.dockerBuild.restPort>
     <build.docker.dockerBuild.uiPort>24631</build.docker.dockerBuild.uiPort>
 
-    <!-- Needs lockss-legacy repository for lockss-plugins -->
-    <repository.enabled.lockss-legacy>true</repository.enabled.lockss-legacy>
-
     <skipStf>true</skipStf><!-- alias -->
     <build.java.runStf.skip>${skipStf}</build.java.runStf.skip><!-- property -->
 
@@ -93,13 +90,6 @@ POSSIBILITY OF SUCH DAMAGE.
       <version>${version.lockss.lockss-core-bundle}</version>
       <type>pom</type>
       <scope>test</scope>
-    </dependency>
-
-    <!-- LOCKSS daemon support -->
-    <dependency>
-      <groupId>org.lockss</groupId>
-      <artifactId>lockss-plugins</artifactId>
-      <version>${version.lockss.lockss-plugins}</version>
     </dependency>
   </dependencies>
 
