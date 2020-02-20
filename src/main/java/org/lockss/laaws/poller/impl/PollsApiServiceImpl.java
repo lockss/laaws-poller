@@ -538,14 +538,13 @@ public class PollsApiServiceImpl implements PollsApiDelegate {
 	    HttpStatus.OK);
       } catch (QueryExecutionException qee) {
 	String message =
-	    "Cannot getTdbTitles() for pollQuery = '" + pollQuery + "'";
+	    "Cannot getPolls() for pollQuery = '" + pollQuery + "'";
 	log.error(message, qee);
 	return new ResponseEntity<String>(message,
 	    HttpStatus.INTERNAL_SERVER_ERROR);
       }
     } catch (Exception e) {
-      String message =
-	  "Cannot getTdbTitles() for pollQuery = '" + pollQuery + "'";
+      String message = "Cannot getPolls() for pollQuery = '" + pollQuery + "'";
       log.error(message, e);
       return new ResponseEntity<String>(message,
 	  HttpStatus.INTERNAL_SERVER_ERROR);

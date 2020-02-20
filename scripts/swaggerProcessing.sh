@@ -68,3 +68,13 @@ sed -i.backup "s/import org.lockss.laaws.poller.model.VoteWsResult/import org.lo
 # Edit VotesApi.java.
 VOTES_API=src/generated/java/org/lockss/laaws/poller/api/VotesApi.java
 sed -i.backup "s/import org.lockss.laaws.poller.model.VoteWsResult/import org.lockss.ws.entities.VoteWsResult/" $VOTES_API && rm $VOTES_API.backup
+
+# Edit HashesApiDelegate.java.
+HASHES_API_DELEGATE=src/generated/java/org/lockss/laaws/poller/api/HashesApiDelegate.java
+sed -i.backup "s/import org.lockss.laaws.poller.model.HasherWsAsynchronousResult/import org.lockss.ws.entities.HasherWsAsynchronousResult/" $HASHES_API_DELEGATE && rm $HASHES_API_DELEGATE.backup
+sed -i.backup "s/import org.lockss.laaws.poller.model.HasherWsParams/import org.lockss.ws.entities.HasherWsParams/" $HASHES_API_DELEGATE && rm $HASHES_API_DELEGATE.backup
+
+# Edit HashesApi.java.
+HASHES_API=src/generated/java/org/lockss/laaws/poller/api/HashesApi.java
+sed -i.backup "s/import org.lockss.laaws.poller.model.HasherWsAsynchronousResult/import org.lockss.ws.entities.HasherWsAsynchronousResult/" $HASHES_API && rm $HASHES_API.backup
+sed -i.backup "s/import org.lockss.laaws.poller.model.HasherWsParams/import org.lockss.ws.entities.HasherWsParams/" $HASHES_API && rm $HASHES_API.backup

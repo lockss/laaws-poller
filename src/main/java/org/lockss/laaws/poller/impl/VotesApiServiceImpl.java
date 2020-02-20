@@ -93,14 +93,13 @@ implements VotesApiDelegate {
 	    HttpStatus.OK);
       } catch (QueryExecutionException qee) {
 	String message =
-	    "Cannot getTdbTitles() for voteQuery = '" + voteQuery + "'";
+	    "Cannot getVotes() for voteQuery = '" + voteQuery + "'";
 	log.error(message, qee);
 	return new ResponseEntity<String>(message,
 	    HttpStatus.INTERNAL_SERVER_ERROR);
       }
     } catch (Exception e) {
-      String message =
-	  "Cannot getTdbTitles() for voteQuery = '" + voteQuery + "'";
+      String message = "Cannot getVotes() for voteQuery = '" + voteQuery + "'";
       log.error(message, e);
       return new ResponseEntity<String>(message,
 	  HttpStatus.INTERNAL_SERVER_ERROR);

@@ -93,14 +93,13 @@ implements PeersApiDelegate {
 	    HttpStatus.OK);
       } catch (QueryExecutionException qee) {
 	String message =
-	    "Cannot getTdbTitles() for peerQuery = '" + peerQuery + "'";
+	    "Cannot getPeers() for peerQuery = '" + peerQuery + "'";
 	log.error(message, qee);
 	return new ResponseEntity<String>(message,
 	    HttpStatus.INTERNAL_SERVER_ERROR);
       }
     } catch (Exception e) {
-      String message =
-	  "Cannot getTdbTitles() for peerQuery = '" + peerQuery + "'";
+      String message = "Cannot getPeers() for peerQuery = '" + peerQuery + "'";
       log.error(message, e);
       return new ResponseEntity<String>(message,
 	  HttpStatus.INTERNAL_SERVER_ERROR);
