@@ -34,4 +34,6 @@ src/generated/java/org/lockss/laaws/*/model/HasherWsAsynchronousResult.java
 src/generated/java/org/lockss/laaws/*/model/PeerWsResult.java
 src/generated/java/org/lockss/laaws/*/model/PollDesc.java
 src/generated/java/org/lockss/laaws/*/model/PollWsResult.java
+src/generated/java/org/lockss/laaws/*/model/RepositorySpaceWsResult.java
+src/generated/java/org/lockss/laaws/*/model/RepositoryWsResult.java
 src/generated/java/org/lockss/laaws/*/model/VoteWsResult.java
