@@ -28,17 +28,12 @@
 
 package org.lockss.laaws.poller.impl;
 
-//import java.io.File;
-//import java.io.FileInputStream;
-import java.io.IOException;
-//import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import org.lockss.app.LockssDaemon;
 import org.lockss.config.ConfigManager;
 import org.lockss.config.Configuration;
-//import org.lockss.config.CurrentConfig;
 import org.lockss.plugin.ArchivalUnit;
 import org.lockss.plugin.AuUtil;
 import org.lockss.plugin.Plugin;
@@ -62,8 +57,6 @@ public class RepositoryWsSource extends RepositoryWsResult {
   private boolean pluginNamePopulated;
   private boolean paramsPopulated;
 
-  //private File repositoryRootDirectory;
-  //private String repositorySpaceRootName;
   private String collectionId;
   private String auId;
   private ArchivalUnit au;
@@ -78,27 +71,12 @@ public class RepositoryWsSource extends RepositoryWsResult {
    * Constructor.
    * 
    * @param repositorySpaceId A String with the name of the store space.
-   * @param collectionId A String with the identifier of a collection.
-   * @param auId A String with the identifier of an Archival Unit.
+   * @param collectionId      A String with the identifier of a collection.
+   * @param auId              A String with the identifier of an Archival Unit.
    */
-//public RepositoryWsSource(File repositoryRootDirectory,
-//    String repositorySpaceId, String repositorySpaceRootName) {
   public RepositoryWsSource(String repositorySpaceId, String collectionId,
       String auId) {
     setRepositorySpaceId(repositorySpaceId);
-//  this.repositoryRootDirectory = repositoryRootDirectory;
-//  this.repositorySpaceRootName = repositorySpaceRootName;
-//
-//  File auIdFile = new File(repositoryRootDirectory,
-//	LockssRepositoryImpl.AU_ID_FILE);
-//
-//  if (auIdFile.exists()) {
-//    Properties props = propsFromFile(auIdFile);
-//
-//    if (props != null) {
-//	auId = props.getProperty("au.id");
-//    }
-//  }
     this.collectionId = collectionId;
     this.auId = auId;
   }
@@ -111,7 +89,6 @@ public class RepositoryWsSource extends RepositoryWsResult {
   @Override
   public String getDirectoryName() {
     if (!directoryNamePopulated) {
-//      setDirectoryName(repositoryRootDirectory.toString());
       setDirectoryName(NOT_APPLICABLE);
       directoryNamePopulated = true;
     }
@@ -208,29 +185,7 @@ public class RepositoryWsSource extends RepositoryWsResult {
   @Override
   public Long getDiskUsage() {
     if (!diskUsagePopulated) {
-      if (auId != null) {
-//	long du;
-//
-//	if (getArchivalUnit() != null) {
-//	  du = AuUtil.getAuDiskUsage(au, true);
-//	} else {
-//	  du = getTheDaemon().getRepositoryManager()
-//	      .getRepoDiskUsage(getDirectoryName(), true);
-//	}
-
-	try {
-	  long du = LockssDaemon.getLockssDaemon().getRepositoryManager()
-	      .getV2Repository().getRepository().auSize(collectionId, auId);
-	  if (du != -1) {
-	    setDiskUsage(Long.valueOf(du));
-	  }
-	} catch (IOException ioe) {
-	  log.error("Exception caught getting AU size for collectionId '"
-	      + collectionId + "', auId '" + auId + "'", ioe);
-
-	}
-      }
-
+      // TODO: Implement it once the repository provides the information.
       diskUsagePopulated = true;
     }
 
@@ -286,27 +241,6 @@ public class RepositoryWsSource extends RepositoryWsResult {
     return super.getParams();
   }
 
-//  private Properties propsFromFile(File file) {
-//    InputStream is = null;
-//    Properties props = null;
-//
-//    try {
-//      is = new FileInputStream(file);
-//      props = new Properties();
-//      props.load(is);
-//    } catch (IOException e) {
-//      log.warning("Error loading au id from file " + file);
-//    } finally {
-//      try {
-//	is.close();
-//      } catch (IOException e) {
-//	log.warning("Error closing Inputstream for file " + file);
-//      }
-//    }
-//
-//    return props;
-//  }
-
   private Properties getAuIdProps() {
     if (!auIdPropsPopulated) {
       String auKey = null;
@@ -315,8 +249,6 @@ public class RepositoryWsSource extends RepositoryWsResult {
 	auKey = PluginManager.auKeyFromAuId(auId);
 	auIdProps = PropUtil.canonicalEncodedStringToProps(auKey);
       } catch (Exception e) {
-//	log.warning("Couldn't decode AUKey in " + repositoryRootDirectory
-//	    + ": " + auKey, e);
 	log.warning("Couldn't decode AUKey: " + auKey, e);
       }
 
@@ -360,19 +292,6 @@ public class RepositoryWsSource extends RepositoryWsResult {
   private ArchivalUnit getArchivalUnit() {
     if (!auPopulated) {
       au = getPluginManager().getAuFromId(auId);
-
-//      if (au != null) {
-//	String repoSpec =
-//	    au.getConfiguration().get(PluginManager.AU_PARAM_REPOSITORY);
-//	String repoRoot = (repoSpec == null)
-//	    ? CurrentConfig.getParam(LockssRepositoryImpl.PARAM_CACHE_LOCATION)
-//	    : LockssRepositoryImpl.getLocalRepositoryPath(repoSpec);
-//
-//	if (!LockssRepositoryImpl.isDirInRepository(repositorySpaceRootName,
-//	    repoRoot)) {
-//	  au = null;
-//	}
-//      }
 
       auPopulated = true;
     }

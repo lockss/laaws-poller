@@ -28,7 +28,6 @@
 
 package org.lockss.laaws.poller.impl;
 
-//import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,7 +36,7 @@ import java.util.List;
 import java.util.Set;
 import org.lockss.app.LockssDaemon;
 import org.lockss.laaws.rs.core.LockssRepository;
-//import org.lockss.remote.RemoteApi;
+import org.lockss.repository.RepoSpec;
 import org.lockss.util.Logger;
 import org.lockss.ws.entities.RepositoryWsResult;
 
@@ -86,7 +85,6 @@ public class RepositoryHelper {
   };
 
   private static Logger log = Logger.getLogger();
-  private LockssRepository repo;
 
   /**
    * Provides the universe of repository-related objects used as the source for
@@ -100,82 +98,28 @@ public class RepositoryHelper {
     // Initialize the universe.
     List<RepositoryWsSource> universe = new ArrayList<RepositoryWsSource>();
 
-//  // Get the remote API manager.
-//  RemoteApi remoteApi =
-//	(RemoteApi)LockssDaemon.getManagerByKeyStatic(LockssDaemon.REMOTE_API);
-//
-//  // Get all the repository space names.
-//  List<String> allRepositorySpacesNames =
-//	(List<String>)remoteApi.getRepositoryList();
-//  if (log.isDebug3()) log.debug3(DEBUG_HEADER
-//	+ "allRepositorySpacesNames.size() = "
-//	+ allRepositorySpacesNames.size());
-//
-//  // Loop through all the repository space names.
-//  for (String repositorySpaceName : allRepositorySpacesNames) {
-//    // Get the name of the path to this repository space.
-//    String pathName =
-//	  LockssRepositoryImpl.getLocalRepositoryPath(repositorySpaceName);
-//    if (log.isDebug3()) log.debug3(DEBUG_HEADER + "pathName = " + pathName);
-//
-//    // Get the name of the root directory of this repository space.
-//    StringBuilder buffer = new StringBuilder(pathName);
-//
-//    if (!pathName.endsWith(File.separator)) {
-//	buffer.append(File.separator);
-//    }
-//
-//    buffer.append(LockssRepositoryImpl.CACHE_ROOT_NAME); // "cache".
-//    buffer.append(File.separator);
-//
-//    String repositorySpaceRootName = buffer.toString();
-//    if (log.isDebug3()) log.debug3(DEBUG_HEADER + "repositorySpaceRootName = "
-//	  + repositorySpaceRootName);
-//
-//    // Find all the objects hanging from the root directory of this repository
-//    // space.
-//    File[] repositorySpaceFiles =
-//	  new File(repositorySpaceRootName).listFiles();
-//
-//    if (repositorySpaceFiles != null) {
-//	if (log.isDebug3()) log.debug3(DEBUG_HEADER
-//	    + "repositorySpaceFiles.length = " + repositorySpaceFiles.length);
-//
-//	// Loop through all the objects hanging from the root directory of this
-//	// repository space.
-//	for (File repositoryRootDirectory : repositorySpaceFiles) {
-//	  // Check whether it is a subdirectory.
-//	  if (repositoryRootDirectory.isDirectory()) {
-//	    // Yes: Add the object initialized with this repository data to the
-//	    // universe of objects.
-//	    universe.add(new RepositoryWsSource(repositoryRootDirectory,
-//		repositorySpaceName, repositorySpaceRootName));
-//	  }
-//	}
-//    }
-//  }
+    // Get the repository specification.
+    RepoSpec repoSpec =
+	LockssDaemon.getLockssDaemon().getRepositoryManager().getV2Repository();
 
-    LockssRepository repo = LockssDaemon.getLockssDaemon()
-	.getRepositoryManager().getV2Repository().getRepository();
+    String repositorySpaceId = repoSpec.getSpec();
+    if (log.isDebug3())
+      log.debug3(DEBUG_HEADER + "repositorySpaceId = " + repositorySpaceId);
 
-    String repositorySpaceId = null;
+    // Get the repository.
+    LockssRepository repo = repoSpec.getRepository();
 
     try {
-      repositorySpaceId = repo.getRepositoryInfo().getStoreInfo().getName();
-      if (log.isDebug3())
-	log.debug3(DEBUG_HEADER + "repositorySpaceId = " + repositorySpaceId);
-    } catch (IOException ioe) {
-      log.error("Exception caught getting store name", ioe);
-    }
-
-    try {
+      // Loop through all the collections in the repository.
       for (String collectionId : repo.getCollectionIds()) {
 	if (log.isDebug3())
 	  log.debug3(DEBUG_HEADER + "collectionId = " + collectionId);
 
 	try {
+	  // Loop through all the AU identifiers in the collection.
 	  for (String auId : repo.getAuIds(collectionId)) {
 	    if (log.isDebug3()) log.debug3(DEBUG_HEADER + "auId = " + auId);
+	    // Add this AU to the universe.
 	    universe.add(new RepositoryWsSource(repositorySpaceId, collectionId,
 		auId));
 	  }

@@ -28,27 +28,19 @@
 
 package org.lockss.laaws.poller.impl;
 
-//import java.io.File;
-//import java.io.FileInputStream;
 import java.io.IOException;
-//import java.io.InputStream;
-//import java.util.Collection;
-//import java.util.Iterator;
 import java.util.Properties;
-//import java.util.TreeSet;
 import org.lockss.app.LockssDaemon;
 import org.lockss.config.ConfigManager;
 import org.lockss.config.Configuration;
 import org.lockss.db.DbException;
 import org.lockss.laaws.rs.core.LockssRepository;
-//import org.lockss.config.CurrentConfig;
 import org.lockss.plugin.ArchivalUnit;
 import org.lockss.plugin.AuUtil;
 import org.lockss.plugin.Plugin;
 import org.lockss.plugin.PluginManager;
 import org.lockss.util.Logger;
 import org.lockss.util.PropUtil;
-//import org.lockss.util.StringUtil;
 import org.lockss.util.os.PlatformUtil;
 import org.lockss.ws.entities.RepositorySpaceWsResult;
 
@@ -75,6 +67,12 @@ public class RepositorySpaceWsSource extends RepositorySpaceWsResult {
   private int allDeletedCount = -1;
   private int allOrphanedCount = -1;
 
+  /**
+   * Constructor.
+   * 
+   * @param repositorySpaceId A String with the name of the store space.
+   * @param puDf              A PlatformUtil.DF with disk space information.
+   */
   public RepositorySpaceWsSource(String repositorySpaceId, PlatformUtil.DF puDf)
   {
     setRepositorySpaceId(repositorySpaceId);
@@ -184,145 +182,103 @@ public class RepositorySpaceWsSource extends RepositorySpaceWsResult {
 
   private void populateCounts() {
     final String DEBUG_HEADER = "populateCounts(): ";
-//    TreeSet<String> roots = new TreeSet<String>();
-//    Collection<String> specs = StringUtil.breakAt(getRepositorySpaceId(), ";");
-//
-//    for (String repoSpec : specs) {
-//      String path = LockssRepositoryImpl.getLocalRepositoryPath(repoSpec);
-//
-//      if (path != null) {
-//	roots.add(path);
-//      }
-//    }
-
     allActiveCount = 0;
     allInactiveCount = 0;
     allDeletedCount = 0;
     allOrphanedCount = 0;
 
-//    for (Iterator<String> iter = roots.iterator(); iter.hasNext(); ) {
-//      String root = iter.next();
-//	
-//      StringBuilder buffer = new StringBuilder(root);
-//
-//      if (!root.endsWith(File.separator)) {
-//	buffer.append(File.separator);
-//      }
-//
-//      buffer.append(LockssRepositoryImpl.CACHE_ROOT_NAME);
-//      buffer.append(File.separator);
-//      String extendedCacheLocation = buffer.toString();
-//
-//      File dir = new File(extendedCacheLocation);
-//      File[] subs = dir.listFiles();
-//
-//      if (subs != null) {
-//	for (int ix = 0; ix < subs.length; ix++) {
-//	  File sub = subs[ix];
-//
-//	  if (sub.isDirectory()) {
-//	    String auid = null;
-//	    File auidfile = new File(sub, LockssRepositoryImpl.AU_ID_FILE);
-//
-//	    if (auidfile.exists()) {
-//	      Properties props = propsFromFile(auidfile);
-//
-//	      if (props != null) {
-//		auid = props.getProperty("au.id");
-//	      }
-//	    }
-
+    // Get the repository.
     LockssRepository repo = LockssDaemon.getLockssDaemon()
 	.getRepositoryManager().getV2Repository().getRepository();
 
+    // Get the plugin manager.
+    PluginManager pluginMgr = (PluginManager)LockssDaemon
+	.getManagerByKeyStatic(LockssDaemon.PLUGIN_MANAGER);
+
     try {
+      // Loop through all the collections in the repository.
       for (String collectionId : repo.getCollectionIds()) {
 	if (log.isDebug3())
 	  log.debug3(DEBUG_HEADER + "collectionId = " + collectionId);
 
 	try {
+	  // Loop through all the AU identifiers in the collection.
 	  for (String auid : repo.getAuIds(collectionId)) {
 	    if (log.isDebug3()) log.debug3(DEBUG_HEADER + "auid = " + auid);
-//	    if (auid != null) {
-	      PluginManager pluginMgr = (PluginManager)LockssDaemon
-		  .getManagerByKeyStatic(LockssDaemon.PLUGIN_MANAGER);
-	      ArchivalUnit au = pluginMgr.getAuFromId(auid);
 
-//	      if (au != null) {
-//		String repoSpec = au.getConfiguration()
-//		    .get(PluginManager.AU_PARAM_REPOSITORY);
-//
-//		String repoRoot = (repoSpec == null) ? CurrentConfig
-//		    .getParam(LockssRepositoryImpl.PARAM_CACHE_LOCATION)
-//		    : LockssRepositoryImpl.getLocalRepositoryPath(repoSpec);
-//
-//		if (!LockssRepositoryImpl
-//		    .isDirInRepository(extendedCacheLocation, repoRoot)) {
-//		  au = null;
-//		}
-//	      }
+	    // Get the archival unit.
+	    ArchivalUnit au = pluginMgr.getAuFromId(auid);
 
-	      if (au != null) {
-		allActiveCount++;
+	    // Check whether the Archival Unit exits.
+	    if (au != null) {
+	      // Yes: Count it as active.
+	      allActiveCount++;
+	    } else {
+	      // No: Get the Archival Unit properties.
+	      String auKey = PluginManager.auKeyFromAuId(auid);
+	      Properties auidProps = null;
+
+	      try {
+		auidProps = PropUtil.canonicalEncodedStringToProps(auKey);
+	      } catch (Exception e) {
+		log.warning("Couldn't decode AUKey : " + auKey, e);
+	      }
+
+	      // Get the Archival Unit plugin.
+	      String pluginKey = PluginManager
+		  .pluginKeyFromId(PluginManager.pluginIdFromAuId(auid));
+	      Plugin plugin = pluginMgr.getPlugin(pluginKey);
+		  
+	      boolean isOrphaned = true;
+
+	      // Check whether both the Archival Unit plugin and properties
+	      // exist.
+	      if (plugin != null && auidProps != null) {
+		// Yes: Get the Archival Unit configuration.
+		Configuration defConfig =
+		    ConfigManager.fromProperties(auidProps);
+
+		// Determine whether the Archival Unit is orphaned because its
+		// configration is incompatible with its plugin.
+		isOrphaned =
+		    !AuUtil.isConfigCompatibleWithPlugin(defConfig, plugin);
+	      }
+
+	      // Check whether the Archival Unit is orphaned.
+	      if (isOrphaned) {
+		// Yes: Count it as orphaned.
+		allOrphanedCount++;
 	      } else {
-		String auKey = PluginManager.auKeyFromAuId(auid);
-		Properties auidProps = null;
+		// No: Get the Archival Unit configuration.
+		Configuration config = null;
 
 		try {
-		  auidProps = PropUtil.canonicalEncodedStringToProps(auKey);
-		} catch (Exception e) {
-//		  log.warning("Couldn't decode AUKey in " + sub + ": " + auKey,
-//		      e);
-		  log.warning("Couldn't decode AUKey : " + auKey, e);
-		}
-		  
-		boolean isOrphaned = true;
-		String pluginKey = PluginManager
-		    .pluginKeyFromId(PluginManager.pluginIdFromAuId(auid));
-		Plugin plugin = pluginMgr.getPlugin(pluginKey);
-
-		if (plugin != null && auidProps != null) {
-		  Configuration defConfig =
-		      ConfigManager.fromProperties(auidProps);
-		  isOrphaned =
-		      !AuUtil.isConfigCompatibleWithPlugin(defConfig, plugin);
+		  config =
+		      pluginMgr.getStoredAuConfigurationAsConfiguration(auid);
+		} catch (DbException dbe) {
+		  log.warning("Exception caught getting stored "
+		      + "configuration for auid '" + auid + "'", dbe);
 		}
 
-		if (isOrphaned) {
-		  allOrphanedCount++;
+		// Check whether the Archival Unit configuration cannot be
+		// found.
+		if (config == null || config.isEmpty()) {
+		  // Yes: Count it as deleted.
+		  allDeletedCount++;
 		} else {
-//		  Configuration config =
-//		      pluginMgr.getStoredAuConfigurationAsConfiguration(auid);
-
-		  Configuration config = null;
-
-		  try {
-		    config =
-			pluginMgr.getStoredAuConfigurationAsConfiguration(auid);
-		  } catch (DbException dbe) {
-		    log.warning("Exception caught getting stored "
-			+ "configuration for auid '" + auid + "'", dbe);
- 		  }
-
-		  if (config == null || config.isEmpty()) {
-		    allDeletedCount++;
-		  } else {
-		    boolean isInactive = config
-			.getBoolean(PluginManager.AU_PARAM_DISABLED, false);
+		  // No: Determine whether the Archival Unit is inactive.
+		  boolean isInactive =
+		      config.getBoolean(PluginManager.AU_PARAM_DISABLED, false);
 			
-		    if (isInactive) {
-		      allInactiveCount++;
-		    } else {
-		      allDeletedCount++;
-		    }	  
-		  }
+		  if (isInactive) {
+		    allInactiveCount++;
+		  } else {
+		    allDeletedCount++;
+		  }	  
 		}
 	      }
 	    }
-//	  }
-//	}
-//      }
-//    }
+	  }
 	} catch (IOException ioe) {
 	  log.error("Exception caught for collectionId '" + collectionId
 	      + "': Ignoring collection", ioe);
@@ -332,17 +288,4 @@ public class RepositorySpaceWsSource extends RepositorySpaceWsResult {
       log.error("Exception caught getting collections", ioe);
     }
   }
-
-//  private Properties propsFromFile(File file) {
-//    try {
-//	InputStream is = new FileInputStream(file);
-//	Properties props = new Properties();
-//	props.load(is);
-//	is.close();
-//	return props;
-//    } catch (IOException e) {
-//	log.warning("Error loading au id from " + file);
-//	return null;
-//    }
-//  }
 }

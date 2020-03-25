@@ -28,15 +28,14 @@
 
 package org.lockss.laaws.poller.impl;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.lockss.app.LockssDaemon;
-import org.lockss.laaws.rs.core.LockssRepository;
 import org.lockss.remote.RemoteApi;
+import org.lockss.repository.RepoSpec;
 import org.lockss.util.Logger;
 import org.lockss.ws.entities.RepositorySpaceWsResult;
 
@@ -97,43 +96,27 @@ public class RepositorySpaceHelper {
    */
   List<RepositorySpaceWsSource> createUniverse() {
     final String DEBUG_HEADER = "createUniverse(): ";
-    
+
+    // Initialize the universe.
+    List<RepositorySpaceWsSource> universe =
+	new ArrayList<RepositorySpaceWsSource>();
+
+    // Get the repository specification.
+    RepoSpec repoSpec =
+	LockssDaemon.getLockssDaemon().getRepositoryManager().getV2Repository();
+
+    String repositorySpaceName = repoSpec.getSpec();
+    if (log.isDebug3())
+      log.debug3(DEBUG_HEADER + "repositorySpaceName = " + repositorySpaceName);
+
     // Get the remote API manager.
     RemoteApi remoteApi =
 	(RemoteApi)LockssDaemon.getManagerByKeyStatic(LockssDaemon.REMOTE_API);
 
-//    // Get all the repository space names.
-//    List<String> allRepositorySpacesNames =
-//	(List<String>)remoteApi.getRepositoryList();
-//    if (log.isDebug3()) log.debug3(DEBUG_HEADER
-//	+ "allRepositorySpacesNames.size() = "
-//	+ allRepositorySpacesNames.size());
-//    // Initialize the universe.
-//    List<RepositorySpaceWsSource> universe =
-//	new ArrayList<RepositorySpaceWsSource>(allRepositorySpacesNames.size());
-    List<RepositorySpaceWsSource> universe =
-	new ArrayList<RepositorySpaceWsSource>();
-
-    LockssRepository repo = LockssDaemon.getLockssDaemon()
-	.getRepositoryManager().getV2Repository().getRepository();
-
-    String repositorySpaceName = null;
-
-    try {
-      repositorySpaceName = repo.getRepositoryInfo().getStoreInfo().getName();
-      if (log.isDebug3()) log.debug3(DEBUG_HEADER
-	  + "repositorySpaceName = " + repositorySpaceName);
-    } catch (IOException ioe) {
-      log.error("Exception caught getting store name", ioe);
-    }
-
-//    // Loop through all the repository space names.
-//    for (String repositorySpaceName : allRepositorySpacesNames) {
-      // Add the object initialized with this repository space to the universe
-      // of objects.
-      universe.add(new RepositorySpaceWsSource(repositorySpaceName,
-	  remoteApi.getRepositoryDF(repositorySpaceName)));
-//    }
+    // Add the object initialized with this repository space to the universe of
+    // objects.
+    universe.add(new RepositorySpaceWsSource(repositorySpaceName,
+	remoteApi.getRepositoryDF(repositorySpaceName)));
 
     if (log.isDebug2())
       log.debug2(DEBUG_HEADER + "universe.size() = " + universe.size());
