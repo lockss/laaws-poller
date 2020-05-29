@@ -33,9 +33,10 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.lockss.app.LockssDaemon;
-import org.lockss.remote.RemoteApi;
-import org.lockss.repository.RepoSpec;
+import org.lockss.repository.RepositoryManager;
 import org.lockss.util.Logger;
 import org.lockss.ws.entities.RepositorySpaceWsResult;
 
@@ -91,7 +92,7 @@ public class RepositorySpaceHelper {
   /**
    * Provides the universe of repository space-related objects used as the
    * source for a query.
-   * 
+   *
    * @return a List<RepositorySpaceWsProxy> with the universe.
    */
   List<RepositorySpaceWsSource> createUniverse() {
@@ -101,22 +102,14 @@ public class RepositorySpaceHelper {
     List<RepositorySpaceWsSource> universe =
 	new ArrayList<RepositorySpaceWsSource>();
 
-    // Get the repository specification.
-    RepoSpec repoSpec =
-	LockssDaemon.getLockssDaemon().getRepositoryManager().getV2Repository();
+    RepositoryManager repoManager = LockssDaemon.getLockssDaemon().getRepositoryManager();
 
-    String repositorySpaceName = repoSpec.getSpec();
-    if (log.isDebug3())
-      log.debug3(DEBUG_HEADER + "repositorySpaceName = " + repositorySpaceName);
-
-    // Get the remote API manager.
-    RemoteApi remoteApi =
-	(RemoteApi)LockssDaemon.getManagerByKeyStatic(LockssDaemon.REMOTE_API);
-
-    // Add the object initialized with this repository space to the universe of
-    // objects.
-    universe.add(new RepositorySpaceWsSource(repositorySpaceName,
-	remoteApi.getRepositoryDF(repositorySpaceName)));
+    // Add the objects initialized from the repositories to the universe of objects.
+    universe.addAll(
+        repoManager.getRepositoryDFMap().entrySet().stream()
+            .map(entry -> new RepositorySpaceWsSource(entry.getKey(), entry.getValue()))
+            .collect(Collectors.toList())
+    );
 
     if (log.isDebug2())
       log.debug2(DEBUG_HEADER + "universe.size() = " + universe.size());
@@ -126,7 +119,7 @@ public class RepositorySpaceHelper {
   /**
    * Provides a printable copy of a collection of repository space-related query
    * results.
-   * 
+   *
    * @param results
    *          A {@code Collection<RepositorySpaceWsResult>} with the query results.
    * @return a String with the requested printable copy.
@@ -153,7 +146,7 @@ public class RepositorySpaceHelper {
 
   /**
    * Provides a printable copy of a repository space-related query result.
-   * 
+   *
    * @param result
    *          A RepositorySpaceWsResult with the query result.
    * @return a String with the requested printable copy.
