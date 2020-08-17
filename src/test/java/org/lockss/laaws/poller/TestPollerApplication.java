@@ -52,11 +52,11 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import org.lockss.laaws.poller.api.PollsApiController;
 import org.lockss.app.LockssDaemon;
-import org.lockss.test.SpringLockssTestCase;
+import org.lockss.spring.test.SpringLockssTestCase4;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class TestPollerApplication extends SpringLockssTestCase {
+public class TestPollerApplication extends SpringLockssTestCase4 {
 
   // The port that Tomcat is using during this test.
   @LocalServerPort
