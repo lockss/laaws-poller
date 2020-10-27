@@ -306,3 +306,5 @@ test/run_stf/testcase-*/
 /TAGS
 logs/
 daemon/
+/pom.xml.bak
+/*/pom.xml.bak
