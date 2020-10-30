@@ -1,4 +1,4 @@
-# Copyright (c) 2000-2018, Board of Trustees of Leland Stanford Jr. University
+# Copyright (c) 2000-2020, Board of Trustees of Leland Stanford Jr. University
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -75,6 +75,33 @@ paths:
           description: The Au is not eligible for polling
         '404':
           description: The descriptor (au) can not be found.
+        '500':
+          description: Internal Server Error
+    get:
+      tags:
+        - "service"
+      summary: Query for poll properties
+      description: Query for polls that meet a set of specified conditions
+      operationId: getPolls
+      produces:
+        - application/json
+      parameters:
+        - name: 'pollQuery'
+          in: query
+          description: The query that specifies the polls to be returned
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Information about the requested polls
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/pollWsResult'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
         '500':
           description: Internal Server Error
   '/polls/{psId}':
@@ -470,6 +497,364 @@ paths:
         required: true
         type: string
         description: The key assigned by the PollManager.
+  '/peers':
+    get:
+      tags:
+        - "service"
+      summary: Query for peer properties
+      description: Query for peers that meet a set of specified conditions
+      operationId: getPeers
+      produces:
+        - application/json
+      parameters:
+        - name: 'peerQuery'
+          in: query
+          description: The query that specifies the peers to be returned
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Information about the requested peers
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/peerWsResult'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+  '/votes':
+    get:
+      tags:
+        - "service"
+      summary: Query for vote properties
+      description: Query for votes that meet a set of specified conditions
+      operationId: getVotes
+      produces:
+        - application/json
+      parameters:
+        - name: 'voteQuery'
+          in: query
+          description: The query that specifies the votes to be returned
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Information about the requested votes
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/voteWsResult'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+  # TODO: Move the following endpoint to some other service. It is here only for
+  # expediency.
+  /aus/{auid}/export:
+    get:
+      tags:
+        - export
+      summary: "Export artifacts in an Archival Unit"
+      description: "Export artifacts in an Archival Unit as a group of archives"
+      operationId: getExportFiles
+      consumes:
+        - application/json
+      produces:
+        - multipart/form-data
+      parameters:
+        - name: "auid"
+          in: "path"
+          required: true
+          type: "string"
+          description: "Identifier of the Archival Unit containing the\
+            \ artifacts"
+        - name: "fileType"
+          in: "query"
+          required: false
+          type: "string"
+          enum: ["WARC_RESPONSE", "WARC_RESOURCE", "ARC_RESPONSE", "ARC_RESOURCE", "ZIP"]
+          default: "WARC_RESPONSE"
+          description: "The type of archive to create"
+        - name: "isCompress"
+          in: "query"
+          required: false
+          type: "boolean"
+          default: "true"
+          description: "Indication of whether contents should be compressed"
+        - name: "isExcludeDirNodes"
+          in: "query"
+          required: false
+          type: "boolean"
+          default: "true"
+          description: "Indication of whether directories should be excluded"
+        - name: "xlateFilenames"
+          in: "query"
+          required: false
+          type: "string"
+          enum: ["XLATE_NONE", "XLATE_WINDOWS", "XLATE_MAC"]
+          default: "XLATE_NONE"
+          description: "Type of filename translation to be done"
+        - name: "filePrefix"
+          in: "query"
+          required: false
+          type: "string"
+          default: "lockss_export"
+          description: "The prefix to be used to name the exported file"
+        - name: "maxSize"
+          in: "query"
+          required: false
+          type: "integer"
+          format: "int64"
+          default: -1
+          description: "The maximum size of the exported file"
+        - name: "maxVersions"
+          in: "query"
+          required: false
+          type: "integer"
+          default: -1
+          description: "The maximum number of versions of an artifact to be\
+            \ exported"
+      responses:
+        200:
+          description: The archives with the requested artifacts
+          schema:
+            type: file
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not found
+        406:
+          description: Not Acceptable
+        500:
+          description: Internal Server Error
+  # TODO: Move the following endpoint to some other service. It is here only for
+  # expediency.
+  /aus/import:
+    put:
+      tags:
+        - import
+      summary: "Import a file into an Archival Unit"
+      description: "Import a file as an artifact in an Archival Unit"
+      operationId: putImportFile
+      consumes:
+        - multipart/form-data
+      produces:
+        - application/json
+      parameters:
+        - name: "targetBaseUrlPath"
+          in: "formData"
+          required: true
+          type: "string"
+          description: "The base URL path of the target AU"
+        - name: "targetUrl"
+          in: "formData"
+          required: true
+          type: "string"
+          description: "The target AU URL"
+        - name: "userProperties"
+          in: "formData"
+          required: false
+          type: array
+          items:
+            type: string
+          description: "The user-specified properties"
+        - name: "file"
+          in: "formData"
+          required: true
+          type: "file"
+          description: "The content of the file to be imported"
+      responses:
+        200:
+          description: OK
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        415:
+          description: Unsupported Media Type
+        500:
+          description: Internal Server Error
+  # TODO: Move the following endpoint to some other service. It is here only for
+  # expediency.
+  '/hashes':
+    get:
+      tags:
+        - "hash"
+      summary: Get the results of all the asynchronous hashing operations
+      description: Get the results of all the asynchronous hashing operations
+      operationId: getAllHashes
+      produces:
+        - multipart/form-data
+      responses:
+        '200':
+          description: Information about all the asynchronous hashing operations
+          schema:
+            type: file
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+    put:
+      tags:
+        - "hash"
+      summary: Perform a hashing operation
+      description: Perform the hashing of an AU or a URL
+      operationId: putHash
+      produces:
+        - multipart/form-data
+      parameters:
+        - name: hasherWsParams
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/hasherWsParams'
+        - name: "isAsynchronous"
+          in: "query"
+          required: false
+          type: "boolean"
+          default: "true"
+          description: "Indication of whether the operation should be done \
+            \asynchronously"
+      responses:
+        '200':
+          description: Information about the performed hashing operation
+          schema:
+            type: file
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+  # TODO: Move the following endpoint to some other service. It is here only for
+  # expediency.
+  '/hashes/requests/{requestId}':
+    delete:
+      tags:
+        - "hash"
+      summary: Remove an asynchronous hashing operation
+      description: Remove from the system an asynchronous hashing operation,\
+        \ terminating it if it's still running
+      operationId: deleteHash
+      produces:
+        - application/json
+      parameters:
+        - name: "requestId"
+          in: "path"
+          required: true
+          type: "string"
+          description: "Identifier of the asynchronous hashing operation"
+      responses:
+        '200':
+          description: Asynchronous hashing operation successfully removed
+          schema:
+            type: string
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '404':
+          description: No asynchronous hashing operation found with that id
+        '500':
+          description: Internal Server Error
+    get:
+      tags:
+        - "hash"
+      summary: Get the result of an asynchronous hashing operation
+      description: Get the result of an asynchronous hashing operation
+      operationId: getHash
+      produces:
+        - multipart/form-data
+      parameters:
+        - name: "requestId"
+          in: "path"
+          required: true
+          type: "string"
+          description: Identifier of the asynchronous hashing operation
+      responses:
+        '200':
+          description: Information about the asynchronous hashing operation
+          schema:
+            type: file
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '404':
+          description: No asynchronous hashing operation found with that id
+        '500':
+          description: Internal Server Error
+  # TODO: Move the following endpoint to some other service. It is here only for
+  # expediency.
+  '/repositories':
+    get:
+      tags:
+        - repo
+      summary: Query the properties of repositories
+      description: Query the system for selected repository properties
+      operationId: getRepositories
+      produces:
+        - application/json
+      parameters:
+        - name: 'repositoryQuery'
+          in: query
+          description: The query that specifies the repository properties to be returned
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Information about the requested TDB AUs
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/repositoryWsResult'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+  # TODO: Move the following endpoint to some other service. It is here only for
+  # expediency.
+  '/repositoryspaces':
+    get:
+      tags:
+        - repo
+      summary: Query the properties of repository spaces
+      description: Query the system for selected repository space properties
+      operationId: getRepositorySpaces
+      produces:
+        - application/json
+      parameters:
+        - name: 'repositorySpaceQuery'
+          in: query
+          description: The query that specifies the repository space properties to be returned
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Information about the requested TDB AUs
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/repositorySpaceWsResult'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
 securityDefinitions:
   basicAuth:
     description: HTTP Basic Authentication. Works over `HTTP` and `HTTPS`
@@ -1051,6 +1436,115 @@ definitions:
         type: string
         description: A description of this link
         example: pollerOnly
+  pollWsResult:
+    type: "object"
+    required:
+      - "auId"
+      - "auName"
+    properties:
+      auId:
+        type: "string"
+        description: "The identifier of the Archival Unit"
+      auName:
+        type: "string"
+        description: "The name of the Archival Unit"
+    description: "The properties of a poll"
+  peerWsResult:
+    type: "object"
+    required:
+      - "peerId"
+    properties:
+      peerId:
+        type: "string"
+        description: "The identifier of the Archival Unit"
+    description: "The properties of a peer"
+  voteWsResult:
+    type: "object"
+    required:
+      - "auId"
+      - "auName"
+    properties:
+      auId:
+        type: "string"
+        description: "The identifier of the Archival Unit"
+      auName:
+        type: "string"
+        description: "The name of the Archival Unit"
+    description: "The properties of a vote"
+  hasherWsParams:
+    type: "object"
+    required:
+      - auId
+      - url
+      - lower
+      - upper
+      - recordFilteredStream
+      - excludeSuspectVersions
+      - includeWeight
+      - algorithm
+      - hashType
+      - resultEncoding
+      - challenge
+      - verifier
+    properties:
+      auId:
+        type: "string"
+        description: "The identifier of the Archival Unit content to be hashed"
+      url:
+        type: "string"
+        description: "The identifier of the URL content to be hashed"
+      lower:
+        type: "string"
+        description: "The lower boundary URL"
+      upper:
+        type: "string"
+        description: "The upper boundary URL"
+      recordFilteredStream:
+        type: "boolean"
+        description: "An indication of whether the filtered stream should be\
+          \ recorded"
+      excludeSuspectVersions:
+        type: "boolean"
+        description: "An indication of whether to exclude suspect versions"
+      includeWeight:
+        type: "boolean"
+        description: "An indication of whether to include hash weight"
+      algorithm:
+        type: "string"
+        description: "The name of the hashing algorithm to be used [SHA-1 (or\
+          \ SHA1), MD5 or SHA-256]"
+      hashType:
+        type: "string"
+        description: "The type of hashing to be performed [V1Content, V1Name,\
+          \ V1File, V3Tree or V3File]"
+      resultEncoding:
+        type: "string"
+        description: "The result encoding to be used [Base64 or Hex]"
+      challenge:
+        type: "string"
+        description: "The encoded challenge"
+      verifier:
+        type: "string"
+        description: "The encoded verifier"
+    description: "The parameters of a hash operation"
+  repositoryWsResult:
+    type: "object"
+    required:
+      - "repositorySpaceId"
+    properties:
+      repositorySpaceId:
+        type: "string"
+        description: "The Repository Space identifier"
+    description: "Information about the requested repositories"
+  repositorySpaceWsResult:
+    type: "object"
+    required:
+      - "repositorySpaceId"
+    properties:
+      repositorySpaceId:
+        type: "string"
+        description: "The Repository Space identifier"
+    description: "Information about the requested repository spaces"
   apiStatus:
     type: "object"
     required:

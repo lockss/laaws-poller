@@ -100,6 +100,7 @@ public class PollerApplication extends BaseSpringBootApplication implements Comm
             .setService(ServiceDescr.SVC_POLLER)
             .setName("Poller/Crawler Service")
             .setArgs(args)
+            .setSpringApplicatonContext(getApplicationContext())
             .setAppManagers(myManagerDescs)
             .addAppConfig(PARAM_START_PLUGINS, "true")
             .addAppConfig(PluginManager.PARAM_START_ALL_AUS, "true");
