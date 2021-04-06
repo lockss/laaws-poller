@@ -49,7 +49,7 @@ import org.lockss.log.L4JLogger;
 import org.lockss.plugin.ArchivalUnit;
 import org.lockss.spring.base.*;
 import org.lockss.spring.error.LockssRestServiceException;
-import org.lockss.util.FileUtil;
+import org.lockss.util.io.FileUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
