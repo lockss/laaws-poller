@@ -49,7 +49,7 @@ import org.lockss.laaws.poller.api.HashesApiDelegate;
 import org.lockss.laaws.rs.util.NamedInputStreamResource;
 import org.lockss.log.L4JLogger;
 import org.lockss.spring.base.BaseSpringApiServiceImpl;
-import org.lockss.util.FileUtil;
+import org.lockss.util.io.FileUtil;
 import org.lockss.util.StringUtil;
 import org.lockss.util.os.PlatformUtil;
 import org.lockss.util.time.TimeBase;
