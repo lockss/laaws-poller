@@ -28,7 +28,7 @@
 package org.lockss.laaws.poller.impl;
 
 import java.util.List;
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.lockss.config.ConfigManager;
 import org.lockss.protocol.PeerIdentityStatus;
 import org.lockss.protocol.V3LcapMessage;
