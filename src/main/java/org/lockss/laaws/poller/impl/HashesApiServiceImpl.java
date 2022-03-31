@@ -109,7 +109,7 @@ implements HashesApiDelegate {
 
       // Handle a missing request.
       if (paramsAndResult == null || paramsAndResult.result == null) {
-        message ="Cannot find asynchronous h ash request '" + requestId + "'";
+        message ="Cannot find asynchronous hash request '" + requestId + "'";
         log.warn(message);
         return new ResponseEntity<String>(message, HttpStatus.NOT_FOUND);
       }
