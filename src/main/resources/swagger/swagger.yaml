@@ -175,6 +175,7 @@ paths:
       tags:
         - "poll-detail"
       summary: Page Tally
+      description: Return the vote tallies for a specific poll.
       operationId: getTallyUrls
       produces:
         - application/json
@@ -233,6 +234,7 @@ paths:
       tags:
         - "poll-detail"
       summary: Poll Repairs
+      description: Return the repair status for a specific poll.
       operationId: getRepairQueueData
       produces:
         - application/json
@@ -289,6 +291,7 @@ paths:
       tags:
         - "poll-detail"
       summary: Poll Peer Data
+      description: Return the list of urls of vote type for a given peer in a specific poll.
       operationId: getPollPeerVoteUrls
       produces:
         - application/json
@@ -399,7 +402,6 @@ paths:
       tags:
         - "poller-polls"
       summary: PollerDetails
-      
       operationId: getPollerPollDetails
       produces:
         - application/json
