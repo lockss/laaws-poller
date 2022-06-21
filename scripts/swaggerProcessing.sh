@@ -79,13 +79,13 @@ HASHES_API=src/generated/java/org/lockss/laaws/poller/api/HashesApi.java
 sed -i.backup "s/import org.lockss.laaws.poller.model.HasherWsAsynchronousResult/import org.lockss.ws.entities.HasherWsAsynchronousResult/" $HASHES_API && rm $HASHES_API.backup
 sed -i.backup "s/import org.lockss.laaws.poller.model.HasherWsParams/import org.lockss.ws.entities.HasherWsParams/" $HASHES_API && rm $HASHES_API.backup
 
-# Edit RepositoriesApiDelegate.java.
-REPOSITORIES_API_DELEGATE=src/generated/java/org/lockss/laaws/poller/api/RepositoriesApiDelegate.java
-sed -i.backup "s/import org.lockss.laaws.poller.model.RepositoryWsResult/import org.lockss.ws.entities.RepositoryWsResult/" $REPOSITORIES_API_DELEGATE && rm $REPOSITORIES_API_DELEGATE.backup
+# Edit AurepositoriesApiDelegate.java.
+AU_REPOSITORIES_API_DELEGATE=src/generated/java/org/lockss/laaws/poller/api/AurepositoriesApiDelegate.java
+sed -i.backup "s/import org.lockss.laaws.poller.model.RepositoryWsResult/import org.lockss.ws.entities.RepositoryWsResult/" $AU_REPOSITORIES_API_DELEGATE && rm $AU_REPOSITORIES_API_DELEGATE.backup
 
-# Edit RepositoriesApi.java.
-REPOSITORIES_API=src/generated/java/org/lockss/laaws/poller/api/RepositoriesApi.java
-sed -i.backup "s/import org.lockss.laaws.poller.model.RepositoryWsResult/import org.lockss.ws.entities.RepositoryWsResult/" $REPOSITORIES_API && rm $REPOSITORIES_API.backup
+# Edit AurepositoriesApi.java.
+AU_REPOSITORIES_API=src/generated/java/org/lockss/laaws/poller/api/AurepositoriesApi.java
+sed -i.backup "s/import org.lockss.laaws.poller.model.RepositoryWsResult/import org.lockss.ws.entities.RepositoryWsResult/" $AU_REPOSITORIES_API && rm $AU_REPOSITORIES_API.backup
 
 # Edit RepositoryspacesApiDelegate.java.
 REPOSITORY_SPACES_API_DELEGATE=src/generated/java/org/lockss/laaws/poller/api/RepositoryspacesApiDelegate.java

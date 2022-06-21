@@ -821,9 +821,9 @@ paths:
           description: No asynchronous hashing operation found with that id
         '500':
           description: Internal Server Error
-  # TODO: Move the following endpoint to some other service. It is here only for
-  # expediency.
-  '/repositories':
+  # TODO: This endpoint doesn't really belong here but it can't be in
+  # RepositoryService because it needs access to AUs, which don't exist there.
+  '/aurepositories':
     get:
       tags:
         - repo
@@ -851,8 +851,8 @@ paths:
           description: Unauthorized
         '500':
           description: Internal Server Error
-  # TODO: Move the following endpoint to some other service. It is here only for
-  # expediency.
+  # TODO: This endpoint doesn't really belong here but it can't be in
+  # RepositoryService because it needs access to AUs, which don't exist there.
   '/repositoryspaces':
     get:
       tags:

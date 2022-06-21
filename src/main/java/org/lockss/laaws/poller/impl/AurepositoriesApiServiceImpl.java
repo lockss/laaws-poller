@@ -35,7 +35,7 @@ import java.util.List;
 import org.josql.Query;
 import org.josql.QueryExecutionException;
 import org.josql.QueryResults;
-import org.lockss.laaws.poller.api.RepositoriesApiDelegate;
+import org.lockss.laaws.poller.api.AurepositoriesApiDelegate;
 import org.lockss.log.L4JLogger;
 import org.lockss.spring.base.BaseSpringApiServiceImpl;
 import org.lockss.util.josql.JosqlUtil;
@@ -45,16 +45,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 /**
- * Service for querying the properties of repositories.
+ * Service for querying the properties of AU repositories.
  */
 @Service
-public class RepositoriesApiServiceImpl extends BaseSpringApiServiceImpl
-    implements RepositoriesApiDelegate {
+public class AurepositoriesApiServiceImpl extends BaseSpringApiServiceImpl
+    implements AurepositoriesApiDelegate {
 
   private static L4JLogger log = L4JLogger.getLogger();
 
   /**
-   * GET /repositories?query={repositoryQuery}: Provides the selected properties
+   * GET /aurepositories?query={repositoryQuery}: Provides the selected properties
    * of selected repositories in the system.
    *
    * @param repositoryQuery A String with the
