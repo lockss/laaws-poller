@@ -79,33 +79,6 @@ paths:
           description: The descriptor (au) can not be found.
         '500':
           description: Internal Server Error
-    get:
-      tags:
-        - "service"
-      summary: Query for poll properties
-      description: Query for polls that meet a set of specified conditions
-      operationId: getPolls
-      produces:
-        - application/json
-      parameters:
-        - name: 'pollQuery'
-          in: query
-          description: The query that specifies the polls to be returned
-          required: true
-          type: string
-      responses:
-        '200':
-          description: Information about the requested polls
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/pollWsResult'
-        '400':
-          description: Bad Request
-        '401':
-          description: Unauthorized
-        '500':
-          description: Internal Server Error
   '/polls/{psId}':
     get:
       tags:
@@ -522,62 +495,6 @@ paths:
         required: true
         type: string
         description: The key assigned by the PollManager.
-  '/peers':
-    get:
-      tags:
-        - "service"
-      summary: Query for peer properties
-      description: Query for peers that meet a set of specified conditions
-      operationId: getPeers
-      produces:
-        - application/json
-      parameters:
-        - name: 'peerQuery'
-          in: query
-          description: The query that specifies the peers to be returned
-          required: true
-          type: string
-      responses:
-        '200':
-          description: Information about the requested peers
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/peerWsResult'
-        '400':
-          description: Bad Request
-        '401':
-          description: Unauthorized
-        '500':
-          description: Internal Server Error
-  '/votes':
-    get:
-      tags:
-        - "service"
-      summary: Query for vote properties
-      description: Query for votes that meet a set of specified conditions
-      operationId: getVotes
-      produces:
-        - application/json
-      parameters:
-        - name: 'voteQuery'
-          in: query
-          description: The query that specifies the votes to be returned
-          required: true
-          type: string
-      responses:
-        '200':
-          description: Information about the requested votes
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/voteWsResult'
-        '400':
-          description: Bad Request
-        '401':
-          description: Unauthorized
-        '500':
-          description: Internal Server Error
   # TODO: Move the following endpoint to some other service. It is here only for
   # expediency.
   /aus/{auid}/export:
@@ -661,9 +578,93 @@ paths:
           description: Not Acceptable
         500:
           description: Internal Server Error
+  /ws/polls:
+    get:
+      tags:
+        - "service"
+      summary: Query for poll properties
+      description: Query for polls that meet a set of specified conditions
+      operationId: getPolls
+      produces:
+        - application/json
+      parameters:
+        - name: 'pollQuery'
+          in: query
+          description: The query that specifies the polls to be returned
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Information about the requested polls
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/pollWsResult'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+  '/ws/peers':
+    get:
+      tags:
+        - "service"
+      summary: Query for peer properties
+      description: Query for peers that meet a set of specified conditions
+      operationId: getPeers
+      produces:
+        - application/json
+      parameters:
+        - name: 'peerQuery'
+          in: query
+          description: The query that specifies the peers to be returned
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Information about the requested peers
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/peerWsResult'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+  '/ws/votes':
+    get:
+      tags:
+        - "service"
+      summary: Query for vote properties
+      description: Query for votes that meet a set of specified conditions
+      operationId: getVotes
+      produces:
+        - application/json
+      parameters:
+        - name: 'voteQuery'
+          in: query
+          description: The query that specifies the votes to be returned
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Information about the requested votes
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/voteWsResult'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
   # TODO: Move the following endpoint to some other service. It is here only for
   # expediency.
-  /aus/import:
+  /ws/aus/import:
     put:
       tags:
         - import
@@ -712,7 +713,7 @@ paths:
           description: Internal Server Error
   # TODO: Move the following endpoint to some other service. It is here only for
   # expediency.
-  '/hashes':
+  '/ws/hashes':
     get:
       tags:
         - "hash"
@@ -764,8 +765,7 @@ paths:
         '500':
           description: Internal Server Error
   # TODO: Move the following endpoint to some other service. It is here only for
-  # expediency.
-  '/hashes/requests/{requestId}':
+  '/ws/hashes/requests/{requestId}':
     delete:
       tags:
         - "hash"
@@ -823,7 +823,7 @@ paths:
           description: Internal Server Error
   # TODO: This endpoint doesn't really belong here but it can't be in
   # RepositoryService because it needs access to AUs, which don't exist there.
-  '/aurepositories':
+  '/ws/aurepositories':
     get:
       tags:
         - repo
@@ -853,7 +853,7 @@ paths:
           description: Internal Server Error
   # TODO: This endpoint doesn't really belong here but it can't be in
   # RepositoryService because it needs access to AUs, which don't exist there.
-  '/repositoryspaces':
+  '/ws/repositoryspaces':
     get:
       tags:
         - repo
