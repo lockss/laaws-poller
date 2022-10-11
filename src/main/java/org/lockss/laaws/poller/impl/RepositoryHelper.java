@@ -111,7 +111,7 @@ public class RepositoryHelper {
 
     try {
       // Loop through all the collections in the repository.
-      for (String collectionId : repo.getCollectionIds()) {
+      for (String collectionId : repo.getNamespaces()) {
 	if (log.isDebug3())
 	  log.debug3(DEBUG_HEADER + "collectionId = " + collectionId);
 
