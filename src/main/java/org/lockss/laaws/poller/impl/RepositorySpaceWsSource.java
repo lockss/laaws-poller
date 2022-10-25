@@ -196,14 +196,14 @@ public class RepositorySpaceWsSource extends RepositorySpaceWsResult {
 	.getManagerByKeyStatic(LockssDaemon.PLUGIN_MANAGER);
 
     try {
-      // Loop through all the collections in the repository.
-      for (String collectionId : repo.getNamespaces()) {
+      // Loop through all the namespaces in the repository.
+      for (String namespace : repo.getNamespaces()) {
 	if (log.isDebug3())
-	  log.debug3(DEBUG_HEADER + "collectionId = " + collectionId);
+	  log.debug3(DEBUG_HEADER + "namespace = " + namespace);
 
 	try {
-	  // Loop through all the AU identifiers in the collection.
-	  for (String auid : repo.getAuIds(collectionId)) {
+	  // Loop through all the AU identifiers in the namespace.
+	  for (String auid : repo.getAuIds(namespace)) {
 	    if (log.isDebug3()) log.debug3(DEBUG_HEADER + "auid = " + auid);
 
 	    // Get the archival unit.
@@ -280,12 +280,12 @@ public class RepositorySpaceWsSource extends RepositorySpaceWsResult {
 	    }
 	  }
 	} catch (IOException ioe) {
-	  log.error("Exception caught for collectionId '" + collectionId
-	      + "': Ignoring collection", ioe);
+	  log.error("Exception caught for namespace '" + namespace
+	      + "': Ignoring namespace", ioe);
 	}
       }
     } catch (IOException ioe) {
-      log.error("Exception caught getting collections", ioe);
+      log.error("Exception caught getting namespaces", ioe);
     }
   }
 }
