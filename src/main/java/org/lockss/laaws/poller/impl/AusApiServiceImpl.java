@@ -29,38 +29,33 @@
  */
 package org.lockss.laaws.poller.impl;
 
-import static org.lockss.config.RestConfigClient.CONFIG_PART_NAME;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.File;
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.util.List;
-import java.util.Optional;
-import javax.servlet.http.HttpServletRequest;
-import javax.activation.FileDataSource;
 import org.lockss.app.LockssDaemon;
 import org.lockss.exporter.Exporter;
 import org.lockss.exporter.Exporter.FilenameTranslation;
 import org.lockss.exporter.Exporter.Type;
-import org.lockss.importer.Importer;
 import org.lockss.laaws.poller.api.AusApiDelegate;
 import org.lockss.laaws.rs.util.NamedInputStreamResource;
 import org.lockss.log.L4JLogger;
 import org.lockss.plugin.ArchivalUnit;
-import org.lockss.spring.base.*;
+import org.lockss.spring.base.BaseSpringApiServiceImpl;
 import org.lockss.spring.error.LockssRestServiceException;
 import org.lockss.util.io.FileUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.multipart.MultipartFile;
+
+import javax.activation.FileDataSource;
+import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
+
+import static org.lockss.config.RestConfigClient.CONFIG_PART_NAME;
 
 /**
  * Service for accessing the repository artifacts.
@@ -299,51 +294,6 @@ implements AusApiDelegate {
     }
   }
 
-  // TODO: Move the following endpoint handler to some other service. It is here
-  // only for expediency.
-  /**
-   * PUT /aus/import: Import a file as an artifact in an Archival Unit.
-   *
-   * @param targetBaseUrlPath A String with the base URL path of the target
-   *                          Archival Unit.
-   * @param targetUrl         A String with the target Archival Unit URL.
-   * @param file           A MultipartFile with the content of the file to be
-   *                          imported.
-   * @param userProperties    A {@code List<String>} with the user-specified
-   *                          properties.
-   * @return a {@code ResponseEntity<Void>}.
-   */
-  @Override
-  public ResponseEntity<Void> putImportFile(String targetBaseUrlPath,
-      String targetUrl, MultipartFile file, List<String> userProperties) {
-    String parsedRequest = String.format("targetBaseUrlPath: %s, "
-      + "targetUrl: %s, content.getName(): %s, content.getSize(): %s, "
-      + "userProperties: %s, requestUrl: %s", targetBaseUrlPath, targetUrl,
-      file.getName(), file.getSize(), userProperties,
-      getFullRequestUrl(request));
-    log.debug2("Parsed request: {}", parsedRequest);
-
-    try {
-      new Importer().importFile(file.getInputStream(), targetBaseUrlPath,
-	  targetUrl, userProperties);
-      return new ResponseEntity<Void>(null, null, HttpStatus.OK);
-    } catch (IllegalArgumentException | IllegalStateException
-	| NoSuchAlgorithmException e) {
-      String errorMessage = "Exception caught trying to import file";
-      log.warn(errorMessage, e);
-      log.warn("Parsed request: {}", parsedRequest);
-
-      throw new LockssRestServiceException(HttpStatus.BAD_REQUEST, errorMessage,
-	  e, parsedRequest);
-    } catch (Exception e) {
-      String errorMessage = "Unexpected exception caught trying to import file";
-      log.warn(errorMessage, e);
-      log.warn("Parsed request: {}", parsedRequest);
-
-      throw new LockssRestServiceException(HttpStatus.INTERNAL_SERVER_ERROR,
-	  errorMessage, e, parsedRequest);
-    }
-  }
 
   @Override
   public Optional<ObjectMapper> getObjectMapper() {
@@ -357,10 +307,10 @@ implements AusApiDelegate {
 
   /**
    * Provides the full URL of the request.
-   * 
+   *
    * @param request
    *          An HttpServletRequest with the HTTP request.
-   * 
+   *
    * @return a String with the full URL of the request.
    */
   private String getFullRequestUrl(HttpServletRequest request) {

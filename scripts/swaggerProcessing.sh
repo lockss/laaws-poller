@@ -38,12 +38,10 @@ sed -i.backup "s/import org.lockss.laaws.poller.model.ApiStatus/import org.locks
 # Edit PollsApiDelegate.java.
 POLLS_API_DELEGATE=src/generated/java/org/lockss/laaws/poller/api/PollsApiDelegate.java
 sed -i.backup "s/import org.lockss.laaws.poller.model.PollDesc/import org.lockss.util.rest.poller.PollDesc/" $POLLS_API_DELEGATE && rm $POLLS_API_DELEGATE.backup
-sed -i.backup "s/import org.lockss.laaws.poller.model.PollWsResult/import org.lockss.ws.entities.PollWsResult/" $POLLS_API_DELEGATE && rm $POLLS_API_DELEGATE.backup
 
 # Edit PollsApi.java.
 POLLS_API=src/generated/java/org/lockss/laaws/poller/api/PollsApi.java
 sed -i.backup "s/import org.lockss.laaws.poller.model.PollDesc/import org.lockss.util.rest.poller.PollDesc/" $POLLS_API && rm $POLLS_API.backup
-sed -i.backup "s/import org.lockss.laaws.poller.model.PollWsResult/import org.lockss.ws.entities.PollWsResult/" $POLLS_API && rm $POLLS_API.backup
 
 # Edit PollerDetail.java.
 POLLER_DETAIL=src/generated/java/org/lockss/laaws/poller/model/PollerDetail.java
@@ -53,44 +51,20 @@ sed -i.backup "s/import org.lockss.laaws.poller.model.PollDesc/import org.lockss
 VOTER_DETAIL=src/generated/java/org/lockss/laaws/poller/model/VoterDetail.java
 sed -i.backup "s/import org.lockss.laaws.poller.model.PollDesc/import org.lockss.util.rest.poller.PollDesc/" $VOTER_DETAIL && rm $VOTER_DETAIL.backup
 
-# Edit PeersApiDelegate.java.
-PEERS_API_DELEGATE=src/generated/java/org/lockss/laaws/poller/api/PeersApiDelegate.java
-sed -i.backup "s/import org.lockss.laaws.poller.model.PeerWsResult/import org.lockss.ws.entities.PeerWsResult/" $PEERS_API_DELEGATE && rm $PEERS_API_DELEGATE.backup
+# Edit WsApiDelegate.java.
+WS_API_DELEGATE=src/generated/java/org/lockss/laaws/poller/api/WsApiDelegate.java
+sed -i.backup "s/import org.lockss.laaws.poller.model.HasherWsParams/import org.lockss.ws.entities.HasherWsParams/" $WS_API_DELEGATE && rm $WS_API_DELEGATE.backup
+sed -i.backup "s/import org.lockss.laaws.poller.model.PollWsResult/import org.lockss.ws.entities.PollWsResult/" $WS_API_DELEGATE && rm $WS_API_DELEGATE.backup
+sed -i.backup "s/import org.lockss.laaws.poller.model.PeerWsResult/import org.lockss.ws.entities.PeerWsResult/" $WS_API_DELEGATE && rm $WS_API_DELEGATE.backup
+sed -i.backup "s/import org.lockss.laaws.poller.model.RepositorySpaceWsResult/import org.lockss.ws.entities.RepositorySpaceWsResult/" $WS_API_DELEGATE && rm $WS_API_DELEGATE.backup
+sed -i.backup "s/import org.lockss.laaws.poller.model.RepositoryWsResult/import org.lockss.ws.entities.RepositoryWsResult/" $WS_API_DELEGATE && rm $WS_API_DELEGATE.backup
+sed -i.backup "s/import org.lockss.laaws.poller.model.VoteWsResult/import org.lockss.ws.entities.VoteWsResult/" $WS_API_DELEGATE && rm $WS_API_DELEGATE.backup
 
-# Edit PeersApi.java.
-PEERS_API=src/generated/java/org/lockss/laaws/poller/api/PeersApi.java
-sed -i.backup "s/import org.lockss.laaws.poller.model.PeerWsResult/import org.lockss.ws.entities.PeerWsResult/" $PEERS_API && rm $PEERS_API.backup
-
-# Edit VotesApiDelegate.java.
-VOTES_API_DELEGATE=src/generated/java/org/lockss/laaws/poller/api/VotesApiDelegate.java
-sed -i.backup "s/import org.lockss.laaws.poller.model.VoteWsResult/import org.lockss.ws.entities.VoteWsResult/" $VOTES_API_DELEGATE && rm $VOTES_API_DELEGATE.backup
-
-# Edit VotesApi.java.
-VOTES_API=src/generated/java/org/lockss/laaws/poller/api/VotesApi.java
-sed -i.backup "s/import org.lockss.laaws.poller.model.VoteWsResult/import org.lockss.ws.entities.VoteWsResult/" $VOTES_API && rm $VOTES_API.backup
-
-# Edit HashesApiDelegate.java.
-HASHES_API_DELEGATE=src/generated/java/org/lockss/laaws/poller/api/HashesApiDelegate.java
-sed -i.backup "s/import org.lockss.laaws.poller.model.HasherWsAsynchronousResult/import org.lockss.ws.entities.HasherWsAsynchronousResult/" $HASHES_API_DELEGATE && rm $HASHES_API_DELEGATE.backup
-sed -i.backup "s/import org.lockss.laaws.poller.model.HasherWsParams/import org.lockss.ws.entities.HasherWsParams/" $HASHES_API_DELEGATE && rm $HASHES_API_DELEGATE.backup
-
-# Edit HashesApi.java.
-HASHES_API=src/generated/java/org/lockss/laaws/poller/api/HashesApi.java
-sed -i.backup "s/import org.lockss.laaws.poller.model.HasherWsAsynchronousResult/import org.lockss.ws.entities.HasherWsAsynchronousResult/" $HASHES_API && rm $HASHES_API.backup
-sed -i.backup "s/import org.lockss.laaws.poller.model.HasherWsParams/import org.lockss.ws.entities.HasherWsParams/" $HASHES_API && rm $HASHES_API.backup
-
-# Edit RepositoriesApiDelegate.java.
-REPOSITORIES_API_DELEGATE=src/generated/java/org/lockss/laaws/poller/api/RepositoriesApiDelegate.java
-sed -i.backup "s/import org.lockss.laaws.poller.model.RepositoryWsResult/import org.lockss.ws.entities.RepositoryWsResult/" $REPOSITORIES_API_DELEGATE && rm $REPOSITORIES_API_DELEGATE.backup
-
-# Edit RepositoriesApi.java.
-REPOSITORIES_API=src/generated/java/org/lockss/laaws/poller/api/RepositoriesApi.java
-sed -i.backup "s/import org.lockss.laaws.poller.model.RepositoryWsResult/import org.lockss.ws.entities.RepositoryWsResult/" $REPOSITORIES_API && rm $REPOSITORIES_API.backup
-
-# Edit RepositoryspacesApiDelegate.java.
-REPOSITORY_SPACES_API_DELEGATE=src/generated/java/org/lockss/laaws/poller/api/RepositoryspacesApiDelegate.java
-sed -i.backup "s/import org.lockss.laaws.poller.model.RepositorySpaceWsResult/import org.lockss.ws.entities.RepositorySpaceWsResult/" $REPOSITORY_SPACES_API_DELEGATE && rm $REPOSITORY_SPACES_API_DELEGATE.backup
-
-# Edit RepositoryspacesApi.java.
-REPOSITORY_SPACES_API=src/generated/java/org/lockss/laaws/poller/api/RepositoryspacesApi.java
-sed -i.backup "s/import org.lockss.laaws.poller.model.RepositorySpaceWsResult/import org.lockss.ws.entities.RepositorySpaceWsResult/" $REPOSITORY_SPACES_API && rm $REPOSITORY_SPACES_API.backup
+# Edit WsApi.java.
+WS_API=src/generated/java/org/lockss/laaws/poller/api/WsApi.java
+sed -i.backup "s/import org.lockss.laaws.poller.model.HasherWsParams/import org.lockss.ws.entities.HasherWsParams/" $WS_API && rm $WS_API.backup
+sed -i.backup "s/import org.lockss.laaws.poller.model.PeerWsResult/import org.lockss.ws.entities.PeerWsResult/" $WS_API && rm $WS_API.backup
+sed -i.backup "s/import org.lockss.laaws.poller.model.PollWsResult/import org.lockss.ws.entities.PollWsResult/" $WS_API && rm $WS_API.backup
+sed -i.backup "s/import org.lockss.laaws.poller.model.RepositorySpaceWsResult/import org.lockss.ws.entities.RepositorySpaceWsResult/" $WS_API && rm $WS_API.backup
+sed -i.backup "s/import org.lockss.laaws.poller.model.RepositoryWsResult/import org.lockss.ws.entities.RepositoryWsResult/" $WS_API && rm $WS_API.backup
+sed -i.backup "s/import org.lockss.laaws.poller.model.VoteWsResult/import org.lockss.ws.entities.VoteWsResult/" $WS_API && rm $WS_API.backup

@@ -110,26 +110,26 @@ public class RepositoryHelper {
     LockssRepository repo = repoSpec.getRepository();
 
     try {
-      // Loop through all the collections in the repository.
-      for (String collectionId : repo.getCollectionIds()) {
+      // Loop through all the namespace in the repository.
+      for (String namespace : repo.getNamespaces()) {
 	if (log.isDebug3())
-	  log.debug3(DEBUG_HEADER + "collectionId = " + collectionId);
+	  log.debug3(DEBUG_HEADER + "namespace = " + namespace);
 
 	try {
-	  // Loop through all the AU identifiers in the collection.
-	  for (String auId : repo.getAuIds(collectionId)) {
+	  // Loop through all the AU identifiers in the namespace.
+	  for (String auId : repo.getAuIds(namespace)) {
 	    if (log.isDebug3()) log.debug3(DEBUG_HEADER + "auId = " + auId);
 	    // Add this AU to the universe.
-	    universe.add(new RepositoryWsSource(repositorySpaceId, collectionId,
+	    universe.add(new RepositoryWsSource(repositorySpaceId, namespace,
 		auId));
 	  }
 	} catch (IOException ioe) {
-	  log.error("Exception caught for collectionId '" + collectionId
-	      + "': Ignoring collection", ioe);
+	  log.error("Exception caught for namespace '" + namespace
+	      + "': Ignoring namespace", ioe);
 	}
       }
     } catch (IOException ioe) {
-      log.error("Exception caught getting collections", ioe);
+      log.error("Exception caught getting namespace", ioe);
     }
 
     if (log.isDebug2())
