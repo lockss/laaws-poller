@@ -71,7 +71,7 @@ org.lockss.poll.v3.messageDir=/tmp
 org.lockss.metrics.slowest.hashrate=250
 org.lockss.state.recall.delay=5m
 
-org.lockss.daemon.crawlMode=NonPlugins
+#org.lockss.daemon.crawlMode=NonPlugins
 
 # Crawl starter interval
 org.lockss.crawler.startCrawlsInterval=5m
@@ -89,7 +89,7 @@ org.lockss.baseau.minFetchDelay=3000
 org.lockss.plugin.restartAusWithNewPlugin=true
 
 # Enable crawler
-org.lockss.crawler.enabled=true
+org.lockss.crawler.enabled=false
 org.lockss.poll.v3.enableV3Poller=true
 org.lockss.poll.v3.enableV3Voter=true
 
