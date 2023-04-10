@@ -34,7 +34,7 @@ import org.lockss.app.LockssDaemon;
 import org.lockss.config.ConfigManager;
 import org.lockss.config.Configuration;
 import org.lockss.db.DbException;
-import org.lockss.laaws.rs.core.LockssRepository;
+import org.lockss.util.rest.repo.LockssRepository;
 import org.lockss.plugin.ArchivalUnit;
 import org.lockss.plugin.AuUtil;
 import org.lockss.plugin.Plugin;

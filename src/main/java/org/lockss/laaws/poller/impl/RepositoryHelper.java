@@ -35,7 +35,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.lockss.app.LockssDaemon;
-import org.lockss.laaws.rs.core.LockssRepository;
+import org.lockss.util.rest.repo.LockssRepository;
 import org.lockss.repository.RepoSpec;
 import org.lockss.util.Logger;
 import org.lockss.ws.entities.RepositoryWsResult;
