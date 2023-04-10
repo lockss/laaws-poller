@@ -35,7 +35,7 @@ import org.lockss.exporter.Exporter;
 import org.lockss.exporter.Exporter.FilenameTranslation;
 import org.lockss.exporter.Exporter.Type;
 import org.lockss.laaws.poller.api.AusApiDelegate;
-import org.lockss.laaws.rs.util.NamedInputStreamResource;
+import org.lockss.util.rest.repo.util.NamedInputStreamResource;
 import org.lockss.log.L4JLogger;
 import org.lockss.plugin.ArchivalUnit;
 import org.lockss.spring.base.BaseSpringApiServiceImpl;
