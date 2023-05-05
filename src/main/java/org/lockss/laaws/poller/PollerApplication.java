@@ -28,8 +28,7 @@ package org.lockss.laaws.poller;
 
 import static org.lockss.app.LockssApp.PARAM_START_PLUGINS;
 import static org.lockss.app.ManagerDescs.*;
-
-import org.lockss.config.ConfigManager;
+import static org.lockss.crawler.CrawlManagerImpl.PARAM_ENABLE_JMS_RECEIVE;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -97,11 +96,11 @@ public class PollerApplication extends BaseSpringBootApplication implements Comm
       try {
         AppSpec spec = new AppSpec()
             .setService(ServiceDescr.SVC_POLLER)
-            .setName("Poller/Crawler Service")
+            .setName("Poller Service")
             .setArgs(args)
             .setSpringApplicatonContext(getApplicationContext())
             .setAppManagers(myManagerDescs)
-            .addAppConfig(ConfigManager.PARAM_ENABLE_JMS_RECEIVE, "true")
+            .addAppConfig(PARAM_ENABLE_JMS_RECEIVE, "true")
             .addAppConfig(PARAM_START_PLUGINS, "true")
             .addAppConfig(PluginManager.PARAM_START_ALL_AUS, "true");
         logger.info("Calling LockssApp.startStatic...");
