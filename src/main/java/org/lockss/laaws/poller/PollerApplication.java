@@ -29,6 +29,7 @@ package org.lockss.laaws.poller;
 import static org.lockss.app.LockssApp.PARAM_START_PLUGINS;
 import static org.lockss.app.ManagerDescs.*;
 
+import org.lockss.crawler.CrawlManagerImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -94,14 +95,16 @@ public class PollerApplication extends BaseSpringBootApplication implements Comm
     if (args != null && args.length > 0) {
       logger.info("Starting the LOCKSS daemon");
       try {
-        AppSpec spec = new AppSpec()
-            .setService(ServiceDescr.SVC_POLLER)
-            .setName("Poller/Crawler Service")
-            .setArgs(args)
-            .setSpringApplicatonContext(getApplicationContext())
-            .setAppManagers(myManagerDescs)
-            .addAppConfig(PARAM_START_PLUGINS, "true")
-            .addAppConfig(PluginManager.PARAM_START_ALL_AUS, "true");
+        AppSpec spec =
+            new AppSpec()
+                .setService(ServiceDescr.SVC_POLLER)
+                .setName("Poller Service")
+                .setArgs(args)
+                .setSpringApplicatonContext(getApplicationContext())
+                .setAppManagers(myManagerDescs)
+                .addAppConfig(CrawlManagerImpl.PARAM_ENABLE_JMS_RECEIVE, "true")
+                .addAppConfig(PARAM_START_PLUGINS, "true")
+                .addAppConfig(PluginManager.PARAM_START_ALL_AUS, "true");
         logger.info("Calling LockssApp.startStatic...");
         lockssApp = LockssApp.startStatic(LockssDaemon.class, spec);
       } catch (Exception ex) {
