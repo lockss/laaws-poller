@@ -304,8 +304,7 @@ public class RepositoryWsSource extends RepositoryWsResult {
 	return true;
     }
 
-    String pluginKey =
-	PluginManager.pluginKeyFromId(PluginManager.pluginIdFromAuId(auId));
+    String pluginKey = PluginManager.pluginKeyFromAuId(auId);
     Plugin plugin = getPluginManager().getPlugin(pluginKey);
 
     if (plugin == null) {

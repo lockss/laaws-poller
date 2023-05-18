@@ -225,8 +225,7 @@ public class RepositorySpaceWsSource extends RepositorySpaceWsResult {
 	      }
 
 	      // Get the Archival Unit plugin.
-	      String pluginKey = PluginManager
-		  .pluginKeyFromId(PluginManager.pluginIdFromAuId(auid));
+	      String pluginKey = PluginManager.pluginKeyFromAuId(auid);
 	      Plugin plugin = pluginMgr.getPlugin(pluginKey);
 		  
 	      boolean isOrphaned = true;
