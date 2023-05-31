@@ -1601,6 +1601,7 @@ definitions:
         description: "The Repository Space identifier"
     description: "Information about the requested repository spaces"
   apiStatus:
+    description: "The status information of the service"
     type: "object"
     required:
       - "apiVersion"
@@ -1631,7 +1632,14 @@ definitions:
       reason:
         type: "string"
         description: "The reason the service isn't ready."
-      pluginsReady:
-        type: "boolean"
-        description: "An indication of whether the service has made the loadable plugin registries ready to load."
-    description: "The status information of the service"
+      startupStatus:
+        description: "Enum indicating progress of plugin/AU processing at startup."
+        type: string
+        enum:
+          - NONE
+          - PLUGINS_CRAWLING
+          - PLUGINS_COLLECTED
+          - PLUGINS_LOADING
+          - PLUGINS_LOADED
+          - AUS_STARTING
+          - AUS_STARTED
