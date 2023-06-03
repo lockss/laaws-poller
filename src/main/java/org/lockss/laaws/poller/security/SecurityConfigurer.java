@@ -40,7 +40,7 @@ import org.lockss.spring.auth.SpringSecurityConfigurer;
  */
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
+//@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfigurer extends SpringSecurityConfigurer {
   // To use an authentication filter different than the default
   // org.lockss.rs.auth.SpringAuthenticationFilter, override the
