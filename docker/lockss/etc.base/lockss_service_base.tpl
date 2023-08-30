@@ -42,8 +42,8 @@
 org.lockss.scomm.enabled=true
 
 # Enable crawls of all but plugin registries
-org.lockss.crawler.enabled=true
-org.lockss.daemon.crawlMode=NonPlugins
+org.lockss.crawler.enabled=false
+org.lockss.daemon.crawlMode=None
 
 # Enable ServeContent
 org.lockss.contentui.start=true

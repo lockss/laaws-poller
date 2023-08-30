@@ -32,6 +32,8 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.lockss.app.*;
+import org.lockss.log.L4JLogger;
 import org.lockss.util.rest.status.ApiStatus;
 import org.lockss.protocol.IdentityManager;
 import org.lockss.protocol.PeerIdentity;
@@ -44,6 +46,7 @@ import org.mockito.MockitoAnnotations;
 
 /** @noinspection TestShouldMockAllTestedDependenciesInspection*/
 public class TestStatusApiServiceImpl extends LockssTestCase4 {
+  private static L4JLogger log = L4JLogger.getLogger();
 
   @Mock
   private HttpServletRequest request;
@@ -80,6 +83,13 @@ public class TestStatusApiServiceImpl extends LockssTestCase4 {
 
     // Get the expected result.
     ApiStatus expected = new ApiStatus("swagger/swagger.yaml");
+    expected.setReady(false);
+    expected.setReadyTime(LockssApp.getLockssApp().getReadyTime());
+    if (LockssDaemon.getLockssDaemon().areLoadablePluginsReady()) {
+      expected.setStartupStatus(ApiStatus.StartupStatus.AUS_STARTED);
+    } else {
+      expected.setStartupStatus(ApiStatus.StartupStatus.NONE);
+    }
 
     Assert.assertEquals(expected.toJson(), result.toJson());
   }

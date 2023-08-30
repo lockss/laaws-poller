@@ -8,7 +8,7 @@ import org.lockss.hasher.HasherResult;
 import org.lockss.hasher.SimpleHasher;
 import org.lockss.importer.Importer;
 import org.lockss.laaws.poller.api.WsApiDelegate;
-import org.lockss.laaws.rs.util.NamedInputStreamResource;
+import org.lockss.util.rest.repo.util.NamedInputStreamResource;
 import org.lockss.log.L4JLogger;
 import org.lockss.spring.base.BaseSpringApiServiceImpl;
 import org.lockss.spring.error.LockssRestServiceException;
