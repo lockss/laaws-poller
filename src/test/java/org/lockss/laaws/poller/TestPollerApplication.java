@@ -134,7 +134,7 @@ public class TestPollerApplication extends SpringLockssTestCase4 {
    */
   @Test
   public void testGetSwaggerDocs() throws Exception {
-    runGetSwaggerDocsTest(getTestUrlTemplate("/v2/api-docs"));
+    runGetSwaggerDocsTest(getTestUrlTemplate("/v3/api-docs"));
   }
 
   @Test
