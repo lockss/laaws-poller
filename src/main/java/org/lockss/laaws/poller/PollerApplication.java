@@ -43,11 +43,8 @@ import org.lockss.app.LockssDaemon;
 import org.lockss.app.ServiceDescr;
 import org.lockss.plugin.PluginManager;
 import org.lockss.spring.base.BaseSpringBootApplication;
-import org.springframework.boot.autoconfigure.solr.SolrAutoConfiguration;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
-@SpringBootApplication(exclude = {SolrAutoConfiguration.class})
-@EnableSwagger2
+@SpringBootApplication()
 public class PollerApplication extends BaseSpringBootApplication implements CommandLineRunner {
 
   private static final Logger logger =
@@ -58,6 +55,7 @@ public class PollerApplication extends BaseSpringBootApplication implements Comm
   // Manager descriptors.  The order of this table determines the order in
   // which managers are initialized and started.
   private static final ManagerDesc[] myManagerDescs = {
+      CONFIG_DB_MANAGER_DESC,
       PLUGIN_MANAGER_DESC,
       STATE_MANAGER_DESC,
       SCHED_SERVICE_DESC,

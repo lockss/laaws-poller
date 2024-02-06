@@ -68,3 +68,5 @@ sed -i.backup "s/import org.lockss.laaws.poller.model.PollWsResult/import org.lo
 sed -i.backup "s/import org.lockss.laaws.poller.model.RepositorySpaceWsResult/import org.lockss.ws.entities.RepositorySpaceWsResult/" $WS_API && rm $WS_API.backup
 sed -i.backup "s/import org.lockss.laaws.poller.model.RepositoryWsResult/import org.lockss.ws.entities.RepositoryWsResult/" $WS_API && rm $WS_API.backup
 sed -i.backup "s/import org.lockss.laaws.poller.model.VoteWsResult/import org.lockss.ws.entities.VoteWsResult/" $WS_API && rm $WS_API.backup
+
+rm src/generated/java/org/lockss/laaws/poller/config/SwaggerDocumentationConfig.java
