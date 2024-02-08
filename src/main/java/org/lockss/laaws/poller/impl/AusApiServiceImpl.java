@@ -300,11 +300,6 @@ implements AusApiDelegate {
     return Optional.ofNullable(objectMapper);
   }
 
-  @Override
-  public Optional<HttpServletRequest> getRequest() {
-    return Optional.ofNullable(request);
-  }
-
   /**
    * Provides the full URL of the request.
    *
