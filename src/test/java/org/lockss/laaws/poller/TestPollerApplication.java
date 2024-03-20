@@ -48,7 +48,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes = {PollerApplication.class},
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class TestPollerApplication extends SpringLockssTestCase4 {
 
   // The port that Tomcat is using during this test.
