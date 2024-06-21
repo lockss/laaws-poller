@@ -29,7 +29,7 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --> 
-# LOCKSS Poller Service [![Build Status](https://travis-ci.org/lockss/laaws-poller.svg?branch=master)](https://travis-ci.org/lockss/laaws-poller)
+# LOCKSS Poller Service
 This is the REST Web Service that provides support for polls and votes.
 
 ## Note on branches
