@@ -33,7 +33,7 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.HashMap;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;

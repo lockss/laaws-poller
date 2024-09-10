@@ -27,7 +27,7 @@
 package org.lockss.laaws.poller.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;

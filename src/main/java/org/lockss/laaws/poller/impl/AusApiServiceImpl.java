@@ -49,7 +49,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import javax.activation.FileDataSource;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -298,11 +298,6 @@ implements AusApiDelegate {
   @Override
   public Optional<ObjectMapper> getObjectMapper() {
     return Optional.ofNullable(objectMapper);
-  }
-
-  @Override
-  public Optional<HttpServletRequest> getRequest() {
-    return Optional.ofNullable(request);
   }
 
   /**
