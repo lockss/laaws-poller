@@ -8,6 +8,8 @@ import org.lockss.hasher.HasherResult;
 import org.lockss.hasher.SimpleHasher;
 import org.lockss.importer.Importer;
 import org.lockss.laaws.poller.api.WsApiDelegate;
+import org.lockss.spring.auth.AuthUtil;
+import org.lockss.spring.auth.Roles;
 import org.lockss.util.rest.repo.util.NamedInputStreamResource;
 import org.lockss.log.L4JLogger;
 import org.lockss.spring.base.BaseSpringApiServiceImpl;
@@ -60,7 +62,8 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
    * @param targetBaseUrlPath A String with the base URL path of the target
    *                          Archival Unit.
    * @param targetUrl         A String with the target Archival Unit URL.
-   * @param file              A MultipartFile with the content of the file to be
+   * @param file              A MultipartFile with the content
+   *                          f the file to be
    *                          imported.
    * @param userProperties    A {@code List<String>} with the user-specified
    *                          properties.
@@ -75,6 +78,13 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
         file.getName(), file.getSize(), userProperties,
         getFullRequestUrl(request));
     log.debug2("Parsed request: {}", parsedRequest);
+
+    // Check whether the service has not been fully initialized.
+    if (!waitReady()) {
+      return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    AuthUtil.checkHasRole(Roles.ROLE_AU_ADMIN);
 
     try {
       new Importer().importFile(file.getInputStream(), targetBaseUrlPath,
@@ -127,6 +137,13 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
   @Override
   public ResponseEntity getRepositories(String repositoryQuery) {
     log.debug2("repositoryQuery = {}", repositoryQuery);
+
+    // Check whether the service has not been fully initialized.
+    if (!waitReady()) {
+      return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    AuthUtil.checkHasRole(Roles.ROLE_AU_ADMIN);
 
     RepositoryHelper repositoryHelper = new RepositoryHelper();
     List<RepositoryWsResult> results = null;
@@ -189,6 +206,13 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
   public ResponseEntity<String> deleteHash(String requestId) {
     log.debug2("requestId = {}", requestId);
     String message = null;
+
+    // Check whether the service has not been fully initialized.
+    if (!waitReady()) {
+      return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    AuthUtil.checkHasRole(Roles.ROLE_CONTENT_ACCESS, Roles.ROLE_AU_ADMIN);
 
     try {
       // Handle a missing request identifier.
@@ -258,6 +282,13 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
   public ResponseEntity getAllHashes() {
     log.debug2("Invoked.");
 
+    // Check whether the service has not been fully initialized.
+    if (!waitReady()) {
+      return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    AuthUtil.checkHasRole(Roles.ROLE_CONTENT_ACCESS, Roles.ROLE_AU_ADMIN);
+
     try {
       // Initialize the response.
       MultiValueMap<String, HttpEntity<?>> parts = new LinkedMultiValueMap<>();
@@ -298,6 +329,13 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
   public ResponseEntity getHash(String requestId) {
     log.debug2("requestId = {}", requestId);
     String message = null;
+
+    // Check whether the service has not been fully initialized.
+    if (!waitReady()) {
+      return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    AuthUtil.checkHasRole(Roles.ROLE_CONTENT_ACCESS, Roles.ROLE_AU_ADMIN);
 
     try {
       // Handle a missing request identifier.
@@ -357,6 +395,13 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
                                 Boolean isAsynchronous) {
     log.debug2("hasherWsParams = {}", hasherWsParams);
     log.debug2("isAsynchronous = {}", isAsynchronous);
+
+    // Check whether the service has not been fully initialized.
+    if (!waitReady()) {
+      return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    AuthUtil.checkHasRole(Roles.ROLE_CONTENT_ACCESS, Roles.ROLE_AU_ADMIN);
 
     try {
       // Prepare the hash parameters.
@@ -606,6 +651,13 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
   public ResponseEntity getPeers(String peerQuery) {
     log.debug2("peerQuery = {}", peerQuery);
 
+    // Check whether the service has not been fully initialized.
+    if (!waitReady()) {
+      return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    AuthUtil.checkHasRole(Roles.ROLE_AU_ADMIN);
+
     PeerHelper peerHelper = new PeerHelper();
     List<PeerWsResult> results = null;
 
@@ -659,6 +711,13 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
   @Override
   public ResponseEntity getPolls(String pollQuery) {
     log.debug("pollQuery = {}", pollQuery);
+
+    // Check whether the service has not been fully initialized.
+    if (!waitReady()) {
+      return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    AuthUtil.checkHasRole(Roles.ROLE_AU_ADMIN);
 
     PollHelper pollHelper = new PollHelper();
     List<PollWsResult> results = null;
@@ -715,6 +774,13 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
   public ResponseEntity getRepositorySpaces(String repositorySpaceQuery) {
     log.debug2("repositorySpaceQuery = {}", repositorySpaceQuery);
 
+    // Check whether the service has not been fully initialized.
+    if (!waitReady()) {
+      return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    AuthUtil.checkHasRole(Roles.ROLE_AU_ADMIN);
+
     RepositorySpaceHelper repositorySpaceHelper = new RepositorySpaceHelper();
     List<RepositorySpaceWsResult> results = null;
 
@@ -769,6 +835,13 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
   @Override
   public ResponseEntity getVotes(String voteQuery) {
     log.debug2("voteQuery = {}", voteQuery);
+
+    // Check whether the service has not been fully initialized.
+    if (!waitReady()) {
+      return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    AuthUtil.checkHasRole(Roles.ROLE_AU_ADMIN);
 
     VoteHelper voteHelper = new VoteHelper();
     List<VoteWsResult> results = null;

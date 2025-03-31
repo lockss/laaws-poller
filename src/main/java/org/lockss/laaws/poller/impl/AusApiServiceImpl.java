@@ -35,6 +35,8 @@ import org.lockss.exporter.Exporter;
 import org.lockss.exporter.Exporter.FilenameTranslation;
 import org.lockss.exporter.Exporter.Type;
 import org.lockss.laaws.poller.api.AusApiDelegate;
+import org.lockss.spring.auth.AuthUtil;
+import org.lockss.spring.auth.Roles;
 import org.lockss.util.rest.repo.util.NamedInputStreamResource;
 import org.lockss.log.L4JLogger;
 import org.lockss.plugin.ArchivalUnit;
@@ -125,6 +127,13 @@ implements AusApiDelegate {
       auid, fileType, isCompress, isExcludeDirNodes, xlateFilenames, filePrefix,
       maxSize, maxVersions, getFullRequestUrl(request));
     log.debug2("Parsed request: {}", parsedRequest);
+
+    // Check whether the service has not been fully initialized.
+    if (!waitReady()) {
+      return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    AuthUtil.checkHasRole(Roles.ROLE_CONTENT_ACCESS, Roles.ROLE_AU_ADMIN);
 
     try {
       LockssDaemon daemon = LockssDaemon.getLockssDaemon();
