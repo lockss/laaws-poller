@@ -128,26 +128,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/errorResult'
-  /status:
-    get:
-      tags:
-        - service
-      summary: Get the status of the service
-      description: Get the status of the service
-      operationId: getStatus
-      responses:
-        200:
-          description: The status of the service
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/apiStatus'
-        default:
-          description: The resulting error payload.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/errorResult'
   /polls/{pollKey}/tallies:
     get:
       tags:
@@ -593,6 +573,27 @@ paths:
               schema:
                 type: string
                 format: binary
+        default:
+          description: The resulting error payload.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResult'
+  /status:
+    get:
+      tags:
+        - service
+      summary: Get the status of the service
+      description: Get the status of the service
+      operationId: getStatus
+      # no credentials required
+      responses:
+        200:
+          description: The status of the service
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/apiStatus'
         default:
           description: The resulting error payload.
           content:
