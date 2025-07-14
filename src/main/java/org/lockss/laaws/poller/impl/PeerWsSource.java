@@ -36,10 +36,10 @@ import org.lockss.protocol.V3LcapMessage.PollNak;
 import org.lockss.ws.entities.PeerWsResult;
 
 /**
- * Container for the information that is used as the source for a query related
- * to peers.
+ * Container for the information that is used as the source for a query related to peers.
  */
 public class PeerWsSource extends PeerWsResult {
+
   private PeerIdentityStatus piStatus;
 
   private boolean peerIdPopulated = false;
@@ -58,7 +58,7 @@ public class PeerWsSource extends PeerWsResult {
   private boolean platformGroupMatchPopulated = false;
 
   private static List<String> platformGroups =
-      (List<String>)ConfigManager.getPlatformGroupList();
+    (List<String>) ConfigManager.getPlatformGroupList();
 
   public PeerWsSource(PeerIdentityStatus piStatus) {
     this.piStatus = piStatus;
@@ -90,13 +90,14 @@ public class PeerWsSource extends PeerWsResult {
       int messageOpCode = piStatus.getLastMessageOpCode();
 
       if (messageOpCode >= V3LcapMessage.POLL_MESSAGES_BASE && messageOpCode
-	  < (V3LcapMessage.POLL_MESSAGES.length
-	      + V3LcapMessage.POLL_MESSAGES_BASE)) {
-	setMessageType(V3LcapMessage
-	    .POLL_MESSAGES[messageOpCode - V3LcapMessage.POLL_MESSAGES_BASE]
-		+ " (" + messageOpCode + ")");
-      } else {
-	setMessageType("n/a");
+        < (V3LcapMessage.POLL_MESSAGES.length
+        + V3LcapMessage.POLL_MESSAGES_BASE)) {
+        setMessageType(V3LcapMessage
+          .POLL_MESSAGES[messageOpCode - V3LcapMessage.POLL_MESSAGES_BASE]
+          + " (" + messageOpCode + ")");
+      }
+      else {
+        setMessageType("n/a");
       }
 
       messageTypePopulated = true;
@@ -191,7 +192,7 @@ public class PeerWsSource extends PeerWsResult {
       PollNak pollNak = piStatus.getLastPollNak();
 
       if (pollNak != null) {
-	setNakReason(pollNak.toString());
+        setNakReason(pollNak.toString());
       }
 
       nakReasonPopulated = true;
@@ -203,7 +204,7 @@ public class PeerWsSource extends PeerWsResult {
   @Override
   public List<String> getGroups() {
     if (!groupsPopulated) {
-      setGroups((List<String>)piStatus.getGroups());
+      setGroups((List<String>) piStatus.getGroups());
       groupsPopulated = true;
     }
 
@@ -215,7 +216,7 @@ public class PeerWsSource extends PeerWsResult {
     if (!platformGroupMatchPopulated) {
       List<String> peerGroups = getGroups();
       boolean match = peerGroups == null || peerGroups.isEmpty()
-	  || CollectionUtils.containsAny(platformGroups, peerGroups);
+        || CollectionUtils.containsAny(platformGroups, peerGroups);
       setPlatformGroupMatch(Boolean.valueOf(match));
 
       platformGroupMatchPopulated = true;

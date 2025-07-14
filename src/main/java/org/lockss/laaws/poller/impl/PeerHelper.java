@@ -44,6 +44,7 @@ import org.lockss.ws.entities.PeerWsResult;
  * Helper of the DaemonStatus web service implementation of peer queries.
  */
 public class PeerHelper {
+
   /**
    * The fully-qualified name of the class of the objects used as source in a
    * query.
@@ -101,28 +102,29 @@ public class PeerHelper {
   /**
    * Provides the universe of peer-related objects used as the source for a
    * query.
-   * 
+   *
    * @return a List<PeerWsProxy> with the universe.
    */
   List<PeerWsSource> createUniverse() {
     final String DEBUG_HEADER = "createUniverse(): ";
-    
+
     // Get identity manager.
-    IdentityManager idMgr = (IdentityManager)LockssDaemon
-	.getManagerByKeyStatic(LockssDaemon.IDENTITY_MANAGER);
+    IdentityManager idMgr = (IdentityManager) LockssDaemon
+      .getManagerByKeyStatic(LockssDaemon.IDENTITY_MANAGER);
 
     boolean includeV1 = false;
 
     try {
       includeV1 = (idMgr.getLocalPeerIdentity(Poll.V1_PROTOCOL) != null);
-    } catch (IllegalArgumentException e) {
+    }
+    catch (IllegalArgumentException e) {
       // Ignore.
     }
 
     // Get all the peers.
-    List<PeerIdentityStatus> allPeers = ((IdentityManager)LockssDaemon
-	.getManagerByKeyStatic(LockssDaemon.IDENTITY_MANAGER))
-	.getPeerIdentityStatusList();
+    List<PeerIdentityStatus> allPeers = ((IdentityManager) LockssDaemon
+      .getManagerByKeyStatic(LockssDaemon.IDENTITY_MANAGER))
+      .getPeerIdentityStatusList();
     if (log.isDebug3())
       log.debug3(DEBUG_HEADER + "allPeers.size() = " + allPeers.size());
 
@@ -134,8 +136,8 @@ public class PeerHelper {
       PeerIdentity pid = status.getPeerIdentity();
 
       if (!pid.isLocalIdentity() && (includeV1 || pid.isV3())) {
-	// Add the object initialized with this peer to the universe of objects.
-	universe.add(new PeerWsSource(status));
+        // Add the object initialized with this peer to the universe of objects.
+        universe.add(new PeerWsSource(status));
       }
     }
 
@@ -146,9 +148,8 @@ public class PeerHelper {
 
   /**
    * Provides a printable copy of a collection of peer-related query results.
-   * 
-   * @param results
-   *          A {@code Collection<PeerWsResult>} with the query results.
+   *
+   * @param results A {@code Collection<PeerWsResult>} with the query results.
    * @return a String with the requested printable copy.
    */
   String nonDefaultToString(Collection<PeerWsResult> results) {
@@ -159,9 +160,10 @@ public class PeerHelper {
     for (PeerWsResult result : results) {
       // Handle the first result differently.
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append(nonDefaultToString(result));
@@ -173,9 +175,8 @@ public class PeerHelper {
 
   /**
    * Provides a printable copy of a peer-related query result.
-   * 
-   * @param result
-   *          A PeerWsResult with the query result.
+   *
+   * @param result A PeerWsResult with the query result.
    * @return a String with the requested printable copy.
    */
   private String nonDefaultToString(PeerWsResult result) {
@@ -189,9 +190,10 @@ public class PeerHelper {
 
     if (result.getLastMessage() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("lastMessage=").append(result.getLastMessage());
@@ -199,9 +201,10 @@ public class PeerHelper {
 
     if (result.getMessageType() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("messageType=").append(result.getMessageType());
@@ -209,9 +212,10 @@ public class PeerHelper {
 
     if (result.getMessageCount() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("messageCount=").append(result.getMessageCount());
@@ -219,9 +223,10 @@ public class PeerHelper {
 
     if (result.getLastPoll() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("lastPoll=").append(result.getLastPoll());
@@ -229,9 +234,10 @@ public class PeerHelper {
 
     if (result.getLastVote() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("lastVote=").append(result.getLastVote());
@@ -239,9 +245,10 @@ public class PeerHelper {
 
     if (result.getLastInvitation() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("lastInvitation=").append(result.getLastInvitation());
@@ -249,9 +256,10 @@ public class PeerHelper {
 
     if (result.getInvitationCount() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("invitationCount=").append(result.getInvitationCount());
@@ -259,9 +267,10 @@ public class PeerHelper {
 
     if (result.getPollsCalled() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("pollsCalled=").append(result.getPollsCalled());
@@ -269,9 +278,10 @@ public class PeerHelper {
 
     if (result.getVotesCast() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("votesCast=").append(result.getVotesCast());
@@ -279,9 +289,10 @@ public class PeerHelper {
 
     if (result.getPollsRejected() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("pollsRejected=").append(result.getPollsRejected());
@@ -289,9 +300,10 @@ public class PeerHelper {
 
     if (result.getNakReason() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("nakReason=").append(result.getNakReason());
@@ -299,9 +311,10 @@ public class PeerHelper {
 
     if (result.getGroups() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("groups=").append(result.getGroups());
@@ -309,13 +322,14 @@ public class PeerHelper {
 
     if (result.getPlatformGroupMatch() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("platformGroupMatch=")
-      .append(result.getPlatformGroupMatch());
+        .append(result.getPlatformGroupMatch());
     }
 
     return builder.append("]").toString();

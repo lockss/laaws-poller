@@ -31,15 +31,15 @@ POSSIBILITY OF SUCH DAMAGE.
 
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
     <groupId>org.lockss</groupId>
     <artifactId>lockss-parent-pom</artifactId>
     <version>1.18.0-SNAPSHOT</version>
-    <relativePath />
+    <relativePath/>
   </parent>
 
   <groupId>org.lockss.laaws</groupId>
@@ -98,6 +98,14 @@ POSSIBILITY OF SUCH DAMAGE.
       <type>pom</type>
       <scope>test</scope>
     </dependency>
+    <dependency>
+    <groupId>org.springframework.security</groupId>
+    <artifactId>spring-security-test</artifactId>
+    <version>6.3.3</version>
+    <scope>test</scope>
+  </dependency>
+
+
   </dependencies>
 
   <build>

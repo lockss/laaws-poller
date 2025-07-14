@@ -36,10 +36,10 @@ import org.lockss.util.time.TimeBase;
 import org.lockss.ws.entities.VoteWsResult;
 
 /**
- * Container for the information that is used as the source for a query related
- * to votes.
+ * Container for the information that is used as the source for a query related to votes.
  */
 public class VoteWsSource extends VoteWsResult {
+
   private V3Voter vote;
 
   private boolean auIdPopulated = false;
@@ -141,7 +141,7 @@ public class VoteWsSource extends VoteWsResult {
   @Override
   public String getVoteKey() {
     if (!voteKeyPopulated) {
-	setVoteKey(vote.getKey());
+      setVoteKey(vote.getKey());
 
       voteKeyPopulated = true;
     }
@@ -166,11 +166,11 @@ public class VoteWsSource extends VoteWsResult {
       PsmInterp interp = vote.getPsmInterp();
 
       if (interp != null) {
-	PsmState state = interp.getCurrentState();
+        PsmState state = interp.getCurrentState();
 
-	if (state != null) {
-	  setCurrentState(state.getName());
-	}
+        if (state != null) {
+          setCurrentState(state.getName());
+        }
       }
 
       currentStatePopulated = true;
@@ -218,7 +218,7 @@ public class VoteWsSource extends VoteWsResult {
       long remain = TimeBase.msUntil(vote.getDeadline().getExpirationTime());
 
       if (remain >= 0) {
-	setRemainingTime(Long.valueOf(remain));
+        setRemainingTime(Long.valueOf(remain));
       }
 
       remainingTimePopulated = true;
@@ -231,8 +231,8 @@ public class VoteWsSource extends VoteWsResult {
   public Double getAgreementHint() {
     if (!agreementHintPopulated) {
       if (vote.getStatus() == V3Voter.STATUS_COMPLETE
-	  && getVoterUserData().hasReceivedHint()) {
-	setAgreementHint(voterUserData.getAgreementHint());
+        && getVoterUserData().hasReceivedHint()) {
+        setAgreementHint(voterUserData.getAgreementHint());
       }
 
       agreementHintPopulated = true;
@@ -267,7 +267,7 @@ public class VoteWsSource extends VoteWsResult {
   public String getVoterNonce2() {
     if (!voterNonce2Populated) {
       if (getIsSymmetricPoll().booleanValue()) {
-	setVoterNonce2(ByteArray.toBase64(vote.getVoterNonce()));
+        setVoterNonce2(ByteArray.toBase64(vote.getVoterNonce()));
       }
 
       voterNonce2Populated = true;
@@ -291,8 +291,8 @@ public class VoteWsSource extends VoteWsResult {
   public Integer getAgreedUrlCount() {
     if (!agreedUrlCountPopulated) {
       if (getIsSymmetricPoll().booleanValue()
-	  && vote.getStatus() == V3Voter.STATUS_COMPLETE) {
-	setAgreedUrlCount(Integer.valueOf(getVoterUserData().getNumAgreeUrl()));
+        && vote.getStatus() == V3Voter.STATUS_COMPLETE) {
+        setAgreedUrlCount(Integer.valueOf(getVoterUserData().getNumAgreeUrl()));
       }
 
       agreedUrlCountPopulated = true;
@@ -305,9 +305,9 @@ public class VoteWsSource extends VoteWsResult {
   public Integer getDisagreedUrlCount() {
     if (!disagreedUrlCountPopulated) {
       if (getIsSymmetricPoll().booleanValue()
-	  && vote.getStatus() == V3Voter.STATUS_COMPLETE) {
-	setDisagreedUrlCount(Integer
-	    .valueOf(getVoterUserData().getNumDisagreeUrl()));
+        && vote.getStatus() == V3Voter.STATUS_COMPLETE) {
+        setDisagreedUrlCount(Integer
+          .valueOf(getVoterUserData().getNumDisagreeUrl()));
       }
 
       disagreedUrlCountPopulated = true;
@@ -320,9 +320,9 @@ public class VoteWsSource extends VoteWsResult {
   public Integer getPollerOnlyUrlCount() {
     if (!pollerOnlyUrlCountPopulated) {
       if (getIsSymmetricPoll().booleanValue()
-	  && vote.getStatus() == V3Voter.STATUS_COMPLETE) {
-	setPollerOnlyUrlCount(Integer
-	    .valueOf(getVoterUserData().getNumPollerOnlyUrl()));
+        && vote.getStatus() == V3Voter.STATUS_COMPLETE) {
+        setPollerOnlyUrlCount(Integer
+          .valueOf(getVoterUserData().getNumPollerOnlyUrl()));
       }
 
       pollerOnlyUrlCountPopulated = true;
@@ -335,9 +335,9 @@ public class VoteWsSource extends VoteWsResult {
   public Integer getVoterOnlyUrlCount() {
     if (!voterOnlyUrlCountPopulated) {
       if (getIsSymmetricPoll().booleanValue()
-	  && vote.getStatus() == V3Voter.STATUS_COMPLETE) {
-	setVoterOnlyUrlCount(Integer
-	    .valueOf(getVoterUserData().getNumVoterOnlyUrl()));
+        && vote.getStatus() == V3Voter.STATUS_COMPLETE) {
+        setVoterOnlyUrlCount(Integer
+          .valueOf(getVoterUserData().getNumVoterOnlyUrl()));
       }
 
       voterOnlyUrlCountPopulated = true;
