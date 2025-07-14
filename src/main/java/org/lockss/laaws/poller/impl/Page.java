@@ -48,7 +48,8 @@ public class Page<T> {
   public Page(Collection<T> content, Integer page, Integer size, String linkBase) {
     if (null == content) {
       mTotal = 0;
-    } else {
+    }
+    else {
       mContent.addAll(content);
     }
     mLinkBase = linkBase;
@@ -61,7 +62,8 @@ public class Page<T> {
       mFirstItem = 0;
       mLastItem = mTotal;
       mPageSize = mTotal;
-    } else {
+    }
+    else {
       // we need to calculate
       mPageNum = page > 0 ? page : 1;
       mLastPage = mTotal / size + (mTotal % size > 0 ? 1 : 0);

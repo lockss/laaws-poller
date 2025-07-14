@@ -311,3 +311,4 @@ daemon/
 /pom.xml.bak
 /*/pom.xml.bak
 /.surefire-*
+/.fastRequest/config/fastRequestCurrentProjectConfig.json

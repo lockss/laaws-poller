@@ -1,3 +1,4 @@
+
 # Copyright (c) 2017 Board of Trustees of Leland Stanford Jr. University,
 # all rights reserved.
 #
@@ -23,3 +24,93 @@
 # in this Software without prior written authorization from Stanford University.
 #
 # Don't make local changes in this file; put local settings in lockss.opt
+
+#org.lockss.log.default.level=debug
+
+org.lockss.ui.access.ip.logForbidden=true
+org.lockss.proxy.access.ip.logForbidden=true
+
+org.lockss.config.reloadInterval = 5m
+org.lockss.ui.allowPluginConfig=true
+
+org.lockss.ui.start=yes
+
+# Turn off V1 -- This will be the default some day.
+org.lockss.comm.enabled=false
+
+# Identity
+org.lockss.platform.v3.identity=TCP:[127.0.0.1]:9720
+
+# Comm settings
+org.lockss.comm.enabled=false
+org.lockss.scomm.enabled=true
+org.lockss.scomm.maxMessageSize=33554430
+org.lockss.scomm.timeout.connect=15s
+
+# Poller settings
+org.lockss.poll.pollStarterInitialDelay=1m
+org.lockss.poll.queueEmptySleep=30s
+org.lockss.poll.queueRecalcInterval=30s
+org.lockss.poll.v3.maxSimultaneousV3Pollers=1
+org.lockss.poll.v3.maxSimultaneousV3Voters=100
+org.lockss.poll.v3.deleteExtraFiles=true
+org.lockss.poll.v3.quorum=4
+arg.lockss.poll.v3.minNominationSize=0
+org.lockss.poll.v3.maxNominationSize=0
+org.lockss.poll.v3.voteDurationPadding=30s
+org.lockss.poll.v3.tallyDurationPadding=30s
+org.lockss.poll.v3.voteDurationMultiplier=3
+org.lockss.poll.v3.tallyDurationMultiplier=3
+org.lockss.poll.v3.receiptPadding=30s
+
+# Set the v3 poll state dir to /tmp
+org.lockss.poll.v3.messageDir=/tmp
+
+org.lockss.metrics.slowest.hashrate=250
+org.lockss.state.recall.delay=5m
+
+#org.lockss.daemon.crawlMode=NonPlugins
+
+# Crawl starter interval
+org.lockss.crawler.startCrawlsInterval=5m
+
+org.lockss.crawlStatus.keepUrls=all
+
+# UI username-passwd = lockss-u/lockss-p
+org.lockss.platform.ui.username=lockss-u
+org.lockss.platform.ui.password=SHA1:ac4fc8fa9930a24c8d002d541c37ca993e1bc40f
+
+# UI username-passwd = content-admin/I'mContentAdmin
+org.lockss.ui.users.1.user=content-admin
+org.lockss.ui.users.1.password=SHA1:3edf8dd2b96a6a344bf70a2cc7794a3baffbbc7c
+org.lockss.ui.users.1.roles=contentAdminRole
+
+# UI username-passwd = access-content/I'mAccessContent
+org.lockss.ui.users.2.user=access-content
+org.lockss.ui.users.2.password=SHA1:3509beee5279f479d257178e8a0eddab4301d75a
+org.lockss.ui.users.2.roles=accessContentRole
+
+# UI username-passwd = au-admin/I'mAuAdmin
+org.lockss.ui.users.3.user=au-admin
+org.lockss.ui.users.3.password=SHA1:d80a88b9abe5bbea6759eb86e88d648b405447ef
+org.lockss.ui.users.3.roles=auAdminRole
+
+# So that we don't hash on no-longer-relevant URLs
+org.lockss.blockHasher.ignoreFilesOutsideCrawlSpec=true
+
+org.lockss.baseau.minFetchDelay=3000
+org.lockss.plugin.restartAusWithNewPlugin=true
+
+# Enable crawler
+org.lockss.crawler.enabled=false
+org.lockss.poll.v3.enableV3Poller=true
+org.lockss.poll.v3.enableV3Voter=true
+
+# Disable the SOAP web services.
+org.lockss.ws.enabled=false
+
+# No Repository Manager.
+org.lockss.plugin.auContentFromWs=false
+
+# AccountManager now enabled by default but startup causes errors in test env
+org.lockss.accounts.enabled=false

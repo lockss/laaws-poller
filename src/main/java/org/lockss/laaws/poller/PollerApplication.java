@@ -48,37 +48,37 @@ import org.lockss.spring.base.BaseSpringBootApplication;
 public class PollerApplication extends BaseSpringBootApplication implements CommandLineRunner {
 
   private static final Logger logger =
-      LoggerFactory.getLogger(PollerApplication.class);
+    LoggerFactory.getLogger(PollerApplication.class);
 
   LockssApp lockssApp;
 
   // Manager descriptors.  The order of this table determines the order in
   // which managers are initialized and started.
   private static final ManagerDesc[] myManagerDescs = {
-      CONFIG_DB_MANAGER_DESC,
-      PLUGIN_MANAGER_DESC,
-      STATE_MANAGER_DESC,
-      SCHED_SERVICE_DESC,
-      HASH_SERVICE_DESC,
-      SYSTEM_METRICS_DESC,
-      ACCOUNT_MANAGER_DESC,
-      IDENTITY_MANAGER_DESC,
-      CRAWL_MANAGER_DESC,
-      PSM_MANAGER_DESC,
-      POLL_MANAGER_DESC,
-      REPOSITORY_MANAGER_DESC,
-      STREAM_COMM_MANAGER_DESC,
-      ROUTER_MANAGER_DESC,
-      SERVLET_MANAGER_DESC,
-      REMOTE_API_DESC,
-      PLATFORM_CONFIG_STATUS_DESC,
-      CONFIG_STATUS_DESC,
-      ARCHIVAL_UNIT_STATUS_DESC,
-      OVERVIEW_STATUS_DESC,
-      CONTENT_SERVLET_MANAGER_DESC,
-      PROXY_MANAGER_DESC,
-      AUDIT_PROXY_MANAGER_DESC,
-      ICP_MANAGER_DESC,
+    CONFIG_DB_MANAGER_DESC,
+    PLUGIN_MANAGER_DESC,
+    STATE_MANAGER_DESC,
+    SCHED_SERVICE_DESC,
+    HASH_SERVICE_DESC,
+    SYSTEM_METRICS_DESC,
+    ACCOUNT_MANAGER_DESC,
+    IDENTITY_MANAGER_DESC,
+    CRAWL_MANAGER_DESC,
+    PSM_MANAGER_DESC,
+    POLL_MANAGER_DESC,
+    REPOSITORY_MANAGER_DESC,
+    STREAM_COMM_MANAGER_DESC,
+    ROUTER_MANAGER_DESC,
+    SERVLET_MANAGER_DESC,
+    REMOTE_API_DESC,
+    PLATFORM_CONFIG_STATUS_DESC,
+    CONFIG_STATUS_DESC,
+    ARCHIVAL_UNIT_STATUS_DESC,
+    OVERVIEW_STATUS_DESC,
+    CONTENT_SERVLET_MANAGER_DESC,
+    PROXY_MANAGER_DESC,
+    AUDIT_PROXY_MANAGER_DESC,
+    ICP_MANAGER_DESC,
   };
 
   public static void main(String[] args) {
@@ -94,18 +94,19 @@ public class PollerApplication extends BaseSpringBootApplication implements Comm
       logger.info("Starting the LOCKSS daemon");
       try {
         AppSpec spec =
-            new AppSpec()
-                .setService(ServiceDescr.SVC_POLLER)
-                .setName("Poller Service")
-                .setArgs(args)
-                .setSpringApplicatonContext(getApplicationContext())
-                .setAppManagers(myManagerDescs)
-                .addAppConfig(CrawlManagerImpl.PARAM_ENABLE_JMS_RECEIVE, "true")
-                .addAppConfig(PARAM_START_PLUGINS, "true")
-                .addAppConfig(PluginManager.PARAM_START_ALL_AUS, "true");
+          new AppSpec()
+            .setService(ServiceDescr.SVC_POLLER)
+            .setName("Poller Service")
+            .setArgs(args)
+            .setSpringApplicatonContext(getApplicationContext())
+            .setAppManagers(myManagerDescs)
+            .addAppConfig(CrawlManagerImpl.PARAM_ENABLE_JMS_RECEIVE, "true")
+            .addAppConfig(PARAM_START_PLUGINS, "true")
+            .addAppConfig(PluginManager.PARAM_START_ALL_AUS, "true");
         logger.info("Calling LockssApp.startStatic...");
         lockssApp = LockssApp.startStatic(LockssDaemon.class, spec);
-      } catch (Exception ex) {
+      }
+      catch (Exception ex) {
         logger.error("LockssApp.startStatic failed: ", ex);
       }
     }

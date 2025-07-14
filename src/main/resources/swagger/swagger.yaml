@@ -40,14 +40,14 @@ info:
     url: https://opensource.org/licenses/BSD-3-Clause
   version: 2.0.0
 servers:
-- url: https://laaws.lockss.org:443/
+  - url: https://laaws.lockss.org:443/
 security:
-- basicAuth: []
+  - basicAuth: [ ]
 paths:
   /polls:
     post:
       tags:
-      - service
+        - service
       summary: Send a request to call a poll to the poller
       description: Use the information found in the descriptor object to initiate
         a  poll.
@@ -77,17 +77,17 @@ paths:
   /polls/{psId}:
     get:
       tags:
-      - service
+        - service
       summary: Get queued poll status
       description: Get the status of a previously queued poll.
       operationId: getPollStatus
       parameters:
-      - name: psId
-        in: path
-        description: The poll id.
-        required: true
-        schema:
-          type: string
+        - name: psId
+          in: path
+          description: The poll id.
+          required: true
+          schema:
+            type: string
       responses:
         200:
           description: Poll info returned.
@@ -103,22 +103,22 @@ paths:
                 $ref: '#/components/schemas/errorResult'
     delete:
       tags:
-      - service
+        - service
       summary: Stop a poll and remove from queue.
       description: Stop a running poll and delete any schecduled polls for poll with
         the poll service id.
       operationId: cancelPoll
       parameters:
-      - name: psId
-        in: path
-        description: The poll id.
-        required: true
-        schema:
-          type: string
+        - name: psId
+          in: path
+          description: The poll id.
+          required: true
+          schema:
+            type: string
       responses:
         200:
           description: Poll successfully stopped
-          content: {}
+          content: { }
         default:
           description: The resulting error payload.
           content:
@@ -128,7 +128,7 @@ paths:
   /status:
     get:
       tags:
-      - service
+        - service
       summary: Get the status of the service
       description: Get the status of the service
       operationId: getStatus
@@ -148,39 +148,39 @@ paths:
   /polls/{pollKey}/tallies:
     get:
       tags:
-      - poll-detail
+        - poll-detail
       summary: Page Tally
       description: Return the vote tallies for a specific poll.
       operationId: getTallyUrls
       parameters:
-      - name: pollKey
-        in: path
-        description: The pollKey as listed in the PollDetail object.
-        required: true
-        schema:
-          type: string
-      - name: tally
-        in: query
-        description: The kind of tally element to return.
-        required: true
-        schema:
-          type: string
-          enum:
-          - agree
-          - disagree
-          - error
-          - noQuorum
-          - tooClose
-      - name: page
-        in: query
-        description: The page number.
-        schema:
-          type: integer
-      - name: size
-        in: query
-        description: The size of the page.
-        schema:
-          type: integer
+        - name: pollKey
+          in: path
+          description: The pollKey as listed in the PollDetail object.
+          required: true
+          schema:
+            type: string
+        - name: tally
+          in: query
+          description: The kind of tally element to return.
+          required: true
+          schema:
+            type: string
+            enum:
+              - agree
+              - disagree
+              - error
+              - noQuorum
+              - tooClose
+        - name: page
+          in: query
+          description: The page number.
+          schema:
+            type: integer
+        - name: size
+          in: query
+          description: The size of the page.
+          schema:
+            type: integer
       responses:
         200:
           description: A pagable list of urls for given tally type.
@@ -214,37 +214,37 @@ paths:
   /polls/{pollKey}/repairs:
     get:
       tags:
-      - poll-detail
+        - poll-detail
       summary: Poll Repairs
       description: Return the repair status for a specific poll.
       operationId: getRepairQueueData
       parameters:
-      - name: pollKey
-        in: path
-        description: The pollKey as listed in the PollDetail object.
-        required: true
-        schema:
-          type: string
-      - name: repair
-        in: query
-        description: The repair queue elements to return.
-        required: true
-        schema:
-          type: string
-          enum:
-          - pending
-          - active
-          - completed
-      - name: page
-        in: query
-        description: The page number.
-        schema:
-          type: integer
-      - name: size
-        in: query
-        description: The size of the page.
-        schema:
-          type: integer
+        - name: pollKey
+          in: path
+          description: The pollKey as listed in the PollDetail object.
+          required: true
+          schema:
+            type: string
+        - name: repair
+          in: query
+          description: The repair queue elements to return.
+          required: true
+          schema:
+            type: string
+            enum:
+              - pending
+              - active
+              - completed
+        - name: page
+          in: query
+          description: The page number.
+          schema:
+            type: integer
+        - name: size
+          in: query
+          description: The size of the page.
+          schema:
+            type: integer
       responses:
         200:
           description: A pagable list of repair queue elements.
@@ -278,45 +278,45 @@ paths:
   /polls/{pollKey}/peer/{peerId}:
     get:
       tags:
-      - poll-detail
+        - poll-detail
       summary: Poll Peer Data
       description: Return the list of urls of vote type for a given peer in a specific
         poll.
       operationId: getPollPeerVoteUrls
       parameters:
-      - name: pollKey
-        in: path
-        description: The pollKey from the PollDetail.
-        required: true
-        schema:
-          type: string
-      - name: peerId
-        in: path
-        description: The peerId from the Poll Detail.PeerData.
-        required: true
-        schema:
-          type: string
-      - name: urls
-        in: query
-        description: The voter urls to return.
-        required: true
-        schema:
-          type: string
-          enum:
-          - agreed
-          - disagreed
-          - pollerOnly
-          - voterOnly
-      - name: page
-        in: query
-        description: The page number
-        schema:
-          type: integer
-      - name: size
-        in: query
-        description: The page size
-        schema:
-          type: integer
+        - name: pollKey
+          in: path
+          description: The pollKey from the PollDetail.
+          required: true
+          schema:
+            type: string
+        - name: peerId
+          in: path
+          description: The peerId from the Poll Detail.PeerData.
+          required: true
+          schema:
+            type: string
+        - name: urls
+          in: query
+          description: The voter urls to return.
+          required: true
+          schema:
+            type: string
+            enum:
+              - agreed
+              - disagreed
+              - pollerOnly
+              - voterOnly
+        - name: page
+          in: query
+          description: The page number
+          schema:
+            type: integer
+        - name: size
+          in: query
+          description: The page size
+          schema:
+            type: integer
       responses:
         200:
           description: A pagable list of voter urls with a given status.
@@ -350,26 +350,26 @@ paths:
   /polls/poller:
     get:
       tags:
-      - poller-polls
+        - poller-polls
       summary: Get the list of recent polls as poller.
       description: Get the list of recent polls as poller from the poll queue. if
         size and page are passed in use those arguments to limit return data.
       operationId: getPollsAsPoller
       parameters:
-      - name: size
-        in: query
-        description: Size of the page to retrieve.
-        schema:
-          type: integer
-          format: int32
-        example: 10
-      - name: page
-        in: query
-        description: Number of the page to retrieve.
-        schema:
-          type: integer
-          format: int32
-        example: 1
+        - name: size
+          in: query
+          description: Size of the page to retrieve.
+          schema:
+            type: integer
+            format: int32
+          example: 10
+        - name: page
+          in: query
+          description: Number of the page to retrieve.
+          schema:
+            type: integer
+            format: int32
+          example: 1
       responses:
         200:
           description: A pagable list has been returned.
@@ -403,17 +403,17 @@ paths:
   /polls/poller/{pollKey}:
     get:
       tags:
-      - poller-polls
+        - poller-polls
       summary: PollerDetails
       description: Return the detailed information about a poll.
       operationId: getPollerPollDetails
       parameters:
-      - name: pollKey
-        in: path
-        description: The key assigned by the PollManager.
-        required: true
-        schema:
-          type: string
+        - name: pollKey
+          in: path
+          description: The key assigned by the PollManager.
+          required: true
+          schema:
+            type: string
       responses:
         200:
           description: Detailed poll info returned.
@@ -430,26 +430,26 @@ paths:
   /polls/voter:
     get:
       tags:
-      - voter-polls
+        - voter-polls
       summary: Get the list of recent voter only polls.
       description: Get the list of recent polls as voter from the poll queue. if size
         and page are passed in use those arguments to limit return data.
       operationId: getPollsAsVoter
       parameters:
-      - name: size
-        in: query
-        description: Size of the page to retrieve.
-        schema:
-          type: integer
-          format: int32
-        example: 10
-      - name: page
-        in: query
-        description: Number of the page to retrieve.
-        schema:
-          type: integer
-          format: int32
-        example: 1
+        - name: size
+          in: query
+          description: Size of the page to retrieve.
+          schema:
+            type: integer
+            format: int32
+          example: 10
+        - name: page
+          in: query
+          description: Number of the page to retrieve.
+          schema:
+            type: integer
+            format: int32
+          example: 1
       responses:
         200:
           description: A pagable list has been returned.
@@ -483,17 +483,17 @@ paths:
   /polls/voter/{pollKey}:
     get:
       tags:
-      - voter-polls
+        - voter-polls
       summary: VoterDetails
       description: Return the detailed information about a poll.
       operationId: getVoterPollDetails
       parameters:
-      - name: pollKey
-        in: path
-        description: The key assigned by the PollManager.
-        required: true
-        schema:
-          type: string
+        - name: pollKey
+          in: path
+          description: The key assigned by the PollManager.
+          required: true
+          schema:
+            type: string
       responses:
         200:
           description: Detailed poll info returned.
@@ -510,70 +510,70 @@ paths:
   /aus/{auid}/export:
     get:
       tags:
-      - export
+        - export
       summary: Export artifacts in an Archival Unit
       description: Export artifacts in an Archival Unit as a group of archives
       operationId: getExportFiles
       parameters:
-      - name: auid
-        in: path
-        description: Identifier of the Archival Unit containing the artifacts
-        required: true
-        schema:
-          type: string
-      - name: fileType
-        in: query
-        description: The type of archive to create
-        schema:
-          type: string
-          default: WARC_RESPONSE
-          enum:
-          - WARC_RESPONSE
-          - WARC_RESOURCE
-          - ARC_RESPONSE
-          - ARC_RESOURCE
-          - ZIP
-      - name: isCompress
-        in: query
-        description: Indication of whether contents should be compressed
-        schema:
-          type: boolean
-          default: true
-      - name: isExcludeDirNodes
-        in: query
-        description: Indication of whether directories should be excluded
-        schema:
-          type: boolean
-          default: true
-      - name: xlateFilenames
-        in: query
-        description: Type of filename translation to be done
-        schema:
-          type: string
-          default: XLATE_NONE
-          enum:
-          - XLATE_NONE
-          - XLATE_WINDOWS
-          - XLATE_MAC
-      - name: filePrefix
-        in: query
-        description: The prefix to be used to name the exported file
-        schema:
-          type: string
-          default: lockss_export
-      - name: maxSize
-        in: query
-        description: The maximum size of the exported file
-        schema:
-          type: integer
-          format: int64
-          default: -1
-      - name: maxVersions
-        in: query
-        description: The maximum number of versions of an artifact to be exported
-        schema:
-          type: integer
-          default: -1
+        - name: auid
+          in: path
+          description: Identifier of the Archival Unit containing the artifacts
+          required: true
+          schema:
+            type: string
+        - name: fileType
+          in: query
+          description: The type of archive to create
+          schema:
+            type: string
+            default: WARC_RESPONSE
+            enum:
+              - WARC_RESPONSE
+              - WARC_RESOURCE
+              - ARC_RESPONSE
+              - ARC_RESOURCE
+              - ZIP
+        - name: isCompress
+          in: query
+          description: Indication of whether contents should be compressed
+          schema:
+            type: boolean
+            default: true
+        - name: isExcludeDirNodes
+          in: query
+          description: Indication of whether directories should be excluded
+          schema:
+            type: boolean
+            default: true
+        - name: xlateFilenames
+          in: query
+          description: Type of filename translation to be done
+          schema:
+            type: string
+            default: XLATE_NONE
+            enum:
+              - XLATE_NONE
+              - XLATE_WINDOWS
+              - XLATE_MAC
+        - name: filePrefix
+          in: query
+          description: The prefix to be used to name the exported file
+          schema:
+            type: string
+            default: lockss_export
+        - name: maxSize
+          in: query
+          description: The maximum size of the exported file
+          schema:
+            type: integer
+            format: int64
+            default: -1
+        - name: maxVersions
+          in: query
+          description: The maximum number of versions of an artifact to be exported
+          schema:
+            type: integer
+            default: -1
       responses:
         200:
           description: The archives with the requested artifacts
@@ -591,17 +591,17 @@ paths:
   /ws/polls:
     get:
       tags:
-      - service
+        - service
       summary: Query for poll properties
       description: Query for polls that meet a set of specified conditions
       operationId: getPolls
       parameters:
-      - name: pollQuery
-        in: query
-        description: The query that specifies the polls to be returned
-        required: true
-        schema:
-          type: string
+        - name: pollQuery
+          in: query
+          description: The query that specifies the polls to be returned
+          required: true
+          schema:
+            type: string
       responses:
         200:
           description: Information about the requested polls
@@ -620,17 +620,17 @@ paths:
   /ws/peers:
     get:
       tags:
-      - service
+        - service
       summary: Query for peer properties
       description: Query for peers that meet a set of specified conditions
       operationId: getPeers
       parameters:
-      - name: peerQuery
-        in: query
-        description: The query that specifies the peers to be returned
-        required: true
-        schema:
-          type: string
+        - name: peerQuery
+          in: query
+          description: The query that specifies the peers to be returned
+          required: true
+          schema:
+            type: string
       responses:
         200:
           description: Information about the requested peers
@@ -649,17 +649,17 @@ paths:
   /ws/votes:
     get:
       tags:
-      - service
+        - service
       summary: Query for vote properties
       description: Query for votes that meet a set of specified conditions
       operationId: getVotes
       parameters:
-      - name: voteQuery
-        in: query
-        description: The query that specifies the votes to be returned
-        required: true
-        schema:
-          type: string
+        - name: voteQuery
+          in: query
+          description: The query that specifies the votes to be returned
+          required: true
+          schema:
+            type: string
       responses:
         200:
           description: Information about the requested votes
@@ -678,7 +678,7 @@ paths:
   /ws/aus/import:
     put:
       tags:
-      - import
+        - import
       summary: Import a file into an Archival Unit
       description: Import a file as an artifact in an Archival Unit
       operationId: putImportFile
@@ -687,9 +687,9 @@ paths:
           multipart/form-data:
             schema:
               required:
-              - file
-              - targetBaseUrlPath
-              - targetUrl
+                - file
+                - targetBaseUrlPath
+                - targetUrl
               properties:
                 targetBaseUrlPath:
                   type: string
@@ -710,7 +710,7 @@ paths:
       responses:
         200:
           description: OK
-          content: {}
+          content: { }
         default:
           description: The resulting error payload.
           content:
@@ -720,7 +720,7 @@ paths:
   /ws/hashes:
     get:
       tags:
-      - hash
+        - hash
       summary: Get the results of all the asynchronous hashing operations
       description: Get the results of all the asynchronous hashing operations
       operationId: getAllHashes
@@ -740,17 +740,17 @@ paths:
                 $ref: '#/components/schemas/errorResult'
     put:
       tags:
-      - hash
+        - hash
       summary: Perform a hashing operation
       description: Perform the hashing of an AU or a URL
       operationId: putHash
       parameters:
-      - name: isAsynchronous
-        in: query
-        description: "Indication of whether the operation should be done \asynchronously"
-        schema:
-          type: boolean
-          default: true
+        - name: isAsynchronous
+          in: query
+          description: "Indication of whether the operation should be done \asynchronously"
+          schema:
+            type: boolean
+            default: true
       requestBody:
         description: The parameters needed to define a hash.
         content:
@@ -776,17 +776,17 @@ paths:
   /ws/hashes/requests/{requestId}:
     get:
       tags:
-      - hash
+        - hash
       summary: Get the result of an asynchronous hashing operation
       description: Get the result of an asynchronous hashing operation
       operationId: getHash
       parameters:
-      - name: requestId
-        in: path
-        description: Identifier of the asynchronous hashing operation
-        required: true
-        schema:
-          type: string
+        - name: requestId
+          in: path
+          description: Identifier of the asynchronous hashing operation
+          required: true
+          schema:
+            type: string
       responses:
         200:
           description: Information about the asynchronous hashing operation
@@ -803,18 +803,18 @@ paths:
                 $ref: '#/components/schemas/errorResult'
     delete:
       tags:
-      - hash
+        - hash
       summary: Remove an asynchronous hashing operation
       description: Remove from the system an asynchronous hashing operation, terminating
         it if it's still running
       operationId: deleteHash
       parameters:
-      - name: requestId
-        in: path
-        description: Identifier of the asynchronous hashing operation
-        required: true
-        schema:
-          type: string
+        - name: requestId
+          in: path
+          description: Identifier of the asynchronous hashing operation
+          required: true
+          schema:
+            type: string
       responses:
         200:
           description: Asynchronous hashing operation successfully removed
@@ -831,17 +831,17 @@ paths:
   /ws/aurepositories:
     get:
       tags:
-      - repo
+        - repo
       summary: Query the properties of repositories
       description: Query the system for selected repository properties
       operationId: getRepositories
       parameters:
-      - name: repositoryQuery
-        in: query
-        description: The query that specifies the repository properties to be returned
-        required: true
-        schema:
-          type: string
+        - name: repositoryQuery
+          in: query
+          description: The query that specifies the repository properties to be returned
+          required: true
+          schema:
+            type: string
       responses:
         200:
           description: Information about the requested TDB AUs
@@ -860,18 +860,18 @@ paths:
   /ws/repositoryspaces:
     get:
       tags:
-      - repo
+        - repo
       summary: Query the properties of repository spaces
       description: Query the system for selected repository space properties
       operationId: getRepositorySpaces
       parameters:
-      - name: repositorySpaceQuery
-        in: query
-        description: The query that specifies the repository space properties to be
-          returned
-        required: true
-        schema:
-          type: string
+        - name: repositorySpaceQuery
+          in: query
+          description: The query that specifies the repository space properties to be
+            returned
+          required: true
+          schema:
+            type: string
       responses:
         200:
           description: Information about the requested TDB AUs
@@ -893,8 +893,8 @@ components:
     errorResult:
       type: object
       required:
-      - message
-      - code
+        - message
+        - code
       properties:
         message:
           type: string
@@ -904,9 +904,9 @@ components:
           type: string
     PollerDetail:
       required:
-      - pollDesc
-      - pollerId
-      - status
+        - pollDesc
+        - pollerId
+        - status
       type: object
       properties:
         pollDesc:
@@ -980,9 +980,9 @@ components:
       description: The details of a poll being performed or queued by the Poller
     VoterDetail:
       required:
-      - pollDesc
-      - pollerId
-      - status
+        - pollDesc
+        - pollerId
+        - status
       type: object
       properties:
         pollDesc:
@@ -1065,8 +1065,8 @@ components:
       description: The details of a poll being performed or queued as the Voter.
     PeerData:
       required:
-      - peerId
-      - status
+        - peerId
+        - status
       type: object
       properties:
         peerId:
@@ -1141,11 +1141,11 @@ components:
       description: Detail for a single voter in a poll.
     TallyData:
       required:
-      - numAgree
-      - numDisagree
-      - numError
-      - numNoQuorum
-      - numTooClose
+        - numAgree
+        - numDisagree
+        - numError
+        - numNoQuorum
+        - numTooClose
       type: object
       properties:
         numAgree:
@@ -1201,9 +1201,9 @@ components:
       description: The tally for the current poll.
     RepairQueue:
       required:
-      - numActive
-      - numCompleted
-      - numPending
+        - numActive
+        - numCompleted
+        - numPending
       type: object
       properties:
         numPending:
@@ -1227,8 +1227,8 @@ components:
       description: Description of the RepairQueue.
     RepairData:
       required:
-      - repairFrom
-      - repairUrl
+        - repairFrom
+        - repairUrl
       type: object
       properties:
         repairUrl:
@@ -1241,17 +1241,17 @@ components:
           type: string
           description: The status of this repair
           enum:
-          - NoQuorum
-          - TooClose
-          - Lost
-          - LostPollerOnly
-          - LostVoterOnly
-          - Won
+            - NoQuorum
+            - TooClose
+            - Lost
+            - LostPollerOnly
+            - LostVoterOnly
+            - Won
       description: structure used to define a repair source for url. if the source
         is null than repair from publisher
     RepairPager:
       required:
-      - pageDesc
+        - pageDesc
       type: object
       properties:
         pageDesc:
@@ -1264,7 +1264,7 @@ components:
       description: A Pager for a list of urls found in poll details.
     UrlPager:
       required:
-      - pageDesc
+        - pageDesc
       type: object
       properties:
         pageDesc:
@@ -1277,7 +1277,7 @@ components:
       description: A Pager for a list of urls found in poll details.
     PollerPager:
       required:
-      - pageDesc
+        - pageDesc
       type: object
       properties:
         pageDesc:
@@ -1290,12 +1290,12 @@ components:
       description: A page of poller poll summaries.
     PollerSummary:
       required:
-      - auId
-      - deadline
-      - pollKey
-      - start
-      - status
-      - variant
+        - auId
+        - deadline
+        - pollKey
+        - start
+        - status
+        - variant
       type: object
       properties:
         auId:
@@ -1347,12 +1347,12 @@ components:
       description: A summary of a poll in which we are the poller.
     VoterSummary:
       required:
-      - auId
-      - caller
-      - deadline
-      - pollKey
-      - start
-      - status
+        - auId
+        - caller
+        - deadline
+        - pollKey
+        - start
+        - status
       type: object
       properties:
         auId:
@@ -1380,7 +1380,7 @@ components:
       description: A summary of a poll in which we are acting just as a voter.
     VoterPager:
       required:
-      - pageDesc
+        - pageDesc
       type: object
       properties:
         pageDesc:
@@ -1393,7 +1393,7 @@ components:
       description: A page of voter poll summary.
     PollDesc:
       required:
-      - auId
+        - auId
       type: object
       properties:
         auId:
@@ -1415,17 +1415,17 @@ components:
           type: string
           description: The V3 poll variation.
           enum:
-          - PoR
-          - PoP
-          - Local
-          - NoPoll
+            - PoR
+            - PoP
+            - Local
+            - NoPoll
         modulus:
           type: integer
           description: Poll on every 'n'th url.
       description: The Poller Services poll spec used to define a poll.
     CachedUriSetSpec:
       required:
-      - urlPrefix
+        - urlPrefix
       type: object
       properties:
         urlPrefix:
@@ -1442,9 +1442,9 @@ components:
         url, if upper is null end with the last.
     PageDesc:
       required:
-      - page
-      - size
-      - total
+        - page
+        - size
+        - total
       type: object
       properties:
         page:
@@ -1468,7 +1468,7 @@ components:
       description: The information needed to page in a long list of data
     LinkDesc:
       required:
-      - link
+        - link
       type: object
       properties:
         link:
@@ -1482,8 +1482,8 @@ components:
       description: A wrapper for a link and a string description.
     pollWsResult:
       required:
-      - auId
-      - auName
+        - auId
+        - auName
       type: object
       properties:
         auId:
@@ -1495,7 +1495,7 @@ components:
       description: The properties of a poll
     peerWsResult:
       required:
-      - peerId
+        - peerId
       type: object
       properties:
         peerId:
@@ -1504,8 +1504,8 @@ components:
       description: The properties of a peer
     voteWsResult:
       required:
-      - auId
-      - auName
+        - auId
+        - auName
       type: object
       properties:
         auId:
@@ -1517,18 +1517,18 @@ components:
       description: The properties of a vote
     hasherWsParams:
       required:
-      - algorithm
-      - auId
-      - challenge
-      - excludeSuspectVersions
-      - hashType
-      - includeWeight
-      - lower
-      - recordFilteredStream
-      - resultEncoding
-      - upper
-      - url
-      - verifier
+        - algorithm
+        - auId
+        - challenge
+        - excludeSuspectVersions
+        - hashType
+        - includeWeight
+        - lower
+        - recordFilteredStream
+        - resultEncoding
+        - upper
+        - url
+        - verifier
       type: object
       properties:
         auId:
@@ -1572,7 +1572,7 @@ components:
       description: The parameters of a hash operation
     repositoryWsResult:
       required:
-      - repositorySpaceId
+        - repositorySpaceId
       type: object
       properties:
         repositorySpaceId:
@@ -1581,7 +1581,7 @@ components:
       description: Information about the requested repositories
     repositorySpaceWsResult:
       required:
-      - repositorySpaceId
+        - repositorySpaceId
       type: object
       properties:
         repositorySpaceId:
@@ -1590,8 +1590,8 @@ components:
       description: Information about the requested repository spaces
     apiStatus:
       required:
-      - apiVersion
-      - ready
+        - apiVersion
+        - ready
       type: object
       properties:
         apiVersion:
@@ -1623,13 +1623,13 @@ components:
           type: string
           description: Enum indicating progress of plugin/AU processing at startup.
           enum:
-          - NONE
-          - PLUGINS_CRAWLING
-          - PLUGINS_COLLECTED
-          - PLUGINS_LOADING
-          - PLUGINS_LOADED
-          - AUS_STARTING
-          - AUS_STARTED
+            - NONE
+            - PLUGINS_CRAWLING
+            - PLUGINS_COLLECTED
+            - PLUGINS_LOADING
+            - PLUGINS_LOADED
+            - AUS_STARTING
+            - AUS_STARTED
       description: The status information of the service
   securitySchemes:
     basicAuth:

@@ -34,7 +34,6 @@ import org.lockss.app.LockssDaemon;
 import org.lockss.config.ConfigManager;
 import org.lockss.config.Configuration;
 import org.lockss.db.DbException;
-import org.lockss.util.rest.repo.LockssRepository;
 import org.lockss.plugin.ArchivalUnit;
 import org.lockss.plugin.AuUtil;
 import org.lockss.plugin.Plugin;
@@ -42,13 +41,15 @@ import org.lockss.plugin.PluginManager;
 import org.lockss.util.Logger;
 import org.lockss.util.PropUtil;
 import org.lockss.util.os.PlatformUtil;
+import org.lockss.util.rest.repo.LockssRepository;
 import org.lockss.ws.entities.RepositorySpaceWsResult;
 
 /**
- * Container for the information that is used as the source for a query related
- * to repository spaces.
+ * Container for the information that is used as the source for a query related to repository
+ * spaces.
  */
 public class RepositorySpaceWsSource extends RepositorySpaceWsResult {
+
   private static Logger log = Logger.getLogger();
 
   private PlatformUtil.DF puDf;
@@ -69,12 +70,11 @@ public class RepositorySpaceWsSource extends RepositorySpaceWsResult {
 
   /**
    * Constructor.
-   * 
+   *
    * @param repositorySpaceId A String with the name of the store space.
-   * @param puDf              A PlatformUtil.DF with disk space information.
+   * @param puDf A PlatformUtil.DF with disk space information.
    */
-  public RepositorySpaceWsSource(String repositorySpaceId, PlatformUtil.DF puDf)
-  {
+  public RepositorySpaceWsSource(String repositorySpaceId, PlatformUtil.DF puDf) {
     setRepositorySpaceId(repositorySpaceId);
     this.puDf = puDf;
   }
@@ -128,7 +128,7 @@ public class RepositorySpaceWsSource extends RepositorySpaceWsResult {
   public Integer getActiveCount() {
     if (!activeCountPopulated) {
       if (allActiveCount < 0) {
-	populateCounts();
+        populateCounts();
       }
 
       setActiveCount(Integer.valueOf(allActiveCount));
@@ -142,7 +142,7 @@ public class RepositorySpaceWsSource extends RepositorySpaceWsResult {
   public Integer getInactiveCount() {
     if (!inactiveCountPopulated) {
       if (allInactiveCount < 0) {
-	populateCounts();
+        populateCounts();
       }
 
       setInactiveCount(Integer.valueOf(allInactiveCount));
@@ -156,7 +156,7 @@ public class RepositorySpaceWsSource extends RepositorySpaceWsResult {
   public Integer getDeletedCount() {
     if (!deletedCountPopulated) {
       if (allDeletedCount < 0) {
-	populateCounts();
+        populateCounts();
       }
 
       setDeletedCount(Integer.valueOf(allDeletedCount));
@@ -170,7 +170,7 @@ public class RepositorySpaceWsSource extends RepositorySpaceWsResult {
   public Integer getOrphanedCount() {
     if (!orphanedCountPopulated) {
       if (allOrphanedCount < 0) {
-	populateCounts();
+        populateCounts();
       }
 
       setOrphanedCount(Integer.valueOf(allOrphanedCount));
@@ -189,101 +189,108 @@ public class RepositorySpaceWsSource extends RepositorySpaceWsResult {
 
     // Get the repository.
     LockssRepository repo = LockssDaemon.getLockssDaemon()
-	.getRepositoryManager().getV2Repository().getRepository();
+      .getRepositoryManager().getV2Repository().getRepository();
 
     // Get the plugin manager.
-    PluginManager pluginMgr = (PluginManager)LockssDaemon
-	.getManagerByKeyStatic(LockssDaemon.PLUGIN_MANAGER);
+    PluginManager pluginMgr = (PluginManager) LockssDaemon
+      .getManagerByKeyStatic(LockssDaemon.PLUGIN_MANAGER);
 
     try {
       // Loop through all the namespaces in the repository.
       for (String namespace : repo.getNamespaces()) {
-	if (log.isDebug3())
-	  log.debug3(DEBUG_HEADER + "namespace = " + namespace);
+        if (log.isDebug3()) {log.debug3(DEBUG_HEADER + "namespace = " + namespace);}
 
-	try {
-	  // Loop through all the AU identifiers in the namespace.
-	  for (String auid : repo.getAuIds(namespace)) {
-	    if (log.isDebug3()) log.debug3(DEBUG_HEADER + "auid = " + auid);
+        try {
+          // Loop through all the AU identifiers in the namespace.
+          for (String auid : repo.getAuIds(namespace)) {
+            if (log.isDebug3()) {log.debug3(DEBUG_HEADER + "auid = " + auid);}
 
-	    // Get the archival unit.
-	    ArchivalUnit au = pluginMgr.getAuFromId(auid);
+            // Get the archival unit.
+            ArchivalUnit au = pluginMgr.getAuFromId(auid);
 
-	    // Check whether the Archival Unit exits.
-	    if (au != null) {
-	      // Yes: Count it as active.
-	      allActiveCount++;
-	    } else {
-	      // No: Get the Archival Unit properties.
-	      String auKey = PluginManager.auKeyFromAuId(auid);
-	      Properties auidProps = null;
+            // Check whether the Archival Unit exits.
+            if (au != null) {
+              // Yes: Count it as active.
+              allActiveCount++;
+            }
+            else {
+              // No: Get the Archival Unit properties.
+              String auKey = PluginManager.auKeyFromAuId(auid);
+              Properties auidProps = null;
 
-	      try {
-		auidProps = PropUtil.canonicalEncodedStringToProps(auKey);
-	      } catch (Exception e) {
-		log.warning("Couldn't decode AUKey : " + auKey, e);
-	      }
+              try {
+                auidProps = PropUtil.canonicalEncodedStringToProps(auKey);
+              }
+              catch (Exception e) {
+                log.warning("Couldn't decode AUKey : " + auKey, e);
+              }
 
-	      // Get the Archival Unit plugin.
-	      String pluginKey = PluginManager.pluginKeyFromAuId(auid);
-	      Plugin plugin = pluginMgr.getPlugin(pluginKey);
-		  
-	      boolean isOrphaned = true;
+              // Get the Archival Unit plugin.
+              String pluginKey = PluginManager.pluginKeyFromAuId(auid);
+              Plugin plugin = pluginMgr.getPlugin(pluginKey);
 
-	      // Check whether both the Archival Unit plugin and properties
-	      // exist.
-	      if (plugin != null && auidProps != null) {
-		// Yes: Get the Archival Unit configuration.
-		Configuration defConfig =
-		    ConfigManager.fromProperties(auidProps);
+              boolean isOrphaned = true;
 
-		// Determine whether the Archival Unit is orphaned because its
-		// configration is incompatible with its plugin.
-		isOrphaned =
-		    !AuUtil.isConfigCompatibleWithPlugin(defConfig, plugin);
-	      }
+              // Check whether both the Archival Unit plugin and properties
+              // exist.
+              if (plugin != null && auidProps != null) {
+                // Yes: Get the Archival Unit configuration.
+                Configuration defConfig =
+                  ConfigManager.fromProperties(auidProps);
 
-	      // Check whether the Archival Unit is orphaned.
-	      if (isOrphaned) {
-		// Yes: Count it as orphaned.
-		allOrphanedCount++;
-	      } else {
-		// No: Get the Archival Unit configuration.
-		Configuration config = null;
+                // Determine whether the Archival Unit is orphaned because its
+                // configration is incompatible with its plugin.
+                isOrphaned =
+                  !AuUtil.isConfigCompatibleWithPlugin(defConfig, plugin);
+              }
 
-		try {
-		  config =
-		      pluginMgr.getStoredAuConfigurationAsConfiguration(auid);
-		} catch (DbException dbe) {
-		  log.warning("Exception caught getting stored "
-		      + "configuration for auid '" + auid + "'", dbe);
-		}
+              // Check whether the Archival Unit is orphaned.
+              if (isOrphaned) {
+                // Yes: Count it as orphaned.
+                allOrphanedCount++;
+              }
+              else {
+                // No: Get the Archival Unit configuration.
+                Configuration config = null;
 
-		// Check whether the Archival Unit configuration cannot be
-		// found.
-		if (config == null || config.isEmpty()) {
-		  // Yes: Count it as deleted.
-		  allDeletedCount++;
-		} else {
-		  // No: Determine whether the Archival Unit is inactive.
-		  boolean isInactive =
-		      config.getBoolean(PluginManager.AU_PARAM_DISABLED, false);
-			
-		  if (isInactive) {
-		    allInactiveCount++;
-		  } else {
-		    allDeletedCount++;
-		  }	  
-		}
-	      }
-	    }
-	  }
-	} catch (IOException ioe) {
-	  log.error("Exception caught for namespace '" + namespace
-	      + "': Ignoring namespace", ioe);
-	}
+                try {
+                  config =
+                    pluginMgr.getStoredAuConfigurationAsConfiguration(auid);
+                }
+                catch (DbException dbe) {
+                  log.warning("Exception caught getting stored "
+                    + "configuration for auid '" + auid + "'", dbe);
+                }
+
+                // Check whether the Archival Unit configuration cannot be
+                // found.
+                if (config == null || config.isEmpty()) {
+                  // Yes: Count it as deleted.
+                  allDeletedCount++;
+                }
+                else {
+                  // No: Determine whether the Archival Unit is inactive.
+                  boolean isInactive =
+                    config.getBoolean(PluginManager.AU_PARAM_DISABLED, false);
+
+                  if (isInactive) {
+                    allInactiveCount++;
+                  }
+                  else {
+                    allDeletedCount++;
+                  }
+                }
+              }
+            }
+          }
+        }
+        catch (IOException ioe) {
+          log.error("Exception caught for namespace '" + namespace
+            + "': Ignoring namespace", ioe);
+        }
       }
-    } catch (IOException ioe) {
+    }
+    catch (IOException ioe) {
       log.error("Exception caught getting namespaces", ioe);
     }
   }

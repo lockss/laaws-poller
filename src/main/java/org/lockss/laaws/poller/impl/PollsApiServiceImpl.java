@@ -44,12 +44,17 @@ import org.lockss.poller.v3.PollerStateBean.TallyStatus;
 import org.lockss.protocol.PeerIdentity;
 import org.lockss.protocol.psm.PsmInterp;
 import org.lockss.protocol.psm.PsmState;
+import org.lockss.spring.auth.AuthUtil;
+import org.lockss.spring.auth.Roles;
+import org.lockss.spring.base.BaseSpringApiServiceImpl;
 import org.lockss.util.ByteArray;
 import org.lockss.util.StringUtil;
 import org.lockss.util.UrlUtil;
 import org.lockss.util.rest.poller.CachedUriSetSpec;
+import org.lockss.util.rest.poller.LinkDesc;
 import org.lockss.util.rest.poller.PollDesc;
 import org.lockss.util.rest.poller.PollDesc.VariantEnum;
+import org.lockss.util.rest.poller.PollerSummary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,7 +70,7 @@ import java.util.*;
  * The Polls api service.
  */
 @Service
-public class PollsApiServiceImpl implements PollsApiDelegate {
+public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements PollsApiDelegate {
 
   private static Logger logger = LoggerFactory
       .getLogger(PollsApiServiceImpl.class);
@@ -75,6 +80,8 @@ public class PollsApiServiceImpl implements PollsApiDelegate {
   @Autowired
   private HttpServletRequest request;
   private static final String DETAIL_UNAVAILABLE = "Unable to add details link.";
+  private static final String NOT_INITIALIZED_MESSAGE = "The service has not been fully initialized.";
+  boolean localReady = false;
 
   /* ------------------------------------------------------------------------
       PollsApiDelegate implementation.
@@ -92,9 +99,17 @@ public class PollsApiServiceImpl implements PollsApiDelegate {
    */
   @Override
   public ResponseEntity<String> callPoll(PollDesc body) {
+    // Check whether the service has not been fully initialized.
+    if (!localWaitReady()) {
+      logger.error(NOT_INITIALIZED_MESSAGE);
+      return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+    // are we authorized
+    AuthUtil.checkHasRole(Roles.ROLE_AU_ADMIN);
+
     ArchivalUnit au = null;
-    final String auId = body.getAuId();
-    final CachedUriSetSpec cuSetSpec = body.getCuSetSpec();
+    String auId = body.getAuId();
+    CachedUriSetSpec cuSetSpec = body.getCuSetSpec();
     if (logger.isDebugEnabled()) {
       logger.debug("request to start a poll for au: " + auId);
     }
@@ -137,6 +152,15 @@ public class PollsApiServiceImpl implements PollsApiDelegate {
     if (logger.isDebugEnabled()) {
       logger.debug("request to cancel poll for " + psId);
     }
+
+    // Check whether the service has not been fully initialized.
+    if (!localWaitReady()) {
+      logger.error(NOT_INITIALIZED_MESSAGE);
+      return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+    // are we authorized
+    AuthUtil.checkHasRole(Roles.ROLE_AU_ADMIN);
+
     PollManager pm = getPollManager();
     ArchivalUnit au;
     try {
@@ -149,6 +173,7 @@ public class PollsApiServiceImpl implements PollsApiDelegate {
     catch (Exception e) {
       if (logger.isDebugEnabled()) {
         logger.debug("unable to locate poll with id " + psId);
+        logger.error(e.getMessage(), e);
       }
     }
     return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -166,6 +191,14 @@ public class PollsApiServiceImpl implements PollsApiDelegate {
     if (logger.isDebugEnabled()) {
       logger.debug("request poll info for " + psId);
     }
+    // Check whether the service has not been fully initialized.
+    if (!localWaitReady()) {
+      logger.error(NOT_INITIALIZED_MESSAGE);
+      return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+    // are we authorized
+    AuthUtil.checkHasRole(Roles.ROLE_AU_ADMIN);
+
     ArchivalUnit au;
     try {
       au = getPluginManager().getAuFromId(psId);
@@ -201,6 +234,13 @@ public class PollsApiServiceImpl implements PollsApiDelegate {
     if (logger.isDebugEnabled()) {
       logger.debug("request poller details for poll with " + pollKey);
     }
+    // Check whether the service has not been fully initialized.
+    if (!localWaitReady()) {
+      logger.error(NOT_INITIALIZED_MESSAGE);
+      return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+    // are we authorized
+    AuthUtil.checkHasRole(Roles.ROLE_AU_ADMIN);
     PollManager pm = getPollManager();
     Poll poll = pm.getPoll(pollKey);
     if (poll == null) {
@@ -225,6 +265,14 @@ public class PollsApiServiceImpl implements PollsApiDelegate {
     if (logger.isDebugEnabled()) {
       logger.debug("request voter details for poll with " + pollKey);
     }
+    // Check whether the service has not been fully initialized.
+    if (!localWaitReady()) {
+      logger.error(NOT_INITIALIZED_MESSAGE);
+      return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+    // are we authorized
+    AuthUtil.checkHasRole(Roles.ROLE_AU_ADMIN);
+
     PollManager pm = getPollManager();
     Poll poll = pm.getPoll(pollKey);
     if (poll == null) {
@@ -249,9 +297,17 @@ public class PollsApiServiceImpl implements PollsApiDelegate {
    * @see PollsApi#getPollPeerVoteUrls
    */
   @Override
-  public ResponseEntity<UrlPager> getPollPeerVoteUrls(String pollKey,
-      String peerId, String urls,
-      Integer page, Integer size) {
+  public ResponseEntity<UrlPager> getPollPeerVoteUrls(String pollKey, String peerId, String urls,
+    Integer page, Integer size) {
+
+    // Check whether the service has not been fully initialized.
+    if (!localWaitReady()) {
+      logger.error(NOT_INITIALIZED_MESSAGE);
+      return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+    // are we authorized
+    AuthUtil.checkHasRole(Roles.ROLE_AU_ADMIN);
+
     PollManager pm = getPollManager();
     Poll poll = pm.getPoll(pollKey);
     String baseLink = request.getRequestURI();
@@ -282,8 +338,7 @@ public class PollsApiServiceImpl implements PollsApiDelegate {
           if (counts != null) {
             Page<String> strPage = new Page<>(counts, page, size, baseLink);
             UrlPager pager = getUrlPager(strPage);
-            return new ResponseEntity<>(pager, strPage.getPageHeaders(),
-                HttpStatus.OK);
+            return new ResponseEntity<>(pager, strPage.getPageHeaders(), HttpStatus.OK);
           }
         }
       }
@@ -316,16 +371,21 @@ public class PollsApiServiceImpl implements PollsApiDelegate {
    * @return A RepairPager of the current page of urls.
    * @see PollsApi#getRepairQueueData
    */
-  public ResponseEntity<RepairPager> getRepairQueueData(String pollKey,
-      String repair, Integer page,
-      Integer size) {
+  public ResponseEntity<RepairPager> getRepairQueueData(String pollKey, String repair, Integer page,
+    Integer size) {
+    // Check whether the service has not been fully initialized.
+    if (!localWaitReady()) {
+      logger.error(NOT_INITIALIZED_MESSAGE);
+      return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+    // are we authorized
+    AuthUtil.checkHasRole(Roles.ROLE_AU_ADMIN);
     PollManager pm = getPollManager();
     Poll poll = pm.getPoll(pollKey);
     String baseLink = request.getRequestURI();
     if (poll instanceof V3Poller) {
-      PollerStateBean.RepairQueue repairQueue = ((V3Poller) poll)
-          .getPollerStateBean()
-          .getRepairQueue();
+      PollerStateBean.RepairQueue repairQueue = ((V3Poller) poll).getPollerStateBean()
+        .getRepairQueue();
       List<Repair> repairList;
       switch (repair) {
         case "active":
@@ -354,14 +414,12 @@ public class PollsApiServiceImpl implements PollsApiDelegate {
             rdata.setRepairUrl(rep.getUrl());
             rdata.setRepairFrom(rep.getRepairFrom().getIdString());
             if ("completed".equals(repair)) {
-              rdata.setResult(
-                  ResultEnum.fromValue(rep.getTallyResult().toString()));
+              rdata.setResult(RepairData.ResultEnum.fromValue(rep.getTallyResult().toString()));
             }
             pager.addRepairsItem(rdata);
           }
         }
-        return new ResponseEntity<>(pager, rpage.getPageHeaders(),
-            HttpStatus.OK);
+        return new ResponseEntity<>(pager, rpage.getPageHeaders(), HttpStatus.OK);
       }
     }
     return new ResponseEntity<>(new RepairPager(), HttpStatus.NOT_FOUND);
@@ -377,16 +435,23 @@ public class PollsApiServiceImpl implements PollsApiDelegate {
    * @return A UrlPager of paged urls.
    * @see PollsApi#getTallyUrls
    */
-  public ResponseEntity<UrlPager> getTallyUrls(String pollKey, String tally,
-      Integer page,
-      Integer size) {
+  public ResponseEntity<UrlPager> getTallyUrls(String pollKey, String tally, Integer page,
+    Integer size) {
+
+    // Check whether the service has not been fully initialized.
+    if (!localWaitReady()) {
+      logger.error(NOT_INITIALIZED_MESSAGE);
+      return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+    // are we authorized
+    AuthUtil.checkHasRole(Roles.ROLE_AU_ADMIN);
+
     PollManager pm = getPollManager();
     Poll poll = pm.getPoll(pollKey);
     String baseLink = request.getRequestURI();
     if (poll instanceof V3Poller) {
-      final PollerStateBean.TallyStatus tallyStatus = ((V3Poller) poll)
-          .getPollerStateBean()
-          .getTallyStatus();
+      PollerStateBean.TallyStatus tallyStatus = ((V3Poller) poll).getPollerStateBean()
+        .getTallyStatus();
       Set tallySet;
       switch (tally) {
         case "agree":
@@ -410,8 +475,7 @@ public class PollsApiServiceImpl implements PollsApiDelegate {
       if (tallySet != null) {
         Page<String> strPage = new Page<>(tallySet, page, size, baseLink);
         UrlPager pager = getUrlPager(strPage);
-        return new ResponseEntity<>(pager, strPage.getPageHeaders(),
-            HttpStatus.OK);
+        return new ResponseEntity<>(pager, strPage.getPageHeaders(), HttpStatus.OK);
 
       }
     }
@@ -427,13 +491,19 @@ public class PollsApiServiceImpl implements PollsApiDelegate {
    * @return A PollPager used to page in the PollerSummary objects.
    * @see PollsApi#getPollsAsPoller
    */
-  public ResponseEntity<PollerPager> getPollsAsPoller(Integer size,
-      Integer page) {
+  public ResponseEntity<PollerPager> getPollsAsPoller(Integer size, Integer page) {
     if (logger.isDebugEnabled()) {
-      logger.debug(
-          "request for  a page " + page + " of voter polls with page size "
-              + size);
+      logger.debug("request for  a page " + page + " of voter polls with page size " + size);
     }
+
+    // Check whether the service has not been fully initialized.
+    if (!localWaitReady()) {
+      logger.error(NOT_INITIALIZED_MESSAGE);
+      return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+    // are we authorized
+    AuthUtil.checkHasRole(Roles.ROLE_AU_ADMIN);
+
     PollManager pm = getPollManager();
     Collection<V3Poller> pollers = pm.getV3Pollers();
     String baseLink = request.getRequestURI();
@@ -448,8 +518,7 @@ public class PollsApiServiceImpl implements PollsApiDelegate {
         pager.addPollsItem(summarizePollerPoll(poll));
       }
     }
-    return new ResponseEntity<>(pager, pollerPage.getPageHeaders(),
-        HttpStatus.OK);
+    return new ResponseEntity<>(pager, pollerPage.getPageHeaders(), HttpStatus.OK);
   }
 
 
@@ -463,13 +532,19 @@ public class PollsApiServiceImpl implements PollsApiDelegate {
    * @return A VoterPager used to page in the VoterSummary objects.
    * @see PollsApi#getPollsAsVoter
    */
-  public ResponseEntity<VoterPager> getPollsAsVoter(Integer size,
-      Integer page) {
+  public ResponseEntity<VoterPager> getPollsAsVoter(Integer size, Integer page) {
     if (logger.isDebugEnabled()) {
-      logger.debug(
-          "request for  a page " + page + " of voter polls with page size "
-              + size);
+      logger.debug("request for  a page " + page + " of voter polls with page size " + size);
     }
+
+    // Check whether the service has not been fully initialized.
+    if (!localWaitReady()) {
+      logger.error(NOT_INITIALIZED_MESSAGE);
+      return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+    // are we authorized
+    AuthUtil.checkHasRole(Roles.ROLE_AU_ADMIN);
+
     PollManager pm = getPollManager();
     Collection<V3Voter> voters = pm.getV3Voters();
     String baseLink = request.getRequestURI();
@@ -508,9 +583,8 @@ public class PollsApiServiceImpl implements PollsApiDelegate {
       return new PollSpec(cus, org.lockss.poller.Poll.V3_POLL);
     }
     else {
-      return new PollSpec(au.getAuId(), spec.getUrlPrefix(),
-          spec.getLowerBound(),
-          spec.getUpperBound(), org.lockss.poller.Poll.V3_POLL);
+      return new PollSpec(au.getAuId(), spec.getUrlPrefix(), spec.getLowerBound(),
+        spec.getUpperBound(), org.lockss.poller.Poll.V3_POLL);
     }
   }
 
@@ -530,8 +604,7 @@ public class PollsApiServiceImpl implements PollsApiDelegate {
     pollDesc.setCuSetSpec(cuss);
     pollDesc.setPollType(pollSpec.getPollType());
     pollDesc.setProtocol(pollSpec.getProtocolVersion());
-    pollDesc.setVariant(
-        VariantEnum.fromValue(pollSpec.getPollVariant().shortName()));
+    pollDesc.setVariant(PollDesc.VariantEnum.fromValue(pollSpec.getPollVariant().shortName()));
     return pollDesc;
   }
 
@@ -543,8 +616,7 @@ public class PollsApiServiceImpl implements PollsApiDelegate {
    */
   private PollerSummary summarizePollerPoll(Poll inPoll) {
     PollerSummary summary = new PollerSummary();
-    if (inPoll instanceof V3Poller) {
-      V3Poller v3poller = (V3Poller) inPoll;
+    if (inPoll instanceof V3Poller v3poller) {
       PollerStateBean psb = v3poller.getPollerStateBean();
       summary.setPollKey(v3poller.getKey());
       summary.setAuId(v3poller.getAu().getAuId());
@@ -554,8 +626,8 @@ public class PollsApiServiceImpl implements PollsApiDelegate {
       summary.setDeadline(v3poller.getDuration());
       summary.setPollEnd(psb.getPollEnd());
       summary.setParticipants(v3poller.getParticipants().size());
-      TallyStatus ts = psb.getTallyStatus();
-      if (ts != null) {
+      PollerStateBean.TallyStatus ts = psb.getTallyStatus();
+      if (null != ts) {
         summary.setNumTalliedUrls(ts.getTalliedUrlCount());
         summary.setNumAgreeUrls(ts.getAgreedUrlCount());
         summary.setNumHashErrors(ts.getErrorUrlCount());
@@ -574,8 +646,7 @@ public class PollsApiServiceImpl implements PollsApiDelegate {
    */
   private VoterSummary summarizeVoterPoll(Poll inPoll) {
     VoterSummary summary = new VoterSummary();
-    if (inPoll instanceof V3Voter) {
-      V3Voter v3Voter = (V3Voter) inPoll;
+    if (inPoll instanceof V3Voter v3Voter) {
       VoterUserData userData = v3Voter.getVoterUserData();
       summary.setAuId(v3Voter.getAu().getAuId());
       summary.setCaller(v3Voter.getPollerId().getIdString());
@@ -597,8 +668,7 @@ public class PollsApiServiceImpl implements PollsApiDelegate {
    */
   private PollerDetail detailPoll(Poll poll) {
     PollerDetail detail = new PollerDetail();
-    if (poll instanceof V3Poller) {
-      V3Poller v3poller = (V3Poller) poll;
+    if (poll instanceof V3Poller v3poller) {
       PollerStateBean psb = v3poller.getPollerStateBean();
       // object
       PollDesc desc = pollDescFromSpec(poll.getPollSpec());
@@ -623,14 +693,12 @@ public class PollsApiServiceImpl implements PollsApiDelegate {
       }
       for (ParticipantUserData participantData : v3poller.getParticipants()) {
         detail.addVotedPeersItem(
-            peerDataFromParticipantData(participantData, psb.getPollKey()));
+          peerDataFromParticipantData(participantData, psb.getPollKey()));
       }
-      TallyData tallyData = tallyDataFromTallyStatus(psb.getTallyStatus(),
-          psb.getPollKey());
+      TallyData tallyData = tallyDataFromTallyStatus(psb.getTallyStatus(), psb.getPollKey());
       detail.setTally(tallyData);
-      RepairQueue repairQueue = repairQueueFromDataRepairQueue(
-          psb.getRepairQueue(),
-          psb.getPollKey());
+      RepairQueue repairQueue = repairQueueFromDataRepairQueue(psb.getRepairQueue(),
+        psb.getPollKey());
       detail.setRepairQueue(repairQueue);
     }
     return detail;
@@ -660,8 +728,7 @@ public class PollsApiServiceImpl implements PollsApiDelegate {
    */
   private VoterDetail detailVoterPoll(Poll poll) {
     VoterDetail detail = new VoterDetail();
-    if (poll instanceof V3Voter) {
-      V3Voter v3voter = (V3Voter) poll;
+    if (poll instanceof V3Voter v3voter) {
       PollDesc desc = pollDescFromSpec(v3voter.getPollSpec());
       VoterUserData vud = v3voter.getVoterUserData();
       desc.setModulus(vud.getModulus());
@@ -713,8 +780,7 @@ public class PollsApiServiceImpl implements PollsApiDelegate {
    * @param pollKey the poll key to use for lin construction.
    * @return a PeerData data transfer object.
    */
-  private PeerData peerDataFromParticipantData(ParticipantUserData voter,
-      String pollKey) {
+  private PeerData peerDataFromParticipantData(ParticipantUserData voter, String pollKey) {
     PeerData peerData = new PeerData();
     peerData.setPeerId(voter.getVoterId().getIdString());
     peerData.setStatus(voter.getStatusString());
@@ -756,9 +822,8 @@ public class PollsApiServiceImpl implements PollsApiDelegate {
    * @param pollKey the key of the repair queue.
    * @return a PollService Repair Queue
    */
-  private RepairQueue repairQueueFromDataRepairQueue(
-      PollerStateBean.RepairQueue inQueue,
-      String pollKey) {
+  private RepairQueue repairQueueFromDataRepairQueue(PollerStateBean.RepairQueue inQueue,
+    String pollKey) {
     RepairQueue outQueue = new RepairQueue();
     outQueue.setNumActive(inQueue.getActiveRepairs().size());
     outQueue.setNumPending(inQueue.getPendingRepairs().size());
@@ -776,8 +841,8 @@ public class PollsApiServiceImpl implements PollsApiDelegate {
    * @param pollKey the key to use for the links.
    * @return a new TallyData object
    */
-  private TallyData tallyDataFromTallyStatus(TallyStatus tallyStatus,
-      String pollKey) {
+  private TallyData tallyDataFromTallyStatus(PollerStateBean.TallyStatus tallyStatus,
+    String pollKey) {
     TallyData tallyData = new TallyData();
     tallyData.setNumAgree(tallyStatus.getAgreedUrlCount());
     tallyData.setNumDisagree(tallyStatus.getDisgreedUrlCount());
@@ -851,8 +916,7 @@ public class PollsApiServiceImpl implements PollsApiDelegate {
       //  build a path element: /polls/{pollKey}/repairs?repair=type
       String prefix = UrlUtil.getUrlPrefix(request.getRequestURI());
       LinkDesc ldesc = new LinkDesc();
-      ldesc.setLink(
-          prefix + "/polls/" + pollKey + "/repairs?repair=" + repairType);
+      ldesc.setLink(prefix + "/polls/" + pollKey + "/repairs?repair=" + repairType);
       return ldesc;
     }
     catch (MalformedURLException e) {
@@ -869,14 +933,12 @@ public class PollsApiServiceImpl implements PollsApiDelegate {
    * @param tallyType the tally data to provide.
    * @return a new Link description object.
    */
-  private LinkDesc makePeerLink(String pollKey, String peerId,
-      String tallyType) {
+  private LinkDesc makePeerLink(String pollKey, String peerId, String tallyType) {
     // /polls/{pollKey}/peer/{peerId}?tally=
     try {
       String prefix = UrlUtil.getUrlPrefix(request.getRequestURI());
       LinkDesc ldesc = new LinkDesc();
-      ldesc.setLink(prefix + "/polls/" + pollKey + "/peer/" + peerId + "?tally="
-          + tallyType);
+      ldesc.setLink(prefix + "/polls/" + pollKey + "/peer/" + peerId + "?tally=" + tallyType);
       return ldesc;
     }
     catch (MalformedURLException e) {
@@ -893,7 +955,7 @@ public class PollsApiServiceImpl implements PollsApiDelegate {
    * @return the ParticipantUserData for the Peer or null if not found.
    */
   private ParticipantUserData userDataForPeer(String peerId,
-      List<ParticipantUserData> participants) {
+    List<ParticipantUserData> participants) {
     if (peerId == null || participants == null || participants.isEmpty()) {
       return null;
     }
@@ -940,10 +1002,22 @@ public class PollsApiServiceImpl implements PollsApiDelegate {
    *
    * @return the current Lockss PluginManager.
    */
-  PluginManager getPluginManager() {
+  public PluginManager getPluginManager() {
     if (pluginManager == null) {
       pluginManager = getLockssDaemon().getPluginManager();
     }
     return pluginManager;
   }
+
+  protected boolean localWaitReady() {
+
+    try {
+      return waitReady();
+    }
+    catch(Exception ex) {
+    }
+    return localReady;
+
+  }
+
 }
