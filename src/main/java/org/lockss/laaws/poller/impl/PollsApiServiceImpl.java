@@ -81,7 +81,6 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
   private HttpServletRequest request;
   private static final String DETAIL_UNAVAILABLE = "Unable to add details link.";
   private static final String NOT_INITIALIZED_MESSAGE = "The service has not been fully initialized.";
-  boolean localReady = false;
 
   /* ------------------------------------------------------------------------
       PollsApiDelegate implementation.
@@ -100,7 +99,7 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
   @Override
   public ResponseEntity<String> callPoll(PollDesc body) {
     // Check whether the service has not been fully initialized.
-    if (!localWaitReady()) {
+    if (!isReady()) {
       logger.error(NOT_INITIALIZED_MESSAGE);
       return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
@@ -154,7 +153,7 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     }
 
     // Check whether the service has not been fully initialized.
-    if (!localWaitReady()) {
+    if (!isReady()) {
       logger.error(NOT_INITIALIZED_MESSAGE);
       return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
@@ -192,7 +191,7 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
       logger.debug("request poll info for " + psId);
     }
     // Check whether the service has not been fully initialized.
-    if (!localWaitReady()) {
+    if (!isReady()) {
       logger.error(NOT_INITIALIZED_MESSAGE);
       return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
@@ -235,7 +234,7 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
       logger.debug("request poller details for poll with " + pollKey);
     }
     // Check whether the service has not been fully initialized.
-    if (!localWaitReady()) {
+    if (!isReady()) {
       logger.error(NOT_INITIALIZED_MESSAGE);
       return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
@@ -266,7 +265,7 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
       logger.debug("request voter details for poll with " + pollKey);
     }
     // Check whether the service has not been fully initialized.
-    if (!localWaitReady()) {
+    if (!isReady()) {
       logger.error(NOT_INITIALIZED_MESSAGE);
       return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
@@ -301,7 +300,7 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     Integer page, Integer size) {
 
     // Check whether the service has not been fully initialized.
-    if (!localWaitReady()) {
+    if (!isReady()) {
       logger.error(NOT_INITIALIZED_MESSAGE);
       return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
@@ -374,7 +373,7 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
   public ResponseEntity<RepairPager> getRepairQueueData(String pollKey, String repair, Integer page,
     Integer size) {
     // Check whether the service has not been fully initialized.
-    if (!localWaitReady()) {
+    if (!isReady()) {
       logger.error(NOT_INITIALIZED_MESSAGE);
       return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
@@ -439,7 +438,7 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     Integer size) {
 
     // Check whether the service has not been fully initialized.
-    if (!localWaitReady()) {
+    if (!isReady()) {
       logger.error(NOT_INITIALIZED_MESSAGE);
       return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
@@ -497,7 +496,7 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     }
 
     // Check whether the service has not been fully initialized.
-    if (!localWaitReady()) {
+    if (!isReady()) {
       logger.error(NOT_INITIALIZED_MESSAGE);
       return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
@@ -538,7 +537,7 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     }
 
     // Check whether the service has not been fully initialized.
-    if (!localWaitReady()) {
+    if (!isReady()) {
       logger.error(NOT_INITIALIZED_MESSAGE);
       return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
@@ -1009,15 +1008,8 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     return pluginManager;
   }
 
-  protected boolean localWaitReady() {
-
-    try {
-      return waitReady();
-    }
-    catch(Exception ex) {
-    }
-    return localReady;
-
+  protected boolean isReady() {
+    return waitReady();
   }
 
 }
