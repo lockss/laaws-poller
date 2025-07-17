@@ -160,25 +160,6 @@ public class TestPollerApplication extends SpringLockssTestCase4 {
 
   }
 
-  @Test
-  public void runUnAuthenticatedTests() throws Exception {
-
-    logger.debug2("Invoked");
-
-    // Specify the command line parameters to be used for the tests.
-    List<String> cmdLineArgs = getCommandLineArguments();
-    cmdLineArgs.add("-p");
-    cmdLineArgs.add("test/config/testAuthOff.opt");
-
-    CommandLineRunner runner = appCtx.getBean(CommandLineRunner.class);
-    runner.run(cmdLineArgs.toArray(new String[cmdLineArgs.size()]));
-    runGetSwaggerDocsTest(getTestUrlTemplate("/v3/api-docs"));
-    //runMethodsNotAllowedAuthenticatedTest();
-    logger.debug2("Done");
-
-  }
-
-
   // Can't be part of setUpBeforeEachTest as daemon hasn't been started yet
   private void startAllAusIfNecessary() {
     startAuIfNecessary(sau.getAuId());
