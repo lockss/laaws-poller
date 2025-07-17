@@ -52,6 +52,7 @@ paths:
       description: Use the information found in the descriptor object to initiate
         a  poll.
       operationId: callPoll
+      # new roles: ROLE_AU_ADMIN
       requestBody:
         description: A poll descriptor object used to define the poll being requested.
         content:
@@ -81,6 +82,7 @@ paths:
       summary: Get queued poll status
       description: Get the status of a previously queued poll.
       operationId: getPollStatus
+      # new roles: ROLE_AU_ADMIN
       parameters:
         - name: psId
           in: path
@@ -108,6 +110,7 @@ paths:
       description: Stop a running poll and delete any schecduled polls for poll with
         the poll service id.
       operationId: cancelPoll
+      # new roles: ROLE_AU_ADMIN
       parameters:
         - name: psId
           in: path
@@ -152,6 +155,7 @@ paths:
       summary: Page Tally
       description: Return the vote tallies for a specific poll.
       operationId: getTallyUrls
+      # new roles: ROLE_AU_ADMIN
       parameters:
         - name: pollKey
           in: path
@@ -218,6 +222,7 @@ paths:
       summary: Poll Repairs
       description: Return the repair status for a specific poll.
       operationId: getRepairQueueData
+      # new roles: ROLE_AU_ADMIN
       parameters:
         - name: pollKey
           in: path
@@ -283,6 +288,7 @@ paths:
       description: Return the list of urls of vote type for a given peer in a specific
         poll.
       operationId: getPollPeerVoteUrls
+      # new roles: ROLE_AU_ADMIN
       parameters:
         - name: pollKey
           in: path
@@ -355,6 +361,7 @@ paths:
       description: Get the list of recent polls as poller from the poll queue. if
         size and page are passed in use those arguments to limit return data.
       operationId: getPollsAsPoller
+      # new roles: ROLE_AU_ADMIN
       parameters:
         - name: size
           in: query
@@ -407,6 +414,7 @@ paths:
       summary: PollerDetails
       description: Return the detailed information about a poll.
       operationId: getPollerPollDetails
+      # new roles: ROLE_AU_ADMIN
       parameters:
         - name: pollKey
           in: path
@@ -435,6 +443,7 @@ paths:
       description: Get the list of recent polls as voter from the poll queue. if size
         and page are passed in use those arguments to limit return data.
       operationId: getPollsAsVoter
+      # new roles: ROLE_AU_ADMIN
       parameters:
         - name: size
           in: query
@@ -487,6 +496,7 @@ paths:
       summary: VoterDetails
       description: Return the detailed information about a poll.
       operationId: getVoterPollDetails
+      # new roles: ROLE_AU_ADMIN
       parameters:
         - name: pollKey
           in: path
@@ -514,6 +524,7 @@ paths:
       summary: Export artifacts in an Archival Unit
       description: Export artifacts in an Archival Unit as a group of archives
       operationId: getExportFiles
+      # new roles: ROLE_CONTENT_ACCESS, ROLE_AU_ADMIN
       parameters:
         - name: auid
           in: path
@@ -595,6 +606,7 @@ paths:
       summary: Query for poll properties
       description: Query for polls that meet a set of specified conditions
       operationId: getPolls
+      # new roles: ROLE_AU_ADMIN
       parameters:
         - name: pollQuery
           in: query
@@ -624,6 +636,7 @@ paths:
       summary: Query for peer properties
       description: Query for peers that meet a set of specified conditions
       operationId: getPeers
+      # new roles: ROLE_AU_ADMIN
       parameters:
         - name: peerQuery
           in: query
@@ -653,6 +666,7 @@ paths:
       summary: Query for vote properties
       description: Query for votes that meet a set of specified conditions
       operationId: getVotes
+      # new roles: ROLE_AU_ADMIN
       parameters:
         - name: voteQuery
           in: query
@@ -682,6 +696,7 @@ paths:
       summary: Import a file into an Archival Unit
       description: Import a file as an artifact in an Archival Unit
       operationId: putImportFile
+      # new roles: ROLE_AU_ADMIN
       requestBody:
         content:
           multipart/form-data:
@@ -724,6 +739,7 @@ paths:
       summary: Get the results of all the asynchronous hashing operations
       description: Get the results of all the asynchronous hashing operations
       operationId: getAllHashes
+      # new roles: ROLE_CONTENT_ACCESS, ROLE_AU_ADMIN
       responses:
         200:
           description: Information about all the asynchronous hashing operations
@@ -744,6 +760,7 @@ paths:
       summary: Perform a hashing operation
       description: Perform the hashing of an AU or a URL
       operationId: putHash
+      # new roles: ROLE_CONTENT_ACCESS, ROLE_AU_ADMIN
       parameters:
         - name: isAsynchronous
           in: query
@@ -780,6 +797,7 @@ paths:
       summary: Get the result of an asynchronous hashing operation
       description: Get the result of an asynchronous hashing operation
       operationId: getHash
+      # new roles: ROLE_CONTENT_ACCESS, ROLE_AU_ADMIN
       parameters:
         - name: requestId
           in: path
@@ -808,6 +826,7 @@ paths:
       description: Remove from the system an asynchronous hashing operation, terminating
         it if it's still running
       operationId: deleteHash
+      # new roles: ROLE_CONTENT_ACCESS, ROLE_AU_ADMIN
       parameters:
         - name: requestId
           in: path
@@ -835,6 +854,7 @@ paths:
       summary: Query the properties of repositories
       description: Query the system for selected repository properties
       operationId: getRepositories
+      # new roles: ROLE_AU_ADMIN
       parameters:
         - name: repositoryQuery
           in: query
@@ -864,6 +884,7 @@ paths:
       summary: Query the properties of repository spaces
       description: Query the system for selected repository space properties
       operationId: getRepositorySpaces
+      # new roles: ROLE_AU_ADMIN
       parameters:
         - name: repositorySpaceQuery
           in: query
