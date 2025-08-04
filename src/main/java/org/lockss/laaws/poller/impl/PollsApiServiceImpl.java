@@ -544,14 +544,6 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     // are we authorized
     AuthUtil.checkHasRole(Roles.ROLE_AU_ADMIN);
 
-
-    // Check whether the service has not been fully initialized.
-//    if (!waitReady()) {
-//      return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
-//    }
-
-    AuthUtil.checkHasRole(Roles.ROLE_AU_ADMIN);
-
     PollManager pm = getPollManager();
     Collection<V3Voter> voters = pm.getV3Voters();
     String baseLink = request.getRequestURI();
@@ -1003,6 +995,7 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     }
     return pollManager;
   }
+
   /**
    * Provides the plugin manager.
    *
