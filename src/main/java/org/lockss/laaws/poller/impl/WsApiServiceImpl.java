@@ -45,6 +45,7 @@ import static org.lockss.ws.entities.HasherWsResult.RECORD_FILE_TYPE;
 
 @Service
 public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiDelegate {
+
   private static L4JLogger log = L4JLogger.getLogger();
 
   // TODO: Move the following endpoint handler to some other service. It is here
