@@ -52,6 +52,7 @@ import org.lockss.plugin.simulated.*;
 import org.lockss.poller.*;
 import org.lockss.poller.v3.*;
 import org.lockss.spring.test.*;
+import org.lockss.test.*;
 import org.lockss.util.rest.*;
 import org.lockss.util.rest.poller.*;
 import org.lockss.util.rest.status.*;
@@ -101,7 +102,6 @@ public class TestApiServiceImpls extends SpringLockssTestCase4 {
   private final Credentials ACCESS_CONTENT = new Credentials("access-content", "I'mAccessContent");
   private final Credentials ANYBODY = new Credentials("someUser", "somePassword");
 
-
   // The port that Tomcat is using during this test.
   @LocalServerPort
   private int port;
@@ -111,19 +111,14 @@ public class TestApiServiceImpls extends SpringLockssTestCase4 {
   @Autowired
   ApplicationContext appCtx;
 
-// Spy the real PollManager bean instead of a pure mock
   @SpyBean
-  private PollManager pollManagerSpy;
-
-
-
-  @Autowired
-  private PollsApiServiceImpl pollsApiService;
+  private PollsApiServiceImpl pollsApiServiceImpl;
 
   // Mock PluginManager for testing
   private MySimulatedArchivalUnit sau;
 
   private MockEntryManager mockEntryManager;
+  private Object entryManagerProxy;
 
 
   /**
@@ -147,13 +142,12 @@ public class TestApiServiceImpls extends SpringLockssTestCase4 {
 
     log.trace("Generating tree of size 3x1x2 with 3000 byte files...");
     sau.generateContentTree();
-    createEntryManagerMock();
-    // Force the service to use our spy
-    PollManager pollManager = LockssDaemon.getLockssDaemon().getPollManager();
-    pollManagerSpy = spy(pollManager);
-
+    // Initialize in-memory EntryManager delegate and its proxy
+    mockEntryManager = new MockEntryManager();
+    entryManagerProxy = createEntryManagerMock();
     log.debug2("Done");
   }
+
   @After
   public void tearDown() throws Exception {
       LockssDaemon daemon = LockssDaemon.getLockssDaemon();
@@ -210,29 +204,22 @@ public class TestApiServiceImpls extends SpringLockssTestCase4 {
 
         switch (method) {
           case "addPoll":
-            mockEntryManager.addPoll((Poll)args[0]);
+            mockEntryManager.addPoll((Poll) args[0]);
             break;
           case "getCurrentPoll":
-            return mockEntryManager.getCurrentPoll((String)args[0]);
+            return mockEntryManager.getCurrentPoll((String) args[0]);
           case "isPollRunning":
-            return mockEntryManager.isPollRunning((String)args[0]);
+            return mockEntryManager.isPollRunning((String) args[0]);
           case "forAu":
-            return mockEntryManager.forAu((ArchivalUnit)args[0]);
+            return mockEntryManager.forAu((ArchivalUnit) args[0]);
           case "forAuId":
-            return mockEntryManager.forAuId((String)args[0]);
+            return mockEntryManager.forAuId((String) args[0]);
           default:
-            // if you want real behavior by reflection, you could do:
-            // return invocation.callRealMethod();
-            // otherwise:
-            throw new UnsupportedOperationException("Unexpected method: " + method);
+            return null;
         }
         return null;
       }
     });
-  }
-
-  private void setSpyEntryManager() {
-    ReflectionTestUtils.setField(pollManagerSpy, "entryManager", createEntryManagerMock());
   }
 
   /**
@@ -252,7 +239,6 @@ public class TestApiServiceImpls extends SpringLockssTestCase4 {
     final CommandLineRunner runner = appCtx.getBean(CommandLineRunner.class);
     runner.run(cmdLineArgs.toArray(new String[cmdLineArgs.size()]));
     startAllAusIfNecessary();
-
     runGetSwaggerDocsTest(getTestUrlTemplate("/v3/api-docs"));
     runStatusApiServiceImplTests();
     runPollsApiServiceImplTests();
@@ -270,7 +256,6 @@ public class TestApiServiceImpls extends SpringLockssTestCase4 {
    */
   private List<String> getCommandLineArguments() throws IOException {
     log.debug2("Invoked");
-
     final List<String> cmdLineArgs = new ArrayList<String>();
     cmdLineArgs.add("-p");
     cmdLineArgs.add(getPlatformDiskSpaceConfigPath());
@@ -294,14 +279,28 @@ public class TestApiServiceImpls extends SpringLockssTestCase4 {
    */
   private void runPollsApiServiceImplTests() throws Exception {
     log.debug2("Invoked");
-    runMethodsNotAllowedTest();
-    runTestCallPoll();
-    runTestCancelPoll();
-    runTestGetPollStatus();
-    runTestGetPollerPollDetails();
-    runTestGetVoterPollDetails();
-    runTestGetPollsAsPoller();
-    runTestGetPollsAsVoter();
+        // Create and wire a standalone PollManager instance for the tests
+    PollManager testPollManager = new PollManager();
+    testPollManager.initService(LockssDaemon.getLockssDaemon());
+    ReflectionTestUtils.setField(testPollManager, "entryManager",
+        (entryManagerProxy != null) ? entryManagerProxy : createEntryManagerMock());
+    testPollManager.startService();
+    pollsApiServiceImpl.setPollManager(testPollManager);
+    try {
+      runMethodsNotAllowedTest();
+      runTestCallPoll();
+      runTestCancelPoll();
+      runTestGetPollStatus();
+      runTestGetPollerPollDetails();
+      runTestGetVoterPollDetails();
+      runTestGetPollsAsPoller();
+      runTestGetPollsAsVoter();
+    }
+    finally {
+      if (testPollManager != null) {
+        testPollManager.stopService();
+      }
+    }
     log.debug2("Done");
   }
 
@@ -573,7 +572,7 @@ public class TestApiServiceImpls extends SpringLockssTestCase4 {
     // Test with invalid AU ID
     PollDesc invalidPollDesc = new PollDesc();
     invalidPollDesc.setAuId(UNKNOWN_AUID);
-    
+
     runTestCallPollWithStatus(invalidPollDesc, AU_ADMIN, HttpMethod.POST, HttpStatus.NOT_FOUND);
 
     // Test authorization - no credentials
@@ -590,8 +589,8 @@ public class TestApiServiceImpls extends SpringLockssTestCase4 {
    */
   private void runTestCancelPoll() throws Exception {
     log.debug2("Invoked");
-    setSpyEntryManager();
    // Test successful cancel
+    addAndRegisterMockV3Poll(sau.getAuId(), sau);
     runTestCancelPollWithStatus(sau.getAuId(), AU_ADMIN, HttpStatus.OK);
 
     // Test cancel with unknown AU
@@ -608,7 +607,7 @@ public class TestApiServiceImpls extends SpringLockssTestCase4 {
    */
   private void runTestGetPollStatus() throws Exception {
     log.debug2("Invoked");
-
+    PollManager pollManager = pollsApiServiceImpl.getPollManager();
     // Setup mock poll
     V3Poller mockPoller = mock(V3Poller.class);
     when(mockPoller.getKey()).thenReturn("test-poll-key");
@@ -619,18 +618,17 @@ public class TestApiServiceImpls extends SpringLockssTestCase4 {
     when(mockPoller.getDuration()).thenReturn(86400000L);
     when(mockPoller.getParticipants()).thenReturn(new ArrayList<>());
     when(mockPoller.getCompletedRepairs()).thenReturn(new ArrayList<>());
-    
+
     PollerStateBean mockStateBean = mock(PollerStateBean.class);
     when(mockStateBean.getPollEnd()).thenReturn(System.currentTimeMillis());
     when(mockPoller.getPollerStateBean()).thenReturn(mockStateBean);
-
-    when(pollManagerSpy.getPoll(sau.getAuId())).thenReturn(mockPoller);
+    //when(pollManagerSpy.getPoll(sau.getAuId())).thenReturn(mockPoller);
 
     // Test successful get status
     runTestGetPollStatusWithExpectedResult(sau.getAuId(), AU_ADMIN, HttpStatus.OK);
 
     // Test with unknown AU
-    when(pollManagerSpy.getPoll(UNKNOWN_AUID)).thenReturn(null);
+    //when(pollManagerSpy.getPoll(UNKNOWN_AUID)).thenReturn(null);
     runTestGetPollStatusWithExpectedResult(UNKNOWN_AUID, AU_ADMIN, HttpStatus.NOT_FOUND);
 
     // Test authorization
@@ -638,7 +636,7 @@ public class TestApiServiceImpls extends SpringLockssTestCase4 {
     runTestGetPollStatusWithExpectedResult(sau.getAuId(), ANYBODY, HttpStatus.FORBIDDEN);
 
     log.debug2("Done");
-  }
+      }
 
   /**
    * Tests the getPollerPollDetails endpoint.
@@ -647,15 +645,15 @@ public class TestApiServiceImpls extends SpringLockssTestCase4 {
     log.debug2("Invoked");
 
     String pollKey = "test-poll-key";
-    
+
     // Setup mock poll
     V3Poller mockPoller = mock(V3Poller.class);
-    when(pollManagerSpy.getPoll(pollKey)).thenReturn(mockPoller);
+    //when(pollManagerSpy.getPoll(pollKey)).thenReturn(mockPoller);
 
     runTestGetPollerPollDetailsWithStatus(pollKey, AU_ADMIN, HttpStatus.OK);
 
     // Test with unknown poll key
-    when(pollManagerSpy.getPoll("unknown-key")).thenReturn(null);
+    //when(pollManagerSpy.getPoll("unknown-key")).thenReturn(null);
     runTestGetPollerPollDetailsWithStatus("unknown-key", AU_ADMIN, HttpStatus.NOT_FOUND);
 
     // Test authorization
@@ -672,15 +670,15 @@ public class TestApiServiceImpls extends SpringLockssTestCase4 {
     log.debug2("Invoked");
 
     String pollKey = "test-voter-poll-key";
-    
+
     // Setup mock poll
     V3Voter mockVoter = mock(V3Voter.class);
-    when(pollManagerSpy.getPoll(pollKey)).thenReturn(mockVoter);
+    //when(pollManagerSpy.getPoll(pollKey)).thenReturn(mockVoter);
 
     runTestGetVoterPollDetailsWithStatus(pollKey, AU_ADMIN, HttpStatus.OK);
 
     // Test with unknown poll key
-    when(pollManagerSpy.getPoll("unknown-voter-key")).thenReturn(null);
+    //when(pollManagerSpy.getPoll("unknown-voter-key")).thenReturn(null);
     runTestGetVoterPollDetailsWithStatus("unknown-voter-key", AU_ADMIN, HttpStatus.NOT_FOUND);
 
     // Test authorization
@@ -698,7 +696,7 @@ public class TestApiServiceImpls extends SpringLockssTestCase4 {
 
     // Setup mock pollers
     Collection<V3Poller> mockPollers = new ArrayList<>();
-    when(pollManagerSpy.getV3Pollers()).thenReturn(mockPollers);
+    //when(pollManagerSpy.getV3Pollers()).thenReturn(mockPollers);
 
     runTestGetPollsAsPollerWithStatus(1, 20, AU_ADMIN, HttpStatus.OK);
 
@@ -717,7 +715,7 @@ public class TestApiServiceImpls extends SpringLockssTestCase4 {
 
     // Setup mock voters
     Collection<V3Voter> mockVoters = new ArrayList<>();
-    when(pollManagerSpy.getV3Voters()).thenReturn(mockVoters);
+    //when(pollManagerSpy.getV3Voters()).thenReturn(mockVoters);
 
     runTestGetPollsAsVoterWithStatus(1, 20, AU_ADMIN, HttpStatus.OK);
 
@@ -733,139 +731,139 @@ public class TestApiServiceImpls extends SpringLockssTestCase4 {
 
   private void runTestCancelPollWithStatus(String auId, Credentials credentials, HttpStatus expectedStatus) {
     log.debug2("Testing cancel poll with auId: {}", auId);
-    
+
     String template = getTestUrlTemplate("/polls/{auId}");
     UriComponents uriComponents = UriComponentsBuilder.fromUriString(template).build()
         .expand(Collections.singletonMap("auId", auId));
     URI uri = UriComponentsBuilder.newInstance().uriComponents(uriComponents).build().encode().toUri();
-    
+
     RestTemplateBuilder templateBuilder = RestUtil.getRestTemplateBuilder(0, 0);
     HttpEntity<String> requestEntity = null;
-    
+
     if (credentials != null) {
       HttpHeaders headers = new HttpHeaders();
       credentials.setUpBasicAuthentication(headers);
       requestEntity = new HttpEntity<>(null, headers);
     }
-    
+
     ResponseEntity<Void> response = new TestRestTemplate(templateBuilder)
         .exchange(uri, HttpMethod.DELETE, requestEntity, Void.class);
-    
+
     Assert.assertEquals(expectedStatus, response.getStatusCode());
   }
 
   private void runTestGetPollStatusWithExpectedResult(String auId, Credentials credentials, HttpStatus expectedStatus) {
     log.debug2("Testing get poll status with auId: {}", auId);
-    
+
     String template = getTestUrlTemplate("/polls/{auId}");
     UriComponents uriComponents = UriComponentsBuilder.fromUriString(template).build()
         .expand(Collections.singletonMap("auId", auId));
     URI uri = UriComponentsBuilder.newInstance().uriComponents(uriComponents).build().encode().toUri();
-    
+
     RestTemplateBuilder templateBuilder = RestUtil.getRestTemplateBuilder(0, 0);
     HttpEntity<String> requestEntity = null;
-    
+
     if (credentials != null) {
       HttpHeaders headers = new HttpHeaders();
       credentials.setUpBasicAuthentication(headers);
       requestEntity = new HttpEntity<>(null, headers);
     }
-    
+
     ResponseEntity<PollerSummary> response = new TestRestTemplate(templateBuilder)
         .exchange(uri, HttpMethod.GET, requestEntity, PollerSummary.class);
-    
+
     Assert.assertEquals(expectedStatus, response.getStatusCode());
   }
 
   private void runTestGetPollerPollDetailsWithStatus(String pollKey, Credentials credentials, HttpStatus expectedStatus) {
     log.debug2("Testing get poller poll details with pollKey: {}", pollKey);
-    
+
     String template = getTestUrlTemplate("/polls/poller/{pollKey}");
     UriComponents uriComponents = UriComponentsBuilder.fromUriString(template).build()
         .expand(Collections.singletonMap("pollKey", pollKey));
     URI uri = UriComponentsBuilder.newInstance().uriComponents(uriComponents).build().encode().toUri();
-    
+
     RestTemplateBuilder templateBuilder = RestUtil.getRestTemplateBuilder(0, 0);
     HttpEntity<String> requestEntity = null;
-    
+
     if (credentials != null) {
       HttpHeaders headers = new HttpHeaders();
       credentials.setUpBasicAuthentication(headers);
       requestEntity = new HttpEntity<>(null, headers);
     }
-    
+
     ResponseEntity<PollerDetail> response = new TestRestTemplate(templateBuilder)
         .exchange(uri, HttpMethod.GET, requestEntity, PollerDetail.class);
-    
+
     Assert.assertEquals(expectedStatus, response.getStatusCode());
   }
 
   private void runTestGetVoterPollDetailsWithStatus(String pollKey, Credentials credentials, HttpStatus expectedStatus) {
     log.debug2("Testing get voter poll details with pollKey: {}", pollKey);
-    
+
     String template = getTestUrlTemplate("/polls/voter/{pollKey}");
     UriComponents uriComponents = UriComponentsBuilder.fromUriString(template).build()
         .expand(Collections.singletonMap("pollKey", pollKey));
     URI uri = UriComponentsBuilder.newInstance().uriComponents(uriComponents).build().encode().toUri();
-    
+
     RestTemplateBuilder templateBuilder = RestUtil.getRestTemplateBuilder(0, 0);
     HttpEntity<String> requestEntity = null;
-    
+
     if (credentials != null) {
       HttpHeaders headers = new HttpHeaders();
       credentials.setUpBasicAuthentication(headers);
       requestEntity = new HttpEntity<>(null, headers);
     }
-    
+
     ResponseEntity<VoterDetail> response = new TestRestTemplate(templateBuilder)
         .exchange(uri, HttpMethod.GET, requestEntity, VoterDetail.class);
-    
+
     Assert.assertEquals(expectedStatus, response.getStatusCode());
   }
 
   private void runTestGetPollsAsPollerWithStatus(Integer page, Integer size, Credentials credentials, HttpStatus expectedStatus) {
     log.debug2("Testing get polls as poller");
-    
+
     String template = getTestUrlTemplate("/polls/poller?page={page}&size={size}");
     UriComponents uriComponents = UriComponentsBuilder.fromUriString(template).build()
         .expand(Map.of("page", page, "size", size));
     URI uri = UriComponentsBuilder.newInstance().uriComponents(uriComponents).build().encode().toUri();
-    
+
     RestTemplateBuilder templateBuilder = RestUtil.getRestTemplateBuilder(0, 0);
     HttpEntity<String> requestEntity = null;
-    
+
     if (credentials != null) {
       HttpHeaders headers = new HttpHeaders();
       credentials.setUpBasicAuthentication(headers);
       requestEntity = new HttpEntity<>(null, headers);
     }
-    
+
     ResponseEntity<PollerPager> response = new TestRestTemplate(templateBuilder)
         .exchange(uri, HttpMethod.GET, requestEntity, PollerPager.class);
-    
+
     Assert.assertEquals(expectedStatus, response.getStatusCode());
   }
 
   private void runTestGetPollsAsVoterWithStatus(Integer page, Integer size, Credentials credentials, HttpStatus expectedStatus) {
     log.debug2("Testing get polls as voter");
-    
+
     String template = getTestUrlTemplate("/polls/voter?page={page}&size={size}");
     UriComponents uriComponents = UriComponentsBuilder.fromUriString(template).build()
         .expand(Map.of("page", page, "size", size));
     URI uri = UriComponentsBuilder.newInstance().uriComponents(uriComponents).build().encode().toUri();
-    
+
     RestTemplateBuilder templateBuilder = RestUtil.getRestTemplateBuilder(0, 0);
     HttpEntity<String> requestEntity = null;
-    
+
     if (credentials != null) {
       HttpHeaders headers = new HttpHeaders();
       credentials.setUpBasicAuthentication(headers);
       requestEntity = new HttpEntity<>(null, headers);
     }
-    
+
     ResponseEntity<VoterPager> response = new TestRestTemplate(templateBuilder)
         .exchange(uri, HttpMethod.GET, requestEntity, VoterPager.class);
-    
+
     Assert.assertEquals(expectedStatus, response.getStatusCode());
   }
 
@@ -881,42 +879,118 @@ public class TestApiServiceImpls extends SpringLockssTestCase4 {
   }
 
   /**
-   * Simple in‐memory mock of EntryManager for testing.
+   * Simple in-memory mock of EntryManager for testing.
+   * Now supports add/get/remove/finish and AU-based queries.
    */
   public class MockEntryManager {
-    private final Map<String, Poll> polls = new ConcurrentHashMap<>();
+    private final Map<String, Poll> activePolls = new ConcurrentHashMap<>();
+    private final Map<String, Poll> finishedPolls = new ConcurrentHashMap<>();
 
     public void addPoll(Poll poll) {
-      if (polls.containsKey(poll.getKey())) {
-        throw new IllegalArgumentException("Poll already registered: " + poll.getKey());
+      String key = poll.getKey();
+      if (activePolls.containsKey(key) || finishedPolls.containsKey(key)) {
+        throw new IllegalArgumentException("Poll already registered: " + key);
       }
-      polls.put(poll.getKey(), poll);
+      activePolls.put(key, poll);
     }
 
     public Poll getCurrentPoll(String key) {
-      return polls.get(key);
+      return activePolls.get(key);
     }
 
     public boolean isPollRunning(String key) {
-      return polls.containsKey(key);
+      return activePolls.containsKey(key);
     }
 
     public List<Poll> forAu(ArchivalUnit au) {
-      return polls.values().stream()
-          .filter(p -> p.getAu().equals(au))
+      return Stream.concat(activePolls.values().stream(), finishedPolls.values().stream())
+          .filter(p -> p.getAu() != null && p.getAu().equals(au))
           .collect(Collectors.toList());
     }
 
     public Poll forAuId(String auId) {
-      return polls.values().stream()
-          .filter(p -> p.getAu().getAuId().equals(auId))
+      return Stream.concat(activePolls.values().stream(), finishedPolls.values().stream())
+          .filter(p -> p.getAu() != null && auId.equals(p.getAu().getAuId()))
           .findFirst()
           .orElse(null);
     }
 
+    // Convenience: simulate finishing a poll (moves from active to finished)
+    public void finishPoll(String key) {
+      Poll p = activePolls.remove(key);
+      if (p != null) {
+        finishedPolls.put(key, p);
+      }
+    }
+
+    // Convenience: remove from any registry
+    public void removePoll(String key) {
+      if (activePolls.remove(key) == null) {
+        finishedPolls.remove(key);
+      }
+    }
+
     /** Utility to clear all polls between tests */
     public void clear() {
-      polls.clear();
+      activePolls.clear();
+      finishedPolls.clear();
     }
+  }
+
+  /**
+   * V3Poller Mockito mock with sensible defaults that match existing tests.
+   */
+  private V3Poller createMockV3Poller(String key, ArchivalUnit au,
+      Long createTimeMillis,
+      Long durationMillis,
+      int status) {
+    V3Poller poller = Mockito.mock(V3Poller.class, withSettings().lenient());
+    when(poller.getKey()).thenReturn(key);
+    when(poller.getAu()).thenReturn(au);
+    when(poller.getStatus()).thenReturn(status);
+    when(poller.getCreateTime()).thenReturn(
+        createTimeMillis != null ? createTimeMillis : System.currentTimeMillis());
+    when(poller.getDuration()).thenReturn(durationMillis != null ? durationMillis : 86_400_000L);
+    when(poller.getPollVariant()).thenReturn(V3Poller.PollVariant.PoR);
+    when(poller.getParticipants()).thenReturn(new ArrayList<>());
+    when(poller.getCompletedRepairs()).thenReturn(new ArrayList<>());
+
+    PollerStateBean state = Mockito.mock(PollerStateBean.class, withSettings().lenient());
+    when(state.getPollEnd()).thenReturn(System.currentTimeMillis());
+    when(poller.getPollerStateBean()).thenReturn(state);
+    return poller;
+  }
+
+  /**
+   * Factory for a robust V3Voter Mockito mock with sensible defaults.
+   */
+  private V3Voter createMockV3Voter(String key, ArchivalUnit au,
+      Long createTimeMillis,
+      Long durationMillis,
+      int status) {
+    V3Voter voter = Mockito.mock(V3Voter.class, withSettings().lenient());
+    // Common fields for detail endpoints
+    when(voter.getKey()).thenReturn(key);
+    when(voter.getAu()).thenReturn(au);
+    when(voter.getStatus()).thenReturn(status);
+    when(voter.getCreateTime()).thenReturn(
+        createTimeMillis != null ? createTimeMillis : System.currentTimeMillis());
+    when(voter.getDuration()).thenReturn(durationMillis != null ? durationMillis : 86_400_000L);
+    return voter;
+  }
+
+  /**
+   * Convenience: create and register a MockPoll in the in-memory EntryManager.
+   */
+  private V3Poller addAndRegisterMockV3Poll(String key, ArchivalUnit au) {
+    V3Poller poller = createMockV3Poller(key, au, null, null, 1);
+    mockEntryManager.addPoll(poller);
+    return poller;
+  }
+
+  private V3Voter addAndRegisterMockV3Voter(String key, ArchivalUnit au) {
+    V3Voter voter = createMockV3Voter(key, au, null, null, 1);
+    mockEntryManager.addPoll(voter);
+    return voter;
   }
 }

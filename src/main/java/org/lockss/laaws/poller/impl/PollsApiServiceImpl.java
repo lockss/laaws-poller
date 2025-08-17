@@ -995,7 +995,9 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     }
     return pollManager;
   }
-
+  void setPollManager(PollManager pollManager) {
+    this.pollManager = pollManager;
+  }
   /**
    * Provides the plugin manager.
    *
