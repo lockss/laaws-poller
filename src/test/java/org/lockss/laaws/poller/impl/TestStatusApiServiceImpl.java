@@ -26,64 +26,154 @@
 
 package org.lockss.laaws.poller.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import jakarta.servlet.http.HttpServletRequest;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import com.fasterxml.jackson.core.*;
+import java.io.*;
+import java.util.*;
+import org.junit.*;
+import org.junit.runner.*;
 import org.lockss.app.*;
-import org.lockss.log.L4JLogger;
-import org.lockss.util.rest.status.ApiStatus;
-import org.lockss.protocol.IdentityManager;
-import org.lockss.protocol.PeerIdentity;
-import org.lockss.protocol.V3LcapMessage;
-import org.lockss.test.LockssTestCase4;
-import org.lockss.test.MockArchivalUnit;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.lockss.laaws.poller.*;
+import org.lockss.log.*;
+import org.lockss.spring.test.*;
+import org.lockss.util.rest.status.*;
+import org.skyscreamer.jsonassert.*;
+import org.springframework.beans.factory.annotation.*;
+import org.springframework.boot.*;
+import org.springframework.boot.test.context.*;
+import org.springframework.boot.test.web.client.*;
+import org.springframework.boot.test.web.server.*;
+import org.springframework.context.*;
+import org.springframework.http.*;
+import org.springframework.test.context.junit4.*;
 
-/** @noinspection TestShouldMockAllTestedDependenciesInspection*/
-public class TestStatusApiServiceImpl extends LockssTestCase4 {
-  private static L4JLogger log = L4JLogger.getLogger();
+/**
+ * This annotation tells JUnit to run using Spring's testing support.
+ * It provides functionality of the Spring TestContext Framework to standard JUnit tests.
+ */
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = PollerApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+public class TestStatusApiServiceImpl extends SpringLockssTestCase4 {
+  private static final L4JLogger log = L4JLogger.getLogger();
 
-  @Mock
-  private HttpServletRequest request;
+  // The port that Tomcat is using during this test.
+  @LocalServerPort
+  private int port;
 
-  @InjectMocks
-  private StatusApiServiceImpl statusApiServiceImpl;
+  // The application Context used to specify the command line arguments to be
+  // used for the tests.
+  @Autowired
+  ApplicationContext appCtx;
 
-  protected static MockArchivalUnit mTestAu;
-
-  protected PeerIdentity testID;
-  protected V3LcapMessage[] v3Testmsg;
-  protected IdentityManager mIdManager;
-
+  /**
+   * Set up code to be run before each test.
+   *
+   * @throws Exception
+   *           if there are problems.
+   */
   @Before
-  public void setUp() throws Exception {
-    super.setUp();
-    MockitoAnnotations.initMocks(this);
-  }
+  public void setUpBeforeEachTest() throws Exception {
+    TestStatusApiServiceImpl.log.debug2("port = {}", () -> this.port);
 
-  @After
-  public void tearDown() throws Exception {
-    super.tearDown();
+    // Set up the temporary directory where the test data will reside.
+    this.setUpTempDirectory(TestStatusApiServiceImpl.class.getCanonicalName());
+
+    // Set up the UI port.
+    this.setUpUiPort(SpringLockssTestCase4.UI_PORT_CONFIGURATION_TEMPLATE, SpringLockssTestCase4.UI_PORT_CONFIGURATION_FILE);
+
+    TestStatusApiServiceImpl.log.debug2("Done");
   }
 
   /**
-   * Runs the status-related test.
-   * 
+   * Runs the tests with authentication turned off.
+   *
+   * @throws Exception
+   *           if there are problems.
+   */
+  @Test
+  public void runUnAuthenticatedTests() throws Exception {
+    TestStatusApiServiceImpl.log.debug2("Invoked");
+
+    // Specify the command line parameters to be used for the tests.
+    final List<String> cmdLineArgs = this.getCommandLineArguments();
+    cmdLineArgs.add("-p");
+    cmdLineArgs.add("test/config/testAuthOff.txt");
+
+    final CommandLineRunner runner = this.appCtx.getBean(CommandLineRunner.class);
+    runner.run(cmdLineArgs.toArray(new String[cmdLineArgs.size()]));
+
+    this.runGetSwaggerDocsTest(this.getTestUrlTemplate("/v3/api-docs"));
+    this.getStatusTest();
+
+    TestStatusApiServiceImpl.log.debug2("Done");
+  }
+
+  /**
+   * Runs the tests with authentication turned on.
+   *
+   * @throws Exception
+   *           if there are problems.
+   */
+  @Test
+  public void runAuthenticatedTests() throws Exception {
+    TestStatusApiServiceImpl.log.debug2("Invoked");
+
+    // Specify the command line parameters to be used for the tests.
+    final List<String> cmdLineArgs = this.getCommandLineArguments();
+    cmdLineArgs.add("-p");
+    cmdLineArgs.add("test/config/testAuthOn.txt");
+
+    final CommandLineRunner runner = this.appCtx.getBean(CommandLineRunner.class);
+    runner.run(cmdLineArgs.toArray(new String[cmdLineArgs.size()]));
+
+    this.runGetSwaggerDocsTest(this.getTestUrlTemplate("/v3/api-docs"));
+    this.getStatusTest();
+
+    TestStatusApiServiceImpl.log.debug2("Done");
+  }
+
+  /**
+   * Provides the standard command line arguments to start the server.
+   *
+   * @return a List<String> with the command line arguments.
+   * @throws IOException
+   *           if there are problems.
+   */
+  private List<String> getCommandLineArguments() throws IOException {
+    TestStatusApiServiceImpl.log.debug2("Invoked");
+
+    final List<String> cmdLineArgs = new ArrayList<String>();
+    cmdLineArgs.add("-p");
+    cmdLineArgs.add(this.getPlatformDiskSpaceConfigPath());
+    cmdLineArgs.add("-p");
+    cmdLineArgs.add(this.getUiPortConfigFile().getAbsolutePath());
+    cmdLineArgs.add("-p");
+    cmdLineArgs.add("test/config/lockss.txt");
+    cmdLineArgs.add("-p");
+    cmdLineArgs.add("test/config/lockss.opt");
+
+    TestStatusApiServiceImpl.log.debug2("cmdLineArgs = {}", () -> cmdLineArgs);
+    return cmdLineArgs;
+  }
+
+  /**
+   * Runs the status-related tests.
+   *
    * @throws JsonProcessingException
    *           if there are problems getting the expected status in JSON format.
    */
-  @Test
-  public void testGetApiStatus() throws JsonProcessingException {
-    ApiStatus result = statusApiServiceImpl.getApiStatus();
+  private void getStatusTest() throws JsonProcessingException {
+    TestStatusApiServiceImpl.log.debug2("Invoked");
+
+    final ResponseEntity<String> successResponse = new TestRestTemplate().exchange(
+        this.getTestUrlTemplate("/status"), HttpMethod.GET, null, String.class);
+
+    final HttpStatusCode statusCode = successResponse.getStatusCode();
+    final HttpStatus status = HttpStatus.valueOf(statusCode.value());
+    Assert.assertEquals(HttpStatus.OK, status);
 
     // Get the expected result.
-    ApiStatus expected = new ApiStatus("swagger/swagger.yaml");
-    expected.setReady(false);
+    final ApiStatus expected = new ApiStatus("swagger/swagger.yaml");
+    expected.setReady(true);
     expected.setReadyTime(LockssApp.getLockssApp().getReadyTime());
     if (LockssDaemon.getLockssDaemon().areLoadablePluginsReady()) {
       expected.setStartupStatus(ApiStatus.StartupStatus.AUS_STARTED);
@@ -91,7 +181,21 @@ public class TestStatusApiServiceImpl extends LockssTestCase4 {
       expected.setStartupStatus(ApiStatus.StartupStatus.NONE);
     }
 
-    Assert.assertEquals(expected.toJson(), result.toJson());
+    JSONAssert.assertEquals(expected.toJson(), successResponse.getBody(),
+        false);
+
+    TestStatusApiServiceImpl.log.debug2("Done");
+  }
+
+  /**
+   * Provides the URL template to be tested.
+   *
+   * @param pathAndQueryParams
+   *          A String with the path and query parameters of the URL template to
+   *          be tested.
+   * @return a String with the URL template to be tested.
+   */
+  private String getTestUrlTemplate(final String pathAndQueryParams) {
+    return "http://localhost:" + this.port + pathAndQueryParams;
   }
 }
-

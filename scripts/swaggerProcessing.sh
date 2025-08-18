@@ -38,10 +38,13 @@ sed -i.backup "s/import org.lockss.laaws.poller.model.ApiStatus/import org.locks
 # Edit PollsApiDelegate.java.
 POLLS_API_DELEGATE=src/generated/java/org/lockss/laaws/poller/api/PollsApiDelegate.java
 sed -i.backup "s/import org.lockss.laaws.poller.model.PollDesc/import org.lockss.util.rest.poller.PollDesc/" $POLLS_API_DELEGATE && rm $POLLS_API_DELEGATE.backup
+sed -i.backup "s/import org.lockss.laaws.poller.model.PollerSummary/import org.lockss.util.rest.poller.PollerSummary/" $POLLS_API_DELEGATE && rm $POLLS_API_DELEGATE.backup
 
 # Edit PollsApi.java.
 POLLS_API=src/generated/java/org/lockss/laaws/poller/api/PollsApi.java
 sed -i.backup "s/import org.lockss.laaws.poller.model.PollDesc/import org.lockss.util.rest.poller.PollDesc/" $POLLS_API && rm $POLLS_API.backup
+sed -i.backup "s/import org.lockss.laaws.poller.model.PollerSummary/import org.lockss.util.rest.poller.PollerSummary/" $POLLS_API && rm $POLLS_API.backup
+
 
 # Edit PollerDetail.java.
 POLLER_DETAIL=src/generated/java/org/lockss/laaws/poller/model/PollerDetail.java
@@ -68,3 +71,24 @@ sed -i.backup "s/import org.lockss.laaws.poller.model.PollWsResult/import org.lo
 sed -i.backup "s/import org.lockss.laaws.poller.model.RepositorySpaceWsResult/import org.lockss.ws.entities.RepositorySpaceWsResult/" $WS_API && rm $WS_API.backup
 sed -i.backup "s/import org.lockss.laaws.poller.model.RepositoryWsResult/import org.lockss.ws.entities.RepositoryWsResult/" $WS_API && rm $WS_API.backup
 sed -i.backup "s/import org.lockss.laaws.poller.model.VoteWsResult/import org.lockss.ws.entities.VoteWsResult/" $WS_API && rm $WS_API.backup
+
+# Edit Model dependencies
+# PeerData
+PEER_DATA=src/generated/java/org/lockss/laaws/poller/model/PeerData.java
+sed -i.backup "s/import org.lockss.laaws.poller.model.LinkDesc/import org.lockss.util.rest.poller.LinkDesc/" $PEER_DATA && rm $PEER_DATA.backup
+
+# RepairQueue
+REPAIR_QUEUE=src/generated/java/org/lockss/laaws/poller/model/RepairQueue.java
+sed -i.backup "s/import org.lockss.laaws.poller.model.LinkDesc/import org.lockss.util.rest.poller.LinkDesc/" $REPAIR_QUEUE && rm $REPAIR_QUEUE.backup
+
+# TallyDaTa
+TALLY_DATA=src/generated/java/org/lockss/laaws/poller/model/TallyData.java
+sed -i.backup "s/import org.lockss.laaws.poller.model.LinkDesc/import org.lockss.util.rest.poller.LinkDesc/" $TALLY_DATA && rm $TALLY_DATA.backup
+
+# VoterSummary
+VOTER_SUMMARY=src/generated/java/org/lockss/laaws/poller/model/VoterSummary.java
+sed -i.backup "s/import org.lockss.laaws.poller.model.LinkDesc/import org.lockss.util.rest.poller.LinkDesc/" $VOTER_SUMMARY && rm $VOTER_SUMMARY.backup
+
+# PollerPager
+POLLER_PAGER=src/generated/java/org/lockss/laaws/poller/model/PollerPager.java
+sed -i.backup "s/import org.lockss.laaws.poller.model.PollerSummary/import org.lockss.util.rest.poller.PollerSummary/" $POLLER_PAGER && rm $POLLER_PAGER.backup

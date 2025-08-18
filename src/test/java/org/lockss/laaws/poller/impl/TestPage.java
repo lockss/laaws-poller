@@ -30,9 +30,8 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
-import org.springframework.http.HttpHeaders;
-
 import org.lockss.test.LockssTestCase4;
+import org.springframework.http.HttpHeaders;
 
 public class TestPage extends LockssTestCase4 {
 

@@ -29,24 +29,20 @@
 package org.lockss.laaws.poller.impl;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import org.lockss.app.LockssDaemon;
-import org.lockss.util.rest.repo.LockssRepository;
 import org.lockss.repository.RepoSpec;
 import org.lockss.util.Logger;
+import org.lockss.util.rest.repo.LockssRepository;
 import org.lockss.ws.entities.RepositoryWsResult;
 
 /**
  * Helper of the DaemonStatus web service implementation of repository queries.
  */
 public class RepositoryHelper {
+
   /**
-   * The fully-qualified name of the class of the objects used as source in a
-   * query.
+   * The fully-qualified name of the class of the objects used as source in a query.
    */
   static String SOURCE_FQCN = RepositoryWsSource.class.getCanonicalName();
 
@@ -87,9 +83,8 @@ public class RepositoryHelper {
   private static Logger log = Logger.getLogger();
 
   /**
-   * Provides the universe of repository-related objects used as the source for
-   * a query.
-   * 
+   * Provides the universe of repository-related objects used as the source for a query.
+   *
    * @return a List<RepositoryWsProxy> with the universe.
    */
   List<RepositoryWsSource> createUniverse() {
@@ -100,11 +95,10 @@ public class RepositoryHelper {
 
     // Get the repository specification.
     RepoSpec repoSpec =
-	LockssDaemon.getLockssDaemon().getRepositoryManager().getV2Repository();
+      LockssDaemon.getLockssDaemon().getRepositoryManager().getV2Repository();
 
     String repositorySpaceId = repoSpec.getSpec();
-    if (log.isDebug3())
-      log.debug3(DEBUG_HEADER + "repositorySpaceId = " + repositorySpaceId);
+    if (log.isDebug3()) {log.debug3(DEBUG_HEADER + "repositorySpaceId = " + repositorySpaceId);}
 
     // Get the repository.
     LockssRepository repo = repoSpec.getRepository();
@@ -112,37 +106,35 @@ public class RepositoryHelper {
     try {
       // Loop through all the namespace in the repository.
       for (String namespace : repo.getNamespaces()) {
-	if (log.isDebug3())
-	  log.debug3(DEBUG_HEADER + "namespace = " + namespace);
+        if (log.isDebug3()) {log.debug3(DEBUG_HEADER + "namespace = " + namespace);}
 
-	try {
-	  // Loop through all the AU identifiers in the namespace.
-	  for (String auId : repo.getAuIds(namespace)) {
-	    if (log.isDebug3()) log.debug3(DEBUG_HEADER + "auId = " + auId);
-	    // Add this AU to the universe.
-	    universe.add(new RepositoryWsSource(repositorySpaceId, namespace,
-		auId));
-	  }
-	} catch (IOException ioe) {
-	  log.error("Exception caught for namespace '" + namespace
-	      + "': Ignoring namespace", ioe);
-	}
+        try {
+          // Loop through all the AU identifiers in the namespace.
+          for (String auId : repo.getAuIds(namespace)) {
+            if (log.isDebug3()) {log.debug3(DEBUG_HEADER + "auId = " + auId);}
+            // Add this AU to the universe.
+            universe.add(new RepositoryWsSource(repositorySpaceId, namespace,
+              auId));
+          }
+        }
+        catch (IOException ioe) {
+          log.error("Exception caught for namespace '" + namespace
+            + "': Ignoring namespace", ioe);
+        }
       }
-    } catch (IOException ioe) {
+    }
+    catch (IOException ioe) {
       log.error("Exception caught getting namespace", ioe);
     }
 
-    if (log.isDebug2())
-      log.debug2(DEBUG_HEADER + "universe.size() = " + universe.size());
+    if (log.isDebug2()) {log.debug2(DEBUG_HEADER + "universe.size() = " + universe.size());}
     return universe;
   }
 
   /**
-   * Provides a printable copy of a collection of repository-related query
-   * results.
-   * 
-   * @param results
-   *          A {@code Collection<RepositoryWsResult>} with the query results.
+   * Provides a printable copy of a collection of repository-related query results.
+   *
+   * @param results A {@code Collection<RepositoryWsResult>} with the query results.
    * @return a String with the requested printable copy.
    */
   String nonDefaultToString(Collection<RepositoryWsResult> results) {
@@ -153,9 +145,10 @@ public class RepositoryHelper {
     for (RepositoryWsResult result : results) {
       // Handle the first result differently.
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append(nonDefaultToString(result));
@@ -167,9 +160,8 @@ public class RepositoryHelper {
 
   /**
    * Provides a printable copy of a repository-related query result.
-   * 
-   * @param result
-   *          A RepositoryWsResult with the query result.
+   *
+   * @param result A RepositoryWsResult with the query result.
    * @return a String with the requested printable copy.
    */
   private String nonDefaultToString(RepositoryWsResult result) {
@@ -178,15 +170,16 @@ public class RepositoryHelper {
 
     if (result.getRepositorySpaceId() != null) {
       builder.append("repositorySpaceId=")
-      .append(result.getRepositorySpaceId());
+        .append(result.getRepositorySpaceId());
       isFirst = false;
     }
 
     if (result.getDirectoryName() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("directoryName=").append(result.getDirectoryName());
@@ -194,9 +187,10 @@ public class RepositoryHelper {
 
     if (result.getAuName() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("auName=").append(result.getAuName());
@@ -204,9 +198,10 @@ public class RepositoryHelper {
 
     if (result.getInternal() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("internal=").append(result.getInternal());
@@ -214,9 +209,10 @@ public class RepositoryHelper {
 
     if (result.getStatus() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("status=").append(result.getStatus());
@@ -224,9 +220,10 @@ public class RepositoryHelper {
 
     if (result.getDiskUsage() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("diskUsage=").append(result.getDiskUsage());
@@ -234,9 +231,10 @@ public class RepositoryHelper {
 
     if (result.getPluginName() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("pluginName=").append(result.getPluginName());
@@ -244,9 +242,10 @@ public class RepositoryHelper {
 
     if (result.getParams() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("params=").append(result.getParams());

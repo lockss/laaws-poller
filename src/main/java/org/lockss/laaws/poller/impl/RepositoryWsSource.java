@@ -43,10 +43,10 @@ import org.lockss.util.PropUtil;
 import org.lockss.ws.entities.RepositoryWsResult;
 
 /**
- * Container for the information that is used as the source for a query related
- * to repositories.
+ * Container for the information that is used as the source for a query related to repositories.
  */
 public class RepositoryWsSource extends RepositoryWsResult {
+
   private static final String NOT_APPLICABLE = "NOT APPLICABLE";
   private static Logger log = Logger.getLogger();
   private boolean directoryNamePopulated;
@@ -69,13 +69,13 @@ public class RepositoryWsSource extends RepositoryWsResult {
 
   /**
    * Constructor.
-   * 
+   *
    * @param repositorySpaceId A String with the name of the store space.
-   * @param collectionId      A String with the identifier of a collection.
-   * @param auId              A String with the identifier of an Archival Unit.
+   * @param collectionId A String with the identifier of a collection.
+   * @param auId A String with the identifier of an Archival Unit.
    */
   public RepositoryWsSource(String repositorySpaceId, String collectionId,
-      String auId) {
+    String auId) {
     setRepositorySpaceId(repositorySpaceId);
     this.collectionId = collectionId;
     this.auId = auId;
@@ -100,30 +100,32 @@ public class RepositoryWsSource extends RepositoryWsResult {
   public String getAuName() {
     if (!auNamePopulated) {
       if (auId != null) {
-	String name = null;
+        String name = null;
 
-	if (getArchivalUnit() != null) {
-	  name = au.getName();
-	} else {
-	  name = "";
+        if (getArchivalUnit() != null) {
+          name = au.getName();
+        }
+        else {
+          name = "";
 
-	  if (!isOrphaned()) {
-	    try {
-	      Configuration config = getPluginManager()
-		  .getStoredAuConfigurationAsConfiguration(auId);
+          if (!isOrphaned()) {
+            try {
+              Configuration config = getPluginManager()
+                .getStoredAuConfigurationAsConfiguration(auId);
 
-	      if (config != null && !config.isEmpty()) {
-		name = config.get(PluginManager.AU_PARAM_DISPLAY_NAME);
-	      }
-	    } catch (Exception e) {
-	      throw new RuntimeException(e);
-	    }
-	  }
-	}
+              if (config != null && !config.isEmpty()) {
+                name = config.get(PluginManager.AU_PARAM_DISPLAY_NAME);
+              }
+            }
+            catch (Exception e) {
+              throw new RuntimeException(e);
+            }
+          }
+        }
 
-	if (name != null) {
-	  setAuName(name);
-	}
+        if (name != null) {
+          setAuName(name);
+        }
       }
 
       auNamePopulated = true;
@@ -136,7 +138,7 @@ public class RepositoryWsSource extends RepositoryWsResult {
   public Boolean getInternal() {
     if (!internalPopulated) {
       setInternal(Boolean.valueOf(getPluginManager()
-	  .isInternalAu(getPluginManager().getAuFromIdIfExists(auId))));
+        .isInternalAu(getPluginManager().getAuFromIdIfExists(auId))));
 
       internalPopulated = true;
     }
@@ -148,32 +150,38 @@ public class RepositoryWsSource extends RepositoryWsResult {
   public String getStatus() {
     if (!statusPopulated) {
       if (auId == null) {
-	setStatus("No AUID");
-      } else {
-	if (getArchivalUnit() != null) {
-	  setStatus("Active");
-	} else {
-	  if (isOrphaned()) {
-	    setStatus("Orphaned");
-	  } else {
-	    try {
-	      Configuration config = getPluginManager()
-		  .getStoredAuConfigurationAsConfiguration(auId);
+        setStatus("No AUID");
+      }
+      else {
+        if (getArchivalUnit() != null) {
+          setStatus("Active");
+        }
+        else {
+          if (isOrphaned()) {
+            setStatus("Orphaned");
+          }
+          else {
+            try {
+              Configuration config = getPluginManager()
+                .getStoredAuConfigurationAsConfiguration(auId);
 
-	      if (config == null || config.isEmpty()) {
-		setStatus("Deleted");
-	      } else {
-		if (config.getBoolean(PluginManager.AU_PARAM_DISABLED, false)) {
-		  setStatus("Inactive");
-		} else {
-		  setStatus("Deleted");
-		}	  
-	      }
-	    } catch (Exception e) {
-	      throw new RuntimeException(e);
-	    }
-	  }
-	}
+              if (config == null || config.isEmpty()) {
+                setStatus("Deleted");
+              }
+              else {
+                if (config.getBoolean(PluginManager.AU_PARAM_DISABLED, false)) {
+                  setStatus("Inactive");
+                }
+                else {
+                  setStatus("Deleted");
+                }
+              }
+            }
+            catch (Exception e) {
+              throw new RuntimeException(e);
+            }
+          }
+        }
       }
 
       statusPopulated = true;
@@ -196,7 +204,7 @@ public class RepositoryWsSource extends RepositoryWsResult {
   public String getPluginName() {
     if (!pluginNamePopulated) {
       if (auId != null) {
-	setPluginName(PluginManager.pluginNameFromAuId(auId));
+        setPluginName(PluginManager.pluginNameFromAuId(auId));
       }
 
       pluginNamePopulated = true;
@@ -209,30 +217,32 @@ public class RepositoryWsSource extends RepositoryWsResult {
   public Map<String, String> getParams() {
     if (!paramsPopulated) {
       if (auId != null) {
-	if (getArchivalUnit() != null) {
-	  Configuration config = au.getConfiguration();
+        if (getArchivalUnit() != null) {
+          Configuration config = au.getConfiguration();
 
-	  if (config != null && !config.isEmpty()) {
-	    setParams(makeParams(config));
-	  }
-	} else {
-	  if (getAuIdProps() != null && !auIdProps.isEmpty()) {
-	    setParams(makeParams(auIdProps));
-	  }
+          if (config != null && !config.isEmpty()) {
+            setParams(makeParams(config));
+          }
+        }
+        else {
+          if (getAuIdProps() != null && !auIdProps.isEmpty()) {
+            setParams(makeParams(auIdProps));
+          }
 
-	  if (!isOrphaned()) {
-	    try {
-	      Configuration config = getPluginManager()
-		  .getStoredAuConfigurationAsConfiguration(auId);
+          if (!isOrphaned()) {
+            try {
+              Configuration config = getPluginManager()
+                .getStoredAuConfigurationAsConfiguration(auId);
 
-	      if (config != null && !config.isEmpty()) {
-		setParams(makeParams(config));
-	      }
-	    } catch (Exception e) {
-	      throw new RuntimeException(e);
-	    }
-	  }
-	}
+              if (config != null && !config.isEmpty()) {
+                setParams(makeParams(config));
+              }
+            }
+            catch (Exception e) {
+              throw new RuntimeException(e);
+            }
+          }
+        }
       }
 
       paramsPopulated = true;
@@ -246,10 +256,11 @@ public class RepositoryWsSource extends RepositoryWsResult {
       String auKey = null;
 
       try {
-	auKey = PluginManager.auKeyFromAuId(auId);
-	auIdProps = PropUtil.canonicalEncodedStringToProps(auKey);
-      } catch (Exception e) {
-	log.warning("Couldn't decode AUKey: " + auKey, e);
+        auKey = PluginManager.auKeyFromAuId(auId);
+        auIdProps = PropUtil.canonicalEncodedStringToProps(auKey);
+      }
+      catch (Exception e) {
+        log.warning("Couldn't decode AUKey: " + auKey, e);
       }
 
       auIdPropsPopulated = true;
@@ -260,7 +271,7 @@ public class RepositoryWsSource extends RepositoryWsResult {
 
   /**
    * Provides the daemon, initializing it if necessary.
-   * 
+   *
    * @return a LockssDaemon with the daemon.
    */
   private LockssDaemon getTheDaemon() {
@@ -273,7 +284,7 @@ public class RepositoryWsSource extends RepositoryWsResult {
 
   /**
    * Provides the plugin manager, initializing it if necessary.
-   * 
+   *
    * @return a PluginManager with the plugin manager.
    */
   private PluginManager getPluginManager() {
@@ -286,7 +297,7 @@ public class RepositoryWsSource extends RepositoryWsResult {
 
   /**
    * Provides the Archival Unit, initializing it if necessary.
-   * 
+   *
    * @return an ArchivalUnit with the Archival Unit.
    */
   private ArchivalUnit getArchivalUnit() {
@@ -301,7 +312,7 @@ public class RepositoryWsSource extends RepositoryWsResult {
 
   private boolean isOrphaned() {
     if (getAuIdProps() == null) {
-	return true;
+      return true;
     }
 
     String pluginKey = PluginManager.pluginKeyFromAuId(auId);

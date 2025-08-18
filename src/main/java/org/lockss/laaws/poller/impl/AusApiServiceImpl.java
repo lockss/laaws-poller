@@ -29,7 +29,15 @@
  */
 package org.lockss.laaws.poller.impl;
 
+import static org.lockss.config.RestConfigClient.CONFIG_PART_NAME;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
+import javax.activation.FileDataSource;
 import org.lockss.app.LockssDaemon;
 import org.lockss.exporter.Exporter;
 import org.lockss.exporter.Exporter.FilenameTranslation;
@@ -38,6 +46,8 @@ import org.lockss.laaws.poller.api.AusApiDelegate;
 import org.lockss.util.rest.repo.util.NamedInputStreamResource;
 import org.lockss.log.L4JLogger;
 import org.lockss.plugin.ArchivalUnit;
+import org.lockss.spring.auth.AuthUtil;
+import org.lockss.spring.auth.Roles;
 import org.lockss.spring.base.BaseSpringApiServiceImpl;
 import org.lockss.spring.error.LockssRestServiceException;
 import org.lockss.util.io.FileUtil;
@@ -48,21 +58,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import javax.activation.FileDataSource;
-import jakarta.servlet.http.HttpServletRequest;
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import java.util.Optional;
-
-import static org.lockss.config.RestConfigClient.CONFIG_PART_NAME;
-
 /**
  * Service for accessing the repository artifacts.
  */
 @Service
 public class AusApiServiceImpl extends BaseSpringApiServiceImpl
-implements AusApiDelegate {
+  implements AusApiDelegate {
+
   private static L4JLogger log = L4JLogger.getLogger();
 
   // Constants for the configuration of the export directory.
@@ -73,58 +75,58 @@ implements AusApiDelegate {
   private final HttpServletRequest request;
 
   // The export directory.
-  @Value("${" + EXPORT_DIR_KEY + ":"
-      + EXPORT_DIR_UNSET_VALUE + "}")
+  @Value("${" + EXPORT_DIR_KEY + ":" + EXPORT_DIR_UNSET_VALUE + "}")
   private String configExportDir;
 
   /**
    * Constructor for autowiring.
-   * 
-   * @param objectMapper
-   *          An ObjectMapper for JSON processing.
-   * @param request
-   *          An HttpServletRequest with the HTTP request.
+   *
+   * @param objectMapper An ObjectMapper for JSON processing.
+   * @param request An HttpServletRequest with the HTTP request.
    */
   @org.springframework.beans.factory.annotation.Autowired
   public AusApiServiceImpl(ObjectMapper objectMapper,
-      HttpServletRequest request) {
+    HttpServletRequest request) {
     this.objectMapper = objectMapper;
     this.request = request;
   }
 
   // TODO: Move the following endpoint handler to some other service. It is here
   // only for expediency.
+
   /**
-   * GET /aus/{auid}/export: Export the Archival Unit artifacts as a group of
-   * archives.
+   * GET /aus/{auid}/export: Export the Archival Unit artifacts as a group of archives.
    *
-   * @param auid              A String with the Archival Unit ID (AUID).
-   * @param fileType          A String with the type of archive to create.
-   * @param isCompress        A Boolean with the indication of whether contents
-   *                          should be compressed.
-   * @param isExcludeDirNodes A Boolean with the indication of whether
-   *                          directories should be excluded.
-   * @param xlateFilenames    A String with the type of filename translation to
-   *                          be done.
-   * @param filePrefix        A String with the prefix to be used to name the
-   *                          exported file.
-   * @param maxSize           A Long with the maximum size in MB of the exported
-   *                          file.
-   * @param maxVersions       An Integer with the maximum number of versions of
-   *                          an artifact to be exported.
-   * @return a {@code ResponseEntity<MultiValueMap<String, Object>>} with the
-   *         archives containing the Archival Unit artifacts.
+   * @param auid A String with the Archival Unit ID (AUID).
+   * @param fileType A String with the type of archive to create.
+   * @param isCompress A Boolean with the indication of whether contents should be compressed.
+   * @param isExcludeDirNodes A Boolean with the indication of whether directories should be
+   * excluded.
+   * @param xlateFilenames A String with the type of filename translation to be done.
+   * @param filePrefix A String with the prefix to be used to name the exported file.
+   * @param maxSize A Long with the maximum size in MB of the exported file.
+   * @param maxVersions An Integer with the maximum number of versions of an artifact to be
+   * exported.
+   * @return a {@code ResponseEntity<MultiValueMap<String, Object>>} with the archives containing
+   * the Archival Unit artifacts.
    */
   @Override
   public ResponseEntity getExportFiles(String auid, String fileType,
-      Boolean isCompress, Boolean isExcludeDirNodes, String xlateFilenames,
-      String filePrefix, Long maxSize, Integer maxVersions) {
+    Boolean isCompress, Boolean isExcludeDirNodes, String xlateFilenames,
+    String filePrefix, Long maxSize, Integer maxVersions) {
     String parsedRequest = String.format("auid: %s, fileType: %s, "
-      + "isCompress: %s, isExcludeDirNodes: %s, xlateFilenames: %s, "
-      + "filePrefix: %s, maxSize: %s, maxVersions: %s, requestUrl: %s",
+        + "isCompress: %s, isExcludeDirNodes: %s, xlateFilenames: %s, "
+        + "filePrefix: %s, maxSize: %s, maxVersions: %s, requestUrl: %s",
       auid, fileType, isCompress, isExcludeDirNodes, xlateFilenames, filePrefix,
       maxSize, maxVersions, getFullRequestUrl(request));
     log.debug2("Parsed request: {}", parsedRequest);
+
+    // Check whether the service has not been fully initialized.
+    if (!waitReady()) {
+      return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    AuthUtil.checkHasRole(Roles.ROLE_CONTENT_ACCESS, Roles.ROLE_AU_ADMIN);
 
     try {
       LockssDaemon daemon = LockssDaemon.getLockssDaemon();
@@ -135,11 +137,11 @@ implements AusApiDelegate {
 
       // Handle a missing Archival Unit.
       if (au == null) {
-	String errorMessage = "The archival unit does not exist";
-	log.warn(errorMessage);
-	log.warn("Parsed request: {}", parsedRequest);
-	throw new LockssRestServiceException(HttpStatus.BAD_REQUEST,
-	    errorMessage, parsedRequest);
+        String errorMessage = "The archival unit does not exist";
+        log.warn(errorMessage);
+        log.warn("Parsed request: {}", parsedRequest);
+        throw new LockssRestServiceException(HttpStatus.BAD_REQUEST,
+          errorMessage, parsedRequest);
       }
 
       // Initialize the appropriate type of exporter.
@@ -163,12 +165,12 @@ implements AusApiDelegate {
           break;
         default:
           String errorMessage = "Invalid fileType '" + fileType
-              + "': It must be one of 'WARC_RESPONSE', 'ARC_RESPONSE', "
-              + "'WARC_RESOURCE', 'ARC_RESOURCE' or 'ZIP'";
-  	log.warn(errorMessage);
-  	log.warn("Parsed request: {}", parsedRequest);
-  	throw new LockssRestServiceException(HttpStatus.BAD_REQUEST,
-  	    errorMessage, parsedRequest);
+            + "': It must be one of 'WARC_RESPONSE', 'ARC_RESPONSE', "
+            + "'WARC_RESOURCE', 'ARC_RESOURCE' or 'ZIP'";
+          log.warn(errorMessage);
+          log.warn("Parsed request: {}", parsedRequest);
+          throw new LockssRestServiceException(HttpStatus.BAD_REQUEST,
+            errorMessage, parsedRequest);
       }
 
       // Validate and specify the directory where to create the exported files.
@@ -177,8 +179,8 @@ implements AusApiDelegate {
 
       if (!exportdir.exists()) {
         if (!FileUtil.ensureDirExists(exportdir)) {
-  	throw new IOException("Could not create export directory "
-  	    + exportdir);
+          throw new IOException("Could not create export directory "
+            + exportdir);
         }
       }
 
@@ -192,23 +194,23 @@ implements AusApiDelegate {
 
       // Specify any filename translation.
       switch (xlateFilenames) {
-	case "XLATE_MAC":
-	  exp.setFilenameTranslation(FilenameTranslation.XLATE_MAC);
+        case "XLATE_MAC":
+          exp.setFilenameTranslation(FilenameTranslation.XLATE_MAC);
           break;
-	case "XLATE_WINDOWS":
-	  exp.setFilenameTranslation(FilenameTranslation.XLATE_WINDOWS);
+        case "XLATE_WINDOWS":
+          exp.setFilenameTranslation(FilenameTranslation.XLATE_WINDOWS);
           break;
-	case "XLATE_NONE":
-	  exp.setFilenameTranslation(FilenameTranslation.XLATE_NONE);
+        case "XLATE_NONE":
+          exp.setFilenameTranslation(FilenameTranslation.XLATE_NONE);
           break;
         default:
           String errorMessage = "Invalid xlateFilenames '" + xlateFilenames
-              + "': It must be one of 'XLATE_MAC', 'XLATE_WINDOWS' or "
-              + "'XLATE_NONE'";
-  	log.warn(errorMessage);
-  	log.warn("Parsed request: {}", parsedRequest);
-  	throw new LockssRestServiceException(HttpStatus.BAD_REQUEST,
-  	    errorMessage, parsedRequest);
+            + "': It must be one of 'XLATE_MAC', 'XLATE_WINDOWS' or "
+            + "'XLATE_NONE'";
+          log.warn(errorMessage);
+          log.warn("Parsed request: {}", parsedRequest);
+          throw new LockssRestServiceException(HttpStatus.BAD_REQUEST,
+            errorMessage, parsedRequest);
       }
 
       // Specify the export filenames prefix.
@@ -216,7 +218,7 @@ implements AusApiDelegate {
 
       // Specify any limit on the size of the exported files.
       if (maxSize > 0) {
-        exp.setMaxSize((long)(maxSize * 1024 * 1024));
+        exp.setMaxSize((long) (maxSize * 1024 * 1024));
       }
 
       // Specify any limit on the number of artifact versions to be exported.
@@ -236,11 +238,11 @@ implements AusApiDelegate {
 
       // Build the response entity.
       MultiValueMap<String, Object> parts =
-  	new LinkedMultiValueMap<String, Object>();
+        new LinkedMultiValueMap<String, Object>();
 
       for (int i = 0; i < exportFilesCount; i++) {
-	log.trace("Processing export file {} of {}...", i + 1,
-	    exportFilesCount);
+        log.trace("Processing export file {} of {}...", i + 1,
+          exportFilesCount);
 
         FileDataSource fileDS = new FileDataSource(exportFiles.get(i));
 
@@ -261,7 +263,7 @@ implements AusApiDelegate {
         log.trace("partHeaders = {}", () -> partHeaders);
 
         Resource resource =
-            new NamedInputStreamResource(name, fileDS.getInputStream());
+          new NamedInputStreamResource(name, fileDS.getInputStream());
 
         parts.add(CONFIG_PART_NAME, new HttpEntity<>(resource, partHeaders));
         log.trace("parts.size() = {}", parts.size());
@@ -278,19 +280,21 @@ implements AusApiDelegate {
       log.trace("status = {}", () -> status);
 
       return new ResponseEntity<MultiValueMap<String, Object>>(parts,
-  	  responseHeaders, status);
-    } catch (LockssRestServiceException lre) {
+        responseHeaders, status);
+    }
+    catch (LockssRestServiceException lre) {
       // Let it cascade to the controller advice exception handler.
       throw lre;
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       String errorMessage =
-	  "Unexpected exception caught while attempting to export files";
+        "Unexpected exception caught while attempting to export files";
 
       log.warn(errorMessage, e);
       log.warn("Parsed request: {}", parsedRequest);
 
       throw new LockssRestServiceException(HttpStatus.INTERNAL_SERVER_ERROR,
-	  errorMessage, e, parsedRequest);
+        errorMessage, e, parsedRequest);
     }
   }
 
@@ -303,18 +307,16 @@ implements AusApiDelegate {
   /**
    * Provides the full URL of the request.
    *
-   * @param request
-   *          An HttpServletRequest with the HTTP request.
-   *
+   * @param request An HttpServletRequest with the HTTP request.
    * @return a String with the full URL of the request.
    */
   private String getFullRequestUrl(HttpServletRequest request) {
     if (request.getQueryString() == null
-	|| request.getQueryString().trim().isEmpty()) {
+      || request.getQueryString().trim().isEmpty()) {
       return "'" + request.getMethod() + " " + request.getRequestURL() + "'";
     }
 
     return "'" + request.getMethod() + " " + request.getRequestURL() + "?"
-	+ request.getQueryString() + "'";
+      + request.getQueryString() + "'";
   }
 }

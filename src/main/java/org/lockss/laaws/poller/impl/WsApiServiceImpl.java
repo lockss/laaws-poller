@@ -8,6 +8,8 @@ import org.lockss.hasher.HasherResult;
 import org.lockss.hasher.SimpleHasher;
 import org.lockss.importer.Importer;
 import org.lockss.laaws.poller.api.WsApiDelegate;
+import org.lockss.spring.auth.AuthUtil;
+import org.lockss.spring.auth.Roles;
 import org.lockss.util.rest.repo.util.NamedInputStreamResource;
 import org.lockss.log.L4JLogger;
 import org.lockss.spring.base.BaseSpringApiServiceImpl;
@@ -16,6 +18,7 @@ import org.lockss.util.StringUtil;
 import org.lockss.util.io.FileUtil;
 import org.lockss.util.josql.JosqlUtil;
 import org.lockss.util.os.PlatformUtil;
+import org.lockss.util.rest.repo.util.NamedInputStreamResource;
 import org.lockss.util.time.TimeBase;
 import org.lockss.ws.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +45,7 @@ import static org.lockss.ws.entities.HasherWsResult.RECORD_FILE_TYPE;
 
 @Service
 public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiDelegate {
+
   private static L4JLogger log = L4JLogger.getLogger();
 
   // TODO: Move the following endpoint handler to some other service. It is here
@@ -57,44 +61,50 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
   /**
    * PUT /aus/import: Import a file as an artifact in an Archival Unit.
    *
-   * @param targetBaseUrlPath A String with the base URL path of the target
-   *                          Archival Unit.
-   * @param targetUrl         A String with the target Archival Unit URL.
-   * @param file              A MultipartFile with the content of the file to be
-   *                          imported.
-   * @param userProperties    A {@code List<String>} with the user-specified
-   *                          properties.
+   * @param targetBaseUrlPath A String with the base URL path of the target Archival Unit.
+   * @param targetUrl A String with the target Archival Unit URL.
+   * @param file A MultipartFile with the content of the file to be imported.
+   * @param userProperties A {@code List<String>} with the user-specified properties.
    * @return a {@code ResponseEntity<Void>}.
    */
   @Override
   public ResponseEntity<Void> putImportFile(String targetBaseUrlPath,
-                                            String targetUrl, MultipartFile file, List<String> userProperties) {
+    String targetUrl, MultipartFile file, List<String> userProperties) {
     String parsedRequest = String.format("targetBaseUrlPath: %s, "
-            + "targetUrl: %s, content.getName(): %s, content.getSize(): %s, "
-            + "userProperties: %s, requestUrl: %s", targetBaseUrlPath, targetUrl,
-        file.getName(), file.getSize(), userProperties,
-        getFullRequestUrl(request));
+        + "targetUrl: %s, content.getName(): %s, content.getSize(): %s, "
+        + "userProperties: %s, requestUrl: %s", targetBaseUrlPath, targetUrl,
+      file.getName(), file.getSize(), userProperties,
+      getFullRequestUrl(request));
     log.debug2("Parsed request: {}", parsedRequest);
+
+    // Check whether the service has not been fully initialized.
+    if (!waitReady()) {
+      return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    AuthUtil.checkHasRole(Roles.ROLE_AU_ADMIN);
 
     try {
       new Importer().importFile(file.getInputStream(), targetBaseUrlPath,
-          targetUrl, userProperties);
+        targetUrl, userProperties);
       return new ResponseEntity<Void>(null, null, HttpStatus.OK);
-    } catch (IllegalArgumentException | IllegalStateException
-             | NoSuchAlgorithmException e) {
+    }
+    catch (IllegalArgumentException | IllegalStateException
+           | NoSuchAlgorithmException e) {
       String errorMessage = "Exception caught trying to import file";
       log.warn(errorMessage, e);
       log.warn("Parsed request: {}", parsedRequest);
 
       throw new LockssRestServiceException(HttpStatus.BAD_REQUEST, errorMessage,
-          e, parsedRequest);
-    } catch (Exception e) {
+        e, parsedRequest);
+    }
+    catch (Exception e) {
       String errorMessage = "Unexpected exception caught trying to import file";
       log.warn(errorMessage, e);
       log.warn("Parsed request: {}", parsedRequest);
 
       throw new LockssRestServiceException(HttpStatus.INTERNAL_SERVER_ERROR,
-          errorMessage, e, parsedRequest);
+        errorMessage, e, parsedRequest);
     }
   }
 
@@ -106,27 +116,33 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
    */
   private String getFullRequestUrl(HttpServletRequest request) {
     if (request.getQueryString() == null
-        || request.getQueryString().trim().isEmpty()) {
+      || request.getQueryString().trim().isEmpty()) {
       return "'" + request.getMethod() + " " + request.getRequestURL() + "'";
     }
 
     return "'" + request.getMethod() + " " + request.getRequestURL() + "?"
-        + request.getQueryString() + "'";
+      + request.getQueryString() + "'";
   }
 
   /**
-   * GET /aurepositories?query={repositoryQuery}: Provides the selected properties
-   * of selected repositories in the system.
+   * GET /aurepositories?query={repositoryQuery}: Provides the selected properties of selected
+   * repositories in the system.
    *
    * @param repositoryQuery A String with the
-   *                        <a href="package-summary.html#SQL-Like_Query">SQL-like
-   *                        query</a> used to specify what properties to
-   *                        retrieve from which repository.
+   * <a href="package-summary.html#SQL-Like_Query">SQL-like
+   * query</a> used to specify what properties to retrieve from which repository.
    * @return a {@code List<RepositoryWsResult>} with the results.
    */
   @Override
   public ResponseEntity getRepositories(String repositoryQuery) {
     log.debug2("repositoryQuery = {}", repositoryQuery);
+
+    // Check whether the service has not been fully initialized.
+    if (!waitReady()) {
+      return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    AuthUtil.checkHasRole(Roles.ROLE_AU_ADMIN);
 
     RepositoryHelper repositoryHelper = new RepositoryHelper();
     List<RepositoryWsResult> results = null;
@@ -134,8 +150,8 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
     try {
       // Create the full query.
       String fullQuery = JosqlUtil.createFullQuery(repositoryQuery,
-          RepositoryHelper.SOURCE_FQCN, RepositoryHelper.PROPERTY_NAMES,
-          RepositoryHelper.RESULT_FQCN);
+        RepositoryHelper.SOURCE_FQCN, RepositoryHelper.PROPERTY_NAMES,
+        RepositoryHelper.RESULT_FQCN);
       log.trace("fullQuery = {}", fullQuery);
 
       // Create a new JoSQL query.
@@ -153,42 +169,50 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
         log.trace("results.size() = {}", results.size());
         log.trace("results = {}", repositoryHelper.nonDefaultToString(results));
         return new ResponseEntity<>(results, HttpStatus.OK);
-      } catch (QueryExecutionException qee) {
+      }
+      catch (QueryExecutionException qee) {
         String message = "Cannot getRepositories() for repositoryQuery = '"
-            + repositoryQuery + "'";
+          + repositoryQuery + "'";
         log.error(message, qee);
         return new ResponseEntity<String>(message,
-            HttpStatus.INTERNAL_SERVER_ERROR);
+          HttpStatus.INTERNAL_SERVER_ERROR);
       }
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       String message = "Cannot getRepositories() for repositoryQuery = '"
-          + repositoryQuery + "'";
+        + repositoryQuery + "'";
       log.error(message, e);
       return new ResponseEntity<String>(message,
-          HttpStatus.INTERNAL_SERVER_ERROR);
+        HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
   private static final Map<String, SimpleHasher.ParamsAndResult> HASH_REQUESTS =
-      new LinkedHashMap<String, SimpleHasher.ParamsAndResult>();
+    new LinkedHashMap<String, SimpleHasher.ParamsAndResult>();
 
   // Dummy request identifier used for synchronous hash operations to use code
   // that is common to asynchronous hash operations.
   private static final String DEFAULT_REQUEST_ID = "noRequestId";
 
   /**
-   * Removes from the system an asynchronous hashing operation, terminating it
-   * if it's still running.
+   * Removes from the system an asynchronous hashing operation, terminating it if it's still
+   * running.
    *
-   * @param requestId A String with the identifier of the requested asynchronous
-   *                  hashing operation.
-   * @return a {@code ResponseEntity<String>} with the result of the removal of
-   * the hashing operation.
+   * @param requestId A String with the identifier of the requested asynchronous hashing operation.
+   * @return a {@code ResponseEntity<String>} with the result of the removal of the hashing
+   * operation.
    */
   @Override
   public ResponseEntity<String> deleteHash(String requestId) {
     log.debug2("requestId = {}", requestId);
     String message = null;
+
+    // Check whether the service has not been fully initialized.
+    if (!waitReady()) {
+      return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    AuthUtil.checkHasRole(Roles.ROLE_CONTENT_ACCESS, Roles.ROLE_AU_ADMIN);
 
     try {
       // Handle a missing request identifier.
@@ -240,11 +264,12 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
       message = SimpleHasher.HasherStatus.Done.toString();
       log.debug2("message = {}", message);
       return new ResponseEntity<String>(message, HttpStatus.OK);
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       message = "Cannot deleteHash() for requestId = '" + requestId + "'";
       log.error(message, e);
       return new ResponseEntity<String>(message,
-          HttpStatus.INTERNAL_SERVER_ERROR);
+        HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -257,6 +282,13 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
    */
   public ResponseEntity getAllHashes() {
     log.debug2("Invoked.");
+
+    // Check whether the service has not been fully initialized.
+    if (!waitReady()) {
+      return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    AuthUtil.checkHasRole(Roles.ROLE_CONTENT_ACCESS, Roles.ROLE_AU_ADMIN);
 
     try {
       // Initialize the response.
@@ -278,26 +310,33 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
 
       // Build and return the response.
       return buildResponse(parts);
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       String message = "Cannot getAllHashes()";
       log.error(message, e);
       return new ResponseEntity<String>(message,
-          HttpStatus.INTERNAL_SERVER_ERROR);
+        HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
   /**
    * Provides the result of an asynchronous hashing operation.
    *
-   * @param requestId A String with the identifier of the requested asynchronous
-   *                  hashing operation.
-   * @return a {@code ResponseEntity<MultiValueMap<String, Object>>} with the
-   * result of the hashing operation.
+   * @param requestId A String with the identifier of the requested asynchronous hashing operation.
+   * @return a {@code ResponseEntity<MultiValueMap<String, Object>>} with the result of the hashing
+   * operation.
    */
   @Override
   public ResponseEntity getHash(String requestId) {
     log.debug2("requestId = {}", requestId);
     String message = null;
+
+    // Check whether the service has not been fully initialized.
+    if (!waitReady()) {
+      return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    AuthUtil.checkHasRole(Roles.ROLE_CONTENT_ACCESS, Roles.ROLE_AU_ADMIN);
 
     try {
       // Handle a missing request identifier.
@@ -334,11 +373,12 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
 
       // Build and return the response.
       return buildResponse(parts);
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       message = "Cannot getHash() for requestId = '" + requestId + "'";
       log.error(message, e);
       return new ResponseEntity<String>(message,
-          HttpStatus.INTERNAL_SERVER_ERROR);
+        HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -354,32 +394,41 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
    *         result of the hashing operation.
    */
   public ResponseEntity putHash(HasherWsParams hasherWsParams,
-                                Boolean isAsynchronous) {
+    Boolean isAsynchronous) {
     log.debug2("hasherWsParams = {}", hasherWsParams);
     log.debug2("isAsynchronous = {}", isAsynchronous);
+
+    // Check whether the service has not been fully initialized.
+    if (!waitReady()) {
+      return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    AuthUtil.checkHasRole(Roles.ROLE_CONTENT_ACCESS, Roles.ROLE_AU_ADMIN);
 
     try {
       // Prepare the hash parameters.
       HasherParams params =
-          new HasherParams(PlatformUtil.getLocalHostname(), isAsynchronous);
+        new HasherParams(PlatformUtil.getLocalHostname(), isAsynchronous);
 
       params.setAlgorithm(hasherWsParams.getAlgorithm());
       params.setAuId(hasherWsParams.getAuId());
       params.setChallenge(hasherWsParams.getChallenge());
 
       Boolean excludeSuspectVersions =
-          hasherWsParams.isExcludeSuspectVersions();
+        hasherWsParams.isExcludeSuspectVersions();
 
       if (excludeSuspectVersions == null) {
         params.setExcludeSuspectVersions(false);
-      } else {
+      }
+      else {
         params.setExcludeSuspectVersions(excludeSuspectVersions.booleanValue());
       }
 
       Boolean includeWeight = hasherWsParams.isIncludeWeight();
       if (includeWeight == null) {
         params.setIncludeWeight(false);
-      } else {
+      }
+      else {
         params.setIncludeWeight(includeWeight.booleanValue());
       }
 
@@ -389,7 +438,8 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
       Boolean recordFilteredStream = hasherWsParams.isRecordFilteredStream();
       if (recordFilteredStream == null) {
         params.setRecordFilteredStream(false);
-      } else {
+      }
+      else {
         params.setRecordFilteredStream(recordFilteredStream.booleanValue());
       }
 
@@ -406,7 +456,8 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
       if (!isAsynchronous) {
         // Yes: Perform the hash synchronously.
         new SimpleHasher(null).hash(params, result);
-      } else {
+      }
+      else {
         try {
           // No: Initialize the request time.
           long requestTime = TimeBase.nowMs();
@@ -420,13 +471,14 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
 
           // Perform the hash asynchronously.
           new SimpleHasher(null).startHashingThread(params, result);
-        } catch (RuntimeException re) {
+        }
+        catch (RuntimeException re) {
           String errorMessage =
-              "Error starting asynchronous hash thread: " + re.toString();
+            "Error starting asynchronous hash thread: " + re.toString();
           log.warn(errorMessage);
           log.warn(re);
           return new ResponseEntity<String>(errorMessage,
-              HttpStatus.INTERNAL_SERVER_ERROR);
+            HttpStatus.INTERNAL_SERVER_ERROR);
         }
       }
 
@@ -442,12 +494,13 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
 
       // Build and return the response.
       return buildResponse(parts);
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       String message = "Cannot putHash() for hasherWsParams = '"
-          + hasherWsParams + "', isAsynchronous = " + isAsynchronous;
+        + hasherWsParams + "', isAsynchronous = " + isAsynchronous;
       log.error(message, e);
       return new ResponseEntity<String>(message,
-          HttpStatus.INTERNAL_SERVER_ERROR);
+        HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -455,14 +508,13 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
    * Populates a map of parts with the results of a hashing operation.
    *
    * @param requestId A String with the identifier of the hashing operation.
-   * @param result    A HasherResult with the results of the hashing operation.
-   * @param parts     A {@code MultiValueMap<String, HttpEntity<?>>} where to
-   *                  add the hashing operation result parts.
-   * @throws IOException if there are problems getting the contents of any of
-   *                     the parts.
+   * @param result A HasherResult with the results of the hashing operation.
+   * @param parts A {@code MultiValueMap<String, HttpEntity<?>>} where to add the hashing operation
+   * result parts.
+   * @throws IOException if there are problems getting the contents of any of the parts.
    */
   private void populateResultParts(String requestId, HasherResult result,
-                                   MultiValueMap<String, HttpEntity<?>> parts) throws IOException {
+    MultiValueMap<String, HttpEntity<?>> parts) throws IOException {
     log.debug2("requestId = {}", requestId);
     log.debug2("result = {}", result);
     log.debug2("parts = {}", parts);
@@ -471,13 +523,13 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
 
     File recordFile = result.getRecordFile();
     if (recordFile != null && recordFile.exists()
-        && recordFile.length() > 0) {
+      && recordFile.length() > 0) {
       addFilePart(requestId + "-" + RECORD_FILE_TYPE, recordFile, parts);
     }
 
     File blockFile = result.getBlockFile();
     if (blockFile != null && blockFile.exists()
-        && blockFile.length() > 0) {
+      && blockFile.length() > 0) {
       addFilePart(requestId + "-" + BLOCK_FILE_TYPE, blockFile, parts);
     }
 
@@ -488,12 +540,12 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
    * Adds to the parts map a part with the properties of a hashing operation.
    *
    * @param partName A String with the name of the part to be added.
-   * @param result   A HasherResult with the results of the hashing operation.
-   * @param parts    A {@code MultiValueMap<String, HttpEntity<?>>} where to add
-   *                 the hashing operation result parts.
+   * @param result A HasherResult with the results of the hashing operation.
+   * @param parts A {@code MultiValueMap<String, HttpEntity<?>>} where to add the hashing operation
+   * result parts.
    */
   private void addResultPropertiesPart(String partName, HasherResult result,
-                                       MultiValueMap<String, HttpEntity<?>> parts) {
+    MultiValueMap<String, HttpEntity<?>> parts) {
     log.debug2("partName = {}", partName);
     log.debug2("result = {}", result);
     log.debug2("parts = {}", parts);
@@ -531,15 +583,14 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
   /**
    * Adds to the parts map a part with a hashing operation result file.
    *
-   * @param partName   A String with the name of the part to be added.
-   * @param sourceFile A File with the result file used as the part contents
-   *                   source.
-   * @param parts      A {@code MultiValueMap<String, HttpEntity<?>>} where to
-   *                   add the hashing operation result parts.
+   * @param partName A String with the name of the part to be added.
+   * @param sourceFile A File with the result file used as the part contents source.
+   * @param parts A {@code MultiValueMap<String, HttpEntity<?>>} where to add the hashing operation
+   * result parts.
    * @throws IOException if there are problems getting the contents of the file.
    */
   void addFilePart(String partName, File sourceFile,
-                   MultiValueMap<String, HttpEntity<?>> parts) throws IOException {
+    MultiValueMap<String, HttpEntity<?>> parts) throws IOException {
     log.debug2("partName = {}", partName);
     log.debug2("sourceFile = {}", sourceFile);
 
@@ -562,7 +613,7 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
     log.trace("partHeaders = {}", () -> partHeaders);
 
     Resource resource =
-        new NamedInputStreamResource(name, fileDS.getInputStream());
+      new NamedInputStreamResource(name, fileDS.getInputStream());
 
     // Add the part to the map.
     parts.add(partName, new HttpEntity<>(resource, partHeaders));
@@ -571,13 +622,13 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
   /**
    * Build the response with a map of parts.
    *
-   * @param parts A {@code MultiValueMap<String, Object>} with the parts to be
-   *              included in the response.
-   * @return a {@code ResponseEntity<MultiValueMap<String, HttpEntity<?>>>} with
-   * the result of one or more hashing operations.
+   * @param parts A {@code MultiValueMap<String, Object>} with the parts to be included in the
+   * response.
+   * @return a {@code ResponseEntity<MultiValueMap<String, HttpEntity<?>>>} with the result of one
+   * or more hashing operations.
    */
   private ResponseEntity<MultiValueMap<String, HttpEntity<?>>> buildResponse(
-      MultiValueMap<String, HttpEntity<?>> parts) {
+    MultiValueMap<String, HttpEntity<?>> parts) {
     log.debug2("parts = {}", parts);
 
     // Specify the response content type.
@@ -590,21 +641,27 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
     log.trace("status = {}", () -> status);
 
     return new ResponseEntity<MultiValueMap<String, HttpEntity<?>>>(parts,
-        responseHeaders, status);
+      responseHeaders, status);
   }
 
   /**
    * Provides the selected properties of selected peers.
    *
    * @param peerQuery A String with the
-   *                  <a href="package-summary.html#SQL-Like_Query">SQL-like
-   *                  query</a> used to specify what properties to retrieve
-   *                  from which peers.
+   * <a href="package-summary.html#SQL-Like_Query">SQL-like
+   * query</a> used to specify what properties to retrieve from which peers.
    * @return a {@code ResponseEntity<List<PeerWsResult>>} with the results.
    */
   @Override
   public ResponseEntity getPeers(String peerQuery) {
     log.debug2("peerQuery = {}", peerQuery);
+
+    // Check whether the service has not been fully initialized.
+    if (!waitReady()) {
+      return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    AuthUtil.checkHasRole(Roles.ROLE_AU_ADMIN);
 
     PeerHelper peerHelper = new PeerHelper();
     List<PeerWsResult> results = null;
@@ -612,8 +669,8 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
     try {
       // Create the full query.
       String fullQuery = JosqlUtil.createFullQuery(peerQuery,
-          PeerHelper.SOURCE_FQCN, PeerHelper.PROPERTY_NAMES,
-          PeerHelper.RESULT_FQCN);
+        PeerHelper.SOURCE_FQCN, PeerHelper.PROPERTY_NAMES,
+        PeerHelper.RESULT_FQCN);
       log.trace("fullQuery = {}", fullQuery);
 
       // Create a new JoSQL query.
@@ -631,19 +688,21 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
         log.trace("results.size() = {}" + results.size());
         log.trace("results = {}", peerHelper.nonDefaultToString(results));
         return new ResponseEntity<List<PeerWsResult>>(results,
-            HttpStatus.OK);
-      } catch (QueryExecutionException qee) {
+          HttpStatus.OK);
+      }
+      catch (QueryExecutionException qee) {
         String message =
-            "Cannot getPeers() for peerQuery = '" + peerQuery + "'";
+          "Cannot getPeers() for peerQuery = '" + peerQuery + "'";
         log.error(message, qee);
         return new ResponseEntity<String>(message,
-            HttpStatus.INTERNAL_SERVER_ERROR);
+          HttpStatus.INTERNAL_SERVER_ERROR);
       }
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       String message = "Cannot getPeers() for peerQuery = '" + peerQuery + "'";
       log.error(message, e);
       return new ResponseEntity<String>(message,
-          HttpStatus.INTERNAL_SERVER_ERROR);
+        HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -651,14 +710,20 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
    * Provides the selected properties of selected polls.
    *
    * @param pollQuery A String with the
-   *                  <a href="package-summary.html#SQL-Like_Query">SQL-like
-   *                  query</a> used to specify what properties to retrieve
-   *                  from which polls.
+   * <a href="package-summary.html#SQL-Like_Query">SQL-like
+   * query</a> used to specify what properties to retrieve from which polls.
    * @return a {@code ResponseEntity<List<PollWsResult>>} with the results.
    */
   @Override
   public ResponseEntity getPolls(String pollQuery) {
     log.debug("pollQuery = {}", pollQuery);
+
+    // Check whether the service has not been fully initialized.
+    if (!waitReady()) {
+      return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    AuthUtil.checkHasRole(Roles.ROLE_AU_ADMIN);
 
     PollHelper pollHelper = new PollHelper();
     List<PollWsResult> results = null;
@@ -666,8 +731,8 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
     try {
       // Create the full query.
       String fullQuery = JosqlUtil.createFullQuery(pollQuery,
-          PollHelper.SOURCE_FQCN, PollHelper.PROPERTY_NAMES,
-          PollHelper.RESULT_FQCN);
+        PollHelper.SOURCE_FQCN, PollHelper.PROPERTY_NAMES,
+        PollHelper.RESULT_FQCN);
       log.trace("fullQuery = {}", fullQuery);
 
       // Create a new JoSQL query.
@@ -685,35 +750,43 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
         log.trace("results.size() = {}" + results.size());
         log.trace("results = {}", pollHelper.nonDefaultToString(results));
         return new ResponseEntity<List<PollWsResult>>(results,
-            HttpStatus.OK);
-      } catch (QueryExecutionException qee) {
+          HttpStatus.OK);
+      }
+      catch (QueryExecutionException qee) {
         String message =
-            "Cannot getPolls() for pollQuery = '" + pollQuery + "'";
+          "Cannot getPolls() for pollQuery = '" + pollQuery + "'";
         log.error(message, qee);
         return new ResponseEntity<String>(message,
-            HttpStatus.INTERNAL_SERVER_ERROR);
+          HttpStatus.INTERNAL_SERVER_ERROR);
       }
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       String message = "Cannot getPolls() for pollQuery = '" + pollQuery + "'";
       log.error(message, e);
       return new ResponseEntity<String>(message,
-          HttpStatus.INTERNAL_SERVER_ERROR);
+        HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
   /**
-   * GET /repositoryspaces?query={repositoryQuery}: Provides the selected
-   * properties of selected repository spaces in the system.
+   * GET /repositoryspaces?query={repositoryQuery}: Provides the selected properties of selected
+   * repository spaces in the system.
    *
    * @param repositorySpaceQuery A String with the
-   *                             <a href= "package-summary.html#SQL-Like_Query">SQL-like
-   *                             query</a> used to specify what properties to
-   *                             retrieve from which repository space.
+   * <a href= "package-summary.html#SQL-Like_Query">SQL-like
+   * query</a> used to specify what properties to retrieve from which repository space.
    * @return a {@code List<RepositorySpaceWsResult>} with the results.
    */
   @Override
   public ResponseEntity getRepositorySpaces(String repositorySpaceQuery) {
     log.debug2("repositorySpaceQuery = {}", repositorySpaceQuery);
+
+    // Check whether the service has not been fully initialized.
+    if (!waitReady()) {
+      return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    AuthUtil.checkHasRole(Roles.ROLE_AU_ADMIN);
 
     RepositorySpaceHelper repositorySpaceHelper = new RepositorySpaceHelper();
     List<RepositorySpaceWsResult> results = null;
@@ -721,8 +794,8 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
     try {
       // Create the full query.
       String fullQuery = JosqlUtil.createFullQuery(repositorySpaceQuery,
-          RepositorySpaceHelper.SOURCE_FQCN, RepositorySpaceHelper.PROPERTY_NAMES,
-          RepositorySpaceHelper.RESULT_FQCN);
+        RepositorySpaceHelper.SOURCE_FQCN, RepositorySpaceHelper.PROPERTY_NAMES,
+        RepositorySpaceHelper.RESULT_FQCN);
       log.trace("fullQuery = {}", fullQuery);
 
       // Create a new JoSQL query.
@@ -739,21 +812,23 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
         results = (List<RepositorySpaceWsResult>) qr.getResults();
         log.trace("results.size() = {}", results.size());
         log.trace("results = {}",
-            repositorySpaceHelper.nonDefaultToString(results));
+          repositorySpaceHelper.nonDefaultToString(results));
         return new ResponseEntity<>(results, HttpStatus.OK);
-      } catch (QueryExecutionException qee) {
+      }
+      catch (QueryExecutionException qee) {
         String message = "Cannot getRepositorySpaces() for "
-            + "repositorySpaceQuery = '" + repositorySpaceQuery + "'";
+          + "repositorySpaceQuery = '" + repositorySpaceQuery + "'";
         log.error(message, qee);
         return new ResponseEntity<String>(message,
-            HttpStatus.INTERNAL_SERVER_ERROR);
+          HttpStatus.INTERNAL_SERVER_ERROR);
       }
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       String message = "Cannot getRepositorySpaces() for "
-          + "repositorySpaceQuery = '" + repositorySpaceQuery + "'";
+        + "repositorySpaceQuery = '" + repositorySpaceQuery + "'";
       log.error(message, e);
       return new ResponseEntity<String>(message,
-          HttpStatus.INTERNAL_SERVER_ERROR);
+        HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -761,14 +836,20 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
    * Provides the selected properties of selected votes.
    *
    * @param voteQuery A String with the
-   *                  <a href="package-summary.html#SQL-Like_Query">SQL-like
-   *                  query</a> used to specify what properties to retrieve
-   *                  from which votes.
+   * <a href="package-summary.html#SQL-Like_Query">SQL-like
+   * query</a> used to specify what properties to retrieve from which votes.
    * @return a {@code ResponseEntity<List<VoteWsResult>>} with the results.
    */
   @Override
   public ResponseEntity getVotes(String voteQuery) {
     log.debug2("voteQuery = {}", voteQuery);
+
+    // Check whether the service has not been fully initialized.
+    if (!waitReady()) {
+      return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    AuthUtil.checkHasRole(Roles.ROLE_AU_ADMIN);
 
     VoteHelper voteHelper = new VoteHelper();
     List<VoteWsResult> results = null;
@@ -776,8 +857,8 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
     try {
       // Create the full query.
       String fullQuery = JosqlUtil.createFullQuery(voteQuery,
-          VoteHelper.SOURCE_FQCN, VoteHelper.PROPERTY_NAMES,
-          VoteHelper.RESULT_FQCN);
+        VoteHelper.SOURCE_FQCN, VoteHelper.PROPERTY_NAMES,
+        VoteHelper.RESULT_FQCN);
       log.trace("fullQuery = {}", fullQuery);
 
       // Create a new JoSQL query.
@@ -795,19 +876,24 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
         log.trace("results.size() = {}" + results.size());
         log.trace("results = {}", voteHelper.nonDefaultToString(results));
         return new ResponseEntity<List<VoteWsResult>>(results,
-            HttpStatus.OK);
-      } catch (QueryExecutionException qee) {
+          HttpStatus.OK);
+      }
+      catch (QueryExecutionException qee) {
         String message =
-            "Cannot getVotes() for voteQuery = '" + voteQuery + "'";
+          "Cannot getVotes() for voteQuery = '" + voteQuery + "'";
         log.error(message, qee);
         return new ResponseEntity<String>(message,
-            HttpStatus.INTERNAL_SERVER_ERROR);
+          HttpStatus.INTERNAL_SERVER_ERROR);
       }
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       String message = "Cannot getVotes() for voteQuery = '" + voteQuery + "'";
       log.error(message, e);
       return new ResponseEntity<String>(message,
-          HttpStatus.INTERNAL_SERVER_ERROR);
+        HttpStatus.INTERNAL_SERVER_ERROR);
     }
+  }
+  protected boolean waitReady() {
+    return super.waitReady();
   }
 }

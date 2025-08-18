@@ -44,10 +44,10 @@ import org.lockss.ws.entities.PollWsResult;
 import org.lockss.ws.entities.RepairWsResult;
 
 /**
- * Container for the information that is used as the source for a query related
- * to polls.
+ * Container for the information that is used as the source for a query related to polls.
  */
 public class PollWsSource extends PollWsResult {
+
   private V3Poller poll;
 
   private boolean auIdPopulated = false;
@@ -144,7 +144,7 @@ public class PollWsSource extends PollWsResult {
   public String getAuId() {
     if (!auIdPopulated) {
       if (isPoll) {
-	setAuId(poll.getAu().getAuId());
+        setAuId(poll.getAu().getAuId());
       }
 
       auIdPopulated = true;
@@ -157,7 +157,7 @@ public class PollWsSource extends PollWsResult {
   public String getAuName() {
     if (!auNamePopulated) {
       if (isPoll) {
-	setAuName(poll.getAu().getName());
+        setAuName(poll.getAu().getName());
       }
 
       auNamePopulated = true;
@@ -170,7 +170,7 @@ public class PollWsSource extends PollWsResult {
   public Integer getParticipantCount() {
     if (!participantCountPopulated) {
       if (isPoll) {
-	setParticipantCount(Integer.valueOf(poll.getPollSize()));
+        setParticipantCount(Integer.valueOf(poll.getPollSize()));
       }
 
       participantCountPopulated = true;
@@ -183,7 +183,7 @@ public class PollWsSource extends PollWsResult {
   public String getPollStatus() {
     if (!pollStatusPopulated) {
       if (isPoll) {
-	setPollStatus(poll.getStatusString());
+        setPollStatus(poll.getStatusString());
       }
 
       pollStatusPopulated = true;
@@ -196,7 +196,7 @@ public class PollWsSource extends PollWsResult {
   public Integer getTalliedUrlCount() {
     if (!talliedUrlCountPopulated) {
       if (isPoll) {
-	setTalliedUrlCount(Integer.valueOf(poll.getTalliedUrls().size()));
+        setTalliedUrlCount(Integer.valueOf(poll.getTalliedUrls().size()));
       }
 
       talliedUrlCountPopulated = true;
@@ -209,7 +209,7 @@ public class PollWsSource extends PollWsResult {
   public List<String> getTalliedUrls() {
     if (!talliedUrlsPopulated) {
       if (isPoll) {
-	setTalliedUrls((List<String>)poll.getTalliedUrls());
+        setTalliedUrls((List<String>) poll.getTalliedUrls());
       }
 
       talliedUrlsPopulated = true;
@@ -222,11 +222,12 @@ public class PollWsSource extends PollWsResult {
   public Integer getHashErrorCount() {
     if (!hashErrorCountPopulated) {
       if (isPoll) {
-	if (poll.getErrorUrls() != null) {
-	  setHashErrorCount(Integer.valueOf(poll.getErrorUrls().size()));
-	} else {
-	  setHashErrorCount(Integer.valueOf(0));
-	}
+        if (poll.getErrorUrls() != null) {
+          setHashErrorCount(Integer.valueOf(poll.getErrorUrls().size()));
+        }
+        else {
+          setHashErrorCount(Integer.valueOf(0));
+        }
       }
 
       hashErrorCountPopulated = true;
@@ -239,7 +240,7 @@ public class PollWsSource extends PollWsResult {
   public Map<String, String> getErrorUrls() {
     if (!errorUrlsPopulated) {
       if (isPoll) {
-	setErrorUrls(poll.getErrorUrls());
+        setErrorUrls(poll.getErrorUrls());
       }
 
       errorUrlsPopulated = true;
@@ -252,8 +253,8 @@ public class PollWsSource extends PollWsResult {
   public Integer getCompletedRepairCount() {
     if (!completedRepairCountPopulated) {
       if (isPoll) {
-	setCompletedRepairCount(Integer
-	    .valueOf(poll.getCompletedRepairs().size()));
+        setCompletedRepairCount(Integer
+          .valueOf(poll.getCompletedRepairs().size()));
       }
 
       completedRepairCountPopulated = true;
@@ -266,21 +267,21 @@ public class PollWsSource extends PollWsResult {
   public List<RepairWsResult> getCompletedRepairs() {
     if (!completedRepairsPopulated) {
       if (isPoll) {
-	List<RepairWsResult> results =
-	    new ArrayList<RepairWsResult>(poll.getCompletedRepairs().size());
+        List<RepairWsResult> results =
+          new ArrayList<RepairWsResult>(poll.getCompletedRepairs().size());
 
-	for (PollerStateBean.Repair repair : poll.getCompletedRepairs()) {
-	  RepairWsResult result = new RepairWsResult();
-	  result.setUrl(repair.getUrl());
+        for (PollerStateBean.Repair repair : poll.getCompletedRepairs()) {
+          RepairWsResult result = new RepairWsResult();
+          result.setUrl(repair.getUrl());
 
-	  if (repair.getRepairFrom() != null) {
-	    result.setPeerId(repair.getRepairFrom().getIdString());
-	  }
+          if (repair.getRepairFrom() != null) {
+            result.setPeerId(repair.getRepairFrom().getIdString());
+          }
 
-	  results.add(result);
-	}
+          results.add(result);
+        }
 
-	setCompletedRepairs(results);
+        setCompletedRepairs(results);
       }
 
       completedRepairsPopulated = true;
@@ -293,9 +294,9 @@ public class PollWsSource extends PollWsResult {
   public Float getPercentAgreement() {
     if (!percentAgreementPopulated) {
       if (isPoll) {
-	if (poll.getStatus() == V3Poller.POLLER_STATUS_COMPLETE) {
-	  setPercentAgreement(poll.getPercentAgreement());
-	}
+        if (poll.getStatus() == V3Poller.POLLER_STATUS_COMPLETE) {
+          setPercentAgreement(poll.getPercentAgreement());
+        }
       }
 
       percentAgreementPopulated = true;
@@ -308,7 +309,7 @@ public class PollWsSource extends PollWsResult {
   public Long getStartTime() {
     if (!startTimePopulated) {
       if (isPoll) {
-	setStartTime(Long.valueOf(poll.getCreateTime()));
+        setStartTime(Long.valueOf(poll.getCreateTime()));
       }
 
       startTimePopulated = true;
@@ -321,7 +322,7 @@ public class PollWsSource extends PollWsResult {
   public Long getDeadline() {
     if (!deadlinePopulated) {
       if (isPoll) {
-	setDeadline(Long.valueOf(poll.getDeadline().getExpirationTime()));
+        setDeadline(Long.valueOf(poll.getDeadline().getExpirationTime()));
       }
 
       deadlinePopulated = true;
@@ -334,7 +335,7 @@ public class PollWsSource extends PollWsResult {
   public String getPollKey() {
     if (!pollKeyPopulated) {
       if (isPoll) {
-	setPollKey(poll.getKey());
+        setPollKey(poll.getKey());
       }
 
       pollKeyPopulated = true;
@@ -347,7 +348,7 @@ public class PollWsSource extends PollWsResult {
   public String getPollVariant() {
     if (!pollVariantPopulated) {
       if (isPoll) {
-	setPollVariant(poll.getPollVariant().toString());
+        setPollVariant(poll.getPollVariant().toString());
       }
 
       pollVariantPopulated = true;
@@ -360,7 +361,7 @@ public class PollWsSource extends PollWsResult {
   public String getErrorDetail() {
     if (!errorDetailPopulated) {
       if (isPoll) {
-	setErrorDetail(poll.getPollerStateBean().getErrorDetail());
+        setErrorDetail(poll.getPollerStateBean().getErrorDetail());
       }
 
       errorDetailPopulated = true;
@@ -373,7 +374,7 @@ public class PollWsSource extends PollWsResult {
   public String getAdditionalInfo() {
     if (!additionalInfoPopulated) {
       if (isPoll) {
-	setAdditionalInfo(poll.getPollerStateBean().getAdditionalInfo());
+        setAdditionalInfo(poll.getPollerStateBean().getAdditionalInfo());
       }
 
       additionalInfoPopulated = true;
@@ -386,9 +387,9 @@ public class PollWsSource extends PollWsResult {
   public Long getVoteDeadline() {
     if (!voteDeadlinePopulated) {
       if (isPoll) {
-	if (!poll.isLocalPoll()) {
-	  setVoteDeadline(Long.valueOf(poll.getVoteDeadline()));
-	}
+        if (!poll.isLocalPoll()) {
+          setVoteDeadline(Long.valueOf(poll.getVoteDeadline()));
+        }
       }
 
       voteDeadlinePopulated = true;
@@ -401,7 +402,7 @@ public class PollWsSource extends PollWsResult {
   public Long getDuration() {
     if (!durationPopulated) {
       if (isPoll) {
-	setDuration(Long.valueOf(poll.getDuration()));
+        setDuration(Long.valueOf(poll.getDuration()));
       }
 
       durationPopulated = true;
@@ -414,14 +415,14 @@ public class PollWsSource extends PollWsResult {
   public Long getRemainingTime() {
     if (!remainingTimePopulated) {
       if (isPoll) {
-	if (poll.isPollActive()) {
-	  long remain =
-	      TimeBase.msUntil(poll.getDeadline().getExpirationTime());
+        if (poll.isPollActive()) {
+          long remain =
+            TimeBase.msUntil(poll.getDeadline().getExpirationTime());
 
-	  if (remain >= 0) {
-	    setRemainingTime(Long.valueOf(remain));
-	  }
-	}
+          if (remain >= 0) {
+            setRemainingTime(Long.valueOf(remain));
+          }
+        }
       }
 
       remainingTimePopulated = true;
@@ -434,10 +435,10 @@ public class PollWsSource extends PollWsResult {
   public Long getEndTime() {
     if (!endTimePopulated) {
       if (isPoll) {
-	if (!poll.isPollActive()
-	    && !poll.getDeadline().equals(poll.getEndTime())) {
-	  setEndTime(Long.valueOf(poll.getEndTime()));
-	}
+        if (!poll.isPollActive()
+          && !poll.getDeadline().equals(poll.getEndTime())) {
+          setEndTime(Long.valueOf(poll.getEndTime()));
+        }
       }
 
       endTimePopulated = true;
@@ -450,11 +451,11 @@ public class PollWsSource extends PollWsResult {
   public Integer getAgreedUrlCount() {
     if (!agreedUrlCountPopulated) {
       if (isPoll) {
-	int count = poll.getAgreedUrls().size();
+        int count = poll.getAgreedUrls().size();
 
-	if (count > 0) {
-	  setAgreedUrlCount(Integer.valueOf(count));
-	}
+        if (count > 0) {
+          setAgreedUrlCount(Integer.valueOf(count));
+        }
       }
 
       agreedUrlCountPopulated = true;
@@ -467,7 +468,7 @@ public class PollWsSource extends PollWsResult {
   public Set<String> getAgreedUrls() {
     if (!agreedUrlsPopulated) {
       if (isPoll) {
-	setAgreedUrls((Set<String>)poll.getAgreedUrls());
+        setAgreedUrls((Set<String>) poll.getAgreedUrls());
       }
 
       agreedUrlsPopulated = true;
@@ -480,11 +481,11 @@ public class PollWsSource extends PollWsResult {
   public Integer getDisagreedUrlCount() {
     if (!disagreedUrlCountPopulated) {
       if (isPoll) {
-	int count = poll.getDisagreedUrls().size();
+        int count = poll.getDisagreedUrls().size();
 
-	if (count > 0) {
-	  setDisagreedUrlCount(Integer.valueOf(count));
-	}
+        if (count > 0) {
+          setDisagreedUrlCount(Integer.valueOf(count));
+        }
       }
 
       disagreedUrlCountPopulated = true;
@@ -497,7 +498,7 @@ public class PollWsSource extends PollWsResult {
   public Set<String> getDisagreedUrls() {
     if (!disagreedUrlsPopulated) {
       if (isPoll) {
-	setDisagreedUrls((Set<String>)poll.getDisagreedUrls());
+        setDisagreedUrls((Set<String>) poll.getDisagreedUrls());
       }
 
       disagreedUrlsPopulated = true;
@@ -510,11 +511,11 @@ public class PollWsSource extends PollWsResult {
   public Integer getNoQuorumUrlCount() {
     if (!noQuorumUrlCountPopulated) {
       if (isPoll) {
-	int count = poll.getNoQuorumUrls().size();
+        int count = poll.getNoQuorumUrls().size();
 
-	if (count > 0) {
-	  setNoQuorumUrlCount(Integer.valueOf(count));
-	}
+        if (count > 0) {
+          setNoQuorumUrlCount(Integer.valueOf(count));
+        }
       }
 
       noQuorumUrlCountPopulated = true;
@@ -527,7 +528,7 @@ public class PollWsSource extends PollWsResult {
   public Set<String> getNoQuorumUrls() {
     if (!noQuorumUrlsPopulated) {
       if (isPoll) {
-	setNoQuorumUrls((Set<String>)poll.getNoQuorumUrls());
+        setNoQuorumUrls((Set<String>) poll.getNoQuorumUrls());
       }
 
       noQuorumUrlsPopulated = true;
@@ -540,11 +541,11 @@ public class PollWsSource extends PollWsResult {
   public Integer getTooCloseUrlCount() {
     if (!tooCloseUrlCountPopulated) {
       if (isPoll) {
-	int count = poll.getTooCloseUrls().size();
+        int count = poll.getTooCloseUrls().size();
 
-	if (count > 0) {
-	  setTooCloseUrlCount(Integer.valueOf(count));
-	}
+        if (count > 0) {
+          setTooCloseUrlCount(Integer.valueOf(count));
+        }
       }
 
       tooCloseUrlCountPopulated = true;
@@ -557,7 +558,7 @@ public class PollWsSource extends PollWsResult {
   public Set<String> getTooCloseUrls() {
     if (!tooCloseUrlsPopulated) {
       if (isPoll) {
-	setTooCloseUrls((Set<String>)poll.getTooCloseUrls());
+        setTooCloseUrls((Set<String>) poll.getTooCloseUrls());
       }
 
       tooCloseUrlsPopulated = true;
@@ -570,11 +571,11 @@ public class PollWsSource extends PollWsResult {
   public Integer getActiveRepairCount() {
     if (!activeRepairCountPopulated) {
       if (isPoll) {
-	int count = poll.getActiveRepairs().size();
+        int count = poll.getActiveRepairs().size();
 
-	if (count > 0) {
-	  setActiveRepairCount(Integer.valueOf(count));
-	}
+        if (count > 0) {
+          setActiveRepairCount(Integer.valueOf(count));
+        }
       }
 
       activeRepairCountPopulated = true;
@@ -587,18 +588,18 @@ public class PollWsSource extends PollWsResult {
   public List<RepairWsResult> getActiveRepairs() {
     if (!activeRepairsPopulated) {
       if (isPoll) {
-	List<Repair> repairs = poll.getActiveRepairs();
-	List<RepairWsResult> results =
-	    new ArrayList<RepairWsResult>(repairs.size());
+        List<Repair> repairs = poll.getActiveRepairs();
+        List<RepairWsResult> results =
+          new ArrayList<RepairWsResult>(repairs.size());
 
-	for (Repair repair : repairs) {
-	  RepairWsResult result = new RepairWsResult();
-	  result.setUrl(repair.getUrl());
-	  result.setPeerId(repair.getRepairFrom().getIdString());
-	  results.add(result);
-	}
+        for (Repair repair : repairs) {
+          RepairWsResult result = new RepairWsResult();
+          result.setUrl(repair.getUrl());
+          result.setPeerId(repair.getRepairFrom().getIdString());
+          results.add(result);
+        }
 
-	setActiveRepairs(results);
+        setActiveRepairs(results);
       }
 
       activeRepairsPopulated = true;
@@ -611,9 +612,9 @@ public class PollWsSource extends PollWsResult {
   public Long getBytesHashedCount() {
     if (!bytesHashedCountPopulated) {
       if (isPoll) {
-	if (poll.isEnableHashStats()) {
-	  setBytesHashedCount(Long.valueOf(poll.getBytesHashed()));
-	}
+        if (poll.isEnableHashStats()) {
+          setBytesHashedCount(Long.valueOf(poll.getBytesHashed()));
+        }
       }
 
       bytesHashedCountPopulated = true;
@@ -626,9 +627,9 @@ public class PollWsSource extends PollWsResult {
   public Long getBytesReadCount() {
     if (!bytesReadCountPopulated) {
       if (isPoll) {
-	if (poll.isEnableHashStats()) {
-	  setBytesReadCount(Long.valueOf(poll.getBytesRead()));
-	}
+        if (poll.isEnableHashStats()) {
+          setBytesReadCount(Long.valueOf(poll.getBytesRead()));
+        }
       }
 
       bytesReadCountPopulated = true;
@@ -641,7 +642,7 @@ public class PollWsSource extends PollWsResult {
   public Integer getQuorum() {
     if (!quorumPopulated) {
       if (isPoll) {
-	setQuorum(poll.getQuorum());
+        setQuorum(poll.getQuorum());
       }
 
       quorumPopulated = true;
@@ -654,18 +655,18 @@ public class PollWsSource extends PollWsResult {
   public List<ParticipantWsResult> getParticipants() {
     if (!participantsPopulated) {
       if (isPoll) {
-	List<ParticipantWsResult> results =
-	    new ArrayList<ParticipantWsResult>();
+        List<ParticipantWsResult> results =
+          new ArrayList<ParticipantWsResult>();
 
-	for (ParticipantUserData voter : poll.getParticipants()) {
-	  results.add(createParticipant(voter, false));
-	}
+        for (ParticipantUserData voter : poll.getParticipants()) {
+          results.add(createParticipant(voter, false));
+        }
 
-	for (ParticipantUserData voter : poll.getExParticipants()) {
-	  results.add(createParticipant(voter, true));
-	}
+        for (ParticipantUserData voter : poll.getExParticipants()) {
+          results.add(createParticipant(voter, true));
+        }
 
-	setParticipants(results);
+        setParticipants(results);
       }
 
       participantsPopulated = true;
@@ -675,7 +676,7 @@ public class PollWsSource extends PollWsResult {
   }
 
   private ParticipantWsResult createParticipant(ParticipantUserData voter,
-      boolean isExParticipant) {
+    boolean isExParticipant) {
     ParticipantWsResult result = new ParticipantWsResult();
 
     result.setPeerId(voter.getVoterId().getIdString());
@@ -686,23 +687,23 @@ public class PollWsSource extends PollWsResult {
       ParticipantUserData.VoteCounts voteCounts = voter.getVoteCounts();
 
       result.setPercentAgreement(Float
-	  .valueOf(voteCounts.getPercentAgreement()));
+        .valueOf(voteCounts.getPercentAgreement()));
       result.setAgreedVoteCount(Long.valueOf(voteCounts.getAgreedVotes()));
       result.setDisagreedVoteCount(Long
-	  .valueOf(voteCounts.getDisagreedVotes()));
+        .valueOf(voteCounts.getDisagreedVotes()));
       result.setPollerOnlyVoteCount(Long
-	  .valueOf(voteCounts.getPollerOnlyVotes()));
+        .valueOf(voteCounts.getPollerOnlyVotes()));
       result.setVoterOnlyVotecount(Long
-	  .valueOf(voteCounts.getVoterOnlyVotes()));
+        .valueOf(voteCounts.getVoterOnlyVotes()));
       result.setBytesHashed(Long.valueOf(voter.getBytesHashed()));
       result.setBytesRead(Long.valueOf(voter.getBytesRead()));
 
       if (voteCounts.hasPeerUrlLists()) {
-	result.setAgreedUrls(voteCounts.getAgreedUrls());
-	result.setDisagreedUrls(voteCounts.getDisagreedUrls());
-	result.setPollerOnlyUrls(voteCounts.getPollerOnlyUrls());
-	result.setVoterOnlyUrls(voteCounts.getVoterOnlyUrls());
-	result.setIsPostRepair(true);
+        result.setAgreedUrls(voteCounts.getAgreedUrls());
+        result.setDisagreedUrls(voteCounts.getDisagreedUrls());
+        result.setPollerOnlyUrls(voteCounts.getPollerOnlyUrls());
+        result.setVoterOnlyUrls(voteCounts.getVoterOnlyUrls());
+        result.setIsPostRepair(true);
       }
     }
 
@@ -712,15 +713,15 @@ public class PollWsSource extends PollWsResult {
       PsmState state = interp.getCurrentState();
 
       if (state != null) {
-	result.setCurrentState(state.getName());
+        result.setCurrentState(state.getName());
 
-	long when = interp.getLastStateChange();
+        long when = interp.getLastStateChange();
 
-	if (when > 0) {
-	  result.setLastStateChange(Long.valueOf(when));
-	}
+        if (when > 0) {
+          result.setLastStateChange(Long.valueOf(when));
+        }
       }
-    }	
+    }
 
     result.setIsExParticipant(Boolean.valueOf(isExParticipant));
 

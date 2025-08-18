@@ -27,11 +27,7 @@
  */
 package org.lockss.laaws.poller.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import org.lockss.app.LockssDaemon;
 import org.lockss.poller.PollManager;
 import org.lockss.poller.v3.V3Voter;
@@ -42,9 +38,9 @@ import org.lockss.ws.entities.VoteWsResult;
  * Helper of the DaemonStatus web service implementation of vote queries.
  */
 public class VoteHelper {
+
   /**
-   * The fully-qualified name of the class of the objects used as source in a
-   * query.
+   * The fully-qualified name of the class of the objects used as source in a query.
    */
   static String SOURCE_FQCN = VoteWsSource.class.getCanonicalName();
 
@@ -113,22 +109,20 @@ public class VoteHelper {
   private static Logger log = Logger.getLogger();
 
   /**
-   * Provides the universe of vote-related objects used as the source for a
-   * query.
-   * 
+   * Provides the universe of vote-related objects used as the source for a query.
+   *
    * @return a List<VoteWsProxy> with the universe.
    */
   List<VoteWsSource> createUniverse() {
     final String DEBUG_HEADER = "createUniverse(): ";
 
     // Get the poll manager.
-    PollManager pollManager = (PollManager)LockssDaemon
-	.getManagerByKeyStatic(LockssDaemon.POLL_MANAGER);
+    PollManager pollManager = (PollManager) LockssDaemon
+      .getManagerByKeyStatic(LockssDaemon.POLL_MANAGER);
 
     // Get all the polls.
     Collection<V3Voter> allVotes = pollManager.getV3Voters();
-    if (log.isDebug3())
-      log.debug3(DEBUG_HEADER + "allVotes.size() = " + allVotes.size());
+    if (log.isDebug3()) {log.debug3(DEBUG_HEADER + "allVotes.size() = " + allVotes.size());}
 
     // Initialize the universe.
     List<VoteWsSource> universe = new ArrayList<VoteWsSource>(allVotes.size());
@@ -139,16 +133,14 @@ public class VoteHelper {
       universe.add(new VoteWsSource(vote));
     }
 
-    if (log.isDebug2())
-      log.debug2(DEBUG_HEADER + "universe.size() = " + universe.size());
+    if (log.isDebug2()) {log.debug2(DEBUG_HEADER + "universe.size() = " + universe.size());}
     return universe;
   }
 
   /**
    * Provides a printable copy of a collection of vote-related query results.
-   * 
-   * @param results
-   *          A {@code Collection<VoteWsResult>} with the query results.
+   *
+   * @param results A {@code Collection<VoteWsResult>} with the query results.
    * @return a String with the requested printable copy.
    */
   String nonDefaultToString(Collection<VoteWsResult> results) {
@@ -159,9 +151,10 @@ public class VoteHelper {
     for (VoteWsResult result : results) {
       // Handle the first result differently.
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append(nonDefaultToString(result));
@@ -173,9 +166,8 @@ public class VoteHelper {
 
   /**
    * Provides a printable copy of a vote-related query result.
-   * 
-   * @param result
-   *          A VoteWsResult with the query result.
+   *
+   * @param result A VoteWsResult with the query result.
    * @return a String with the requested printable copy.
    */
   private String nonDefaultToString(VoteWsResult result) {
@@ -189,9 +181,10 @@ public class VoteHelper {
 
     if (result.getAuName() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("auName=").append(result.getAuName());
@@ -199,9 +192,10 @@ public class VoteHelper {
 
     if (result.getCallerId() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("callerId=").append(result.getCallerId());
@@ -209,9 +203,10 @@ public class VoteHelper {
 
     if (result.getVoteStatus() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("voteStatus=").append(result.getVoteStatus());
@@ -219,9 +214,10 @@ public class VoteHelper {
 
     if (result.getStartTime() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("startTime=").append(result.getStartTime());
@@ -229,9 +225,10 @@ public class VoteHelper {
 
     if (result.getDeadline() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("deadline=").append(result.getDeadline());
@@ -239,9 +236,10 @@ public class VoteHelper {
 
     if (result.getVoteKey() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("voteKey=").append(result.getVoteKey());
@@ -249,9 +247,10 @@ public class VoteHelper {
 
     if (result.getIsPollActive() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("isPollActive=").append(result.getIsPollActive());
@@ -259,9 +258,10 @@ public class VoteHelper {
 
     if (result.getCurrentState() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("currentState=").append(result.getCurrentState());
@@ -269,9 +269,10 @@ public class VoteHelper {
 
     if (result.getErrorDetail() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("errorDetail=").append(result.getErrorDetail());
@@ -279,9 +280,10 @@ public class VoteHelper {
 
     if (result.getVoteDeadline() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("voteDeadline=").append(result.getVoteDeadline());
@@ -289,9 +291,10 @@ public class VoteHelper {
 
     if (result.getDuration() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("duration=").append(result.getDuration());
@@ -299,9 +302,10 @@ public class VoteHelper {
 
     if (result.getRemainingTime() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("remainingTime=").append(result.getRemainingTime());
@@ -309,9 +313,10 @@ public class VoteHelper {
 
     if (result.getAgreementHint() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("agreementHint=").append(result.getAgreementHint());
@@ -319,9 +324,10 @@ public class VoteHelper {
 
     if (result.getPollerNonce() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("pollerNonce=").append(result.getPollerNonce());
@@ -329,9 +335,10 @@ public class VoteHelper {
 
     if (result.getVoterNonce() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("voterNonce=").append(result.getVoterNonce());
@@ -339,9 +346,10 @@ public class VoteHelper {
 
     if (result.getVoterNonce2() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("voterNonce2=").append(result.getVoterNonce2());
@@ -349,9 +357,10 @@ public class VoteHelper {
 
     if (result.getIsSymmetricPoll() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("isSymmetricPoll=").append(result.getIsSymmetricPoll());
@@ -359,9 +368,10 @@ public class VoteHelper {
 
     if (result.getAgreedUrlCount() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("agreedUrlCount=").append(result.getAgreedUrlCount());
@@ -369,35 +379,38 @@ public class VoteHelper {
 
     if (result.getDisagreedUrlCount() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("disagreedUrlCount=")
-      .append(result.getDisagreedUrlCount());
+        .append(result.getDisagreedUrlCount());
     }
 
     if (result.getPollerOnlyUrlCount() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("pollerOnlyUrlCount=")
-      .append(result.getPollerOnlyUrlCount());
+        .append(result.getPollerOnlyUrlCount());
     }
 
     if (result.getVoterOnlyUrlCount() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("voterOnlyUrlCount=")
-      .append(result.getVoterOnlyUrlCount());
+        .append(result.getVoterOnlyUrlCount());
     }
 
     return builder.append("]").toString();

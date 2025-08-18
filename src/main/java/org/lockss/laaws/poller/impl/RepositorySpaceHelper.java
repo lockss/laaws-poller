@@ -28,26 +28,20 @@
 
 package org.lockss.laaws.poller.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
-
 import org.lockss.app.LockssDaemon;
 import org.lockss.repository.RepositoryManager;
 import org.lockss.util.Logger;
 import org.lockss.ws.entities.RepositorySpaceWsResult;
 
 /**
- * Helper of the DaemonStatus web service implementation of repository space
- * queries.
+ * Helper of the DaemonStatus web service implementation of repository space queries.
  */
 public class RepositorySpaceHelper {
+
   /**
-   * The fully-qualified name of the class of the objects used as source in a
-   * query.
+   * The fully-qualified name of the class of the objects used as source in a query.
    */
   static String SOURCE_FQCN = RepositorySpaceWsSource.class.getCanonicalName();
 
@@ -90,8 +84,7 @@ public class RepositorySpaceHelper {
   private static Logger log = Logger.getLogger();
 
   /**
-   * Provides the universe of repository space-related objects used as the
-   * source for a query.
+   * Provides the universe of repository space-related objects used as the source for a query.
    *
    * @return a List<RepositorySpaceWsProxy> with the universe.
    */
@@ -100,28 +93,25 @@ public class RepositorySpaceHelper {
 
     // Initialize the universe.
     List<RepositorySpaceWsSource> universe =
-	new ArrayList<RepositorySpaceWsSource>();
+      new ArrayList<RepositorySpaceWsSource>();
 
     RepositoryManager repoManager = LockssDaemon.getLockssDaemon().getRepositoryManager();
 
     // Add the objects initialized from the repositories to the universe of objects.
     universe.addAll(
-        repoManager.getRepositoryDFMap().entrySet().stream()
-            .map(entry -> new RepositorySpaceWsSource(entry.getKey(), entry.getValue()))
-            .collect(Collectors.toList())
+      repoManager.getRepositoryDFMap().entrySet().stream()
+        .map(entry -> new RepositorySpaceWsSource(entry.getKey(), entry.getValue()))
+        .collect(Collectors.toList())
     );
 
-    if (log.isDebug2())
-      log.debug2(DEBUG_HEADER + "universe.size() = " + universe.size());
+    if (log.isDebug2()) {log.debug2(DEBUG_HEADER + "universe.size() = " + universe.size());}
     return universe;
   }
 
   /**
-   * Provides a printable copy of a collection of repository space-related query
-   * results.
+   * Provides a printable copy of a collection of repository space-related query results.
    *
-   * @param results
-   *          A {@code Collection<RepositorySpaceWsResult>} with the query results.
+   * @param results A {@code Collection<RepositorySpaceWsResult>} with the query results.
    * @return a String with the requested printable copy.
    */
   String nonDefaultToString(Collection<RepositorySpaceWsResult> results) {
@@ -132,9 +122,10 @@ public class RepositorySpaceHelper {
     for (RepositorySpaceWsResult result : results) {
       // Handle the first result differently.
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append(nonDefaultToString(result));
@@ -147,8 +138,7 @@ public class RepositorySpaceHelper {
   /**
    * Provides a printable copy of a repository space-related query result.
    *
-   * @param result
-   *          A RepositorySpaceWsResult with the query result.
+   * @param result A RepositorySpaceWsResult with the query result.
    * @return a String with the requested printable copy.
    */
   private String nonDefaultToString(RepositorySpaceWsResult result) {
@@ -157,15 +147,16 @@ public class RepositorySpaceHelper {
 
     if (result.getRepositorySpaceId() != null) {
       builder.append("repositorySpaceId=")
-      .append(result.getRepositorySpaceId());
+        .append(result.getRepositorySpaceId());
       isFirst = false;
     }
 
     if (result.getSize() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("size=").append(result.getSize());
@@ -173,9 +164,10 @@ public class RepositorySpaceHelper {
 
     if (result.getUsed() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("used=").append(result.getUsed());
@@ -183,9 +175,10 @@ public class RepositorySpaceHelper {
 
     if (result.getFree() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("free=").append(result.getFree());
@@ -193,9 +186,10 @@ public class RepositorySpaceHelper {
 
     if (result.getPercentageFull() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("percentageFull=").append(result.getPercentageFull());
@@ -203,9 +197,10 @@ public class RepositorySpaceHelper {
 
     if (result.getActiveCount() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("activeCount=").append(result.getActiveCount());
@@ -213,9 +208,10 @@ public class RepositorySpaceHelper {
 
     if (result.getInactiveCount() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("inactiveCount=").append(result.getInactiveCount());
@@ -223,9 +219,10 @@ public class RepositorySpaceHelper {
 
     if (result.getDeletedCount() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("deletedCount=").append(result.getDeletedCount());
@@ -233,9 +230,10 @@ public class RepositorySpaceHelper {
 
     if (result.getOrphanedCount() != null) {
       if (!isFirst) {
-	builder.append(", ");
-      } else {
-	isFirst = false;
+        builder.append(", ");
+      }
+      else {
+        isFirst = false;
       }
 
       builder.append("orphanedCount=").append(result.getOrphanedCount());
