@@ -38,14 +38,17 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.lockss.laaws.poller.*;
 import org.lockss.spring.test.SpringLockssTestCase4;
 import org.lockss.ws.entities.PollWsResult;
+import org.springframework.boot.test.context.*;
 import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * Test class for PollHelper.
  */
-@RunWith(SpringRunner.class)
+@SpringBootTest(classes = {PollerApplication.class},
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class TestPollHelper extends SpringLockssTestCase4 {
 
   private PollHelper pollHelper;

@@ -4,9 +4,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.*;
+import org.lockss.laaws.poller.*;
 import org.lockss.plugin.*;
 import org.lockss.poller.v3.*;
+import org.springframework.boot.test.context.*;
 
+@SpringBootTest(classes = {PollerApplication.class},
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class TestPollWsSource {
 
   @Test

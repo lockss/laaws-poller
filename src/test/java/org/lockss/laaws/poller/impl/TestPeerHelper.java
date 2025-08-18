@@ -39,6 +39,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.lockss.app.LockssDaemon;
+import org.lockss.laaws.poller.*;
 import org.lockss.poller.Poll;
 import org.lockss.protocol.IdentityManager;
 import org.lockss.protocol.PeerIdentity;
@@ -48,12 +49,14 @@ import org.lockss.ws.entities.PeerWsResult;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
+import org.springframework.boot.test.context.*;
 import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * Test class for PeerHelper.
  */
-@RunWith(SpringRunner.class)
+@SpringBootTest(classes = {PollerApplication.class},
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class TestPeerHelper extends SpringLockssTestCase4 {
 
   @Mock

@@ -37,6 +37,7 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.lockss.laaws.poller.*;
 import org.lockss.protocol.PeerIdentity;
 import org.lockss.protocol.PeerIdentityStatus;
 import org.lockss.protocol.V3LcapMessage;
@@ -44,12 +45,14 @@ import org.lockss.protocol.V3LcapMessage.PollNak;
 import org.lockss.spring.test.SpringLockssTestCase4;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.boot.test.context.*;
 import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * Test class for PeerWsSource.
  */
-@RunWith(SpringRunner.class)
+@SpringBootTest(classes = {PollerApplication.class},
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class TestPeerWsSource extends SpringLockssTestCase4 {
 
   @Mock
