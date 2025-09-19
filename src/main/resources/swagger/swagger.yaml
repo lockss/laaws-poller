@@ -50,13 +50,13 @@ tags:
 - name: poll-detail
   description: Poll detail operations
 - name: poller-polls
-  description: Poll operations (as a poller)
+  description: Poll operations where this peer is the poller
 - name: repo
   description: Repository operations
 - name: service
   description: Service operations
 - name: voter-polls
-  description: Poll operations (as a voter)
+  description: Poll operations where this peer is a voter
 paths:
   /polls:
     post:
@@ -181,7 +181,7 @@ paths:
           type: integer
       responses:
         200:
-          description: A pagable list of urls for given tally type.
+          description: A pageable list of urls for given tally type.
           headers:
             X-Page-Count:
               description: The total number of pages.
@@ -246,7 +246,7 @@ paths:
           type: integer
       responses:
         200:
-          description: A pagable list of repair queue elements.
+          description: A pageable list of repair queue elements.
           headers:
             X-Page-Count:
               description: The total number of pages.
@@ -319,7 +319,7 @@ paths:
           type: integer
       responses:
         200:
-          description: A pagable list of voter urls with a given status.
+          description: A pageable list of voter urls with a given status.
           headers:
             X-Page-Count:
               description: The total number of pages.
@@ -351,9 +351,10 @@ paths:
     get:
       tags:
       - poller-polls
-      summary: Get the list of recent polls as poller.
-      description: Get the list of recent polls as poller from the poll queue. if
-        size and page are passed in use those arguments to limit return data.
+      summary: Get the list of recent polls in which this peer is the poller.
+      description: Get the list of recent polls in which this peer is the poller
+        from the poll queue. If size and page are passed in use, those arguments
+        to limit return data.
       operationId: getPollsAsPoller
       # new roles: ROLE_AU_ADMIN
       parameters:
@@ -373,7 +374,7 @@ paths:
         example: 1
       responses:
         200:
-          description: A pagable list has been returned.
+          description: A pageable list has been returned.
           headers:
             X-Page-Count:
               description: The total number of pages.
@@ -406,7 +407,8 @@ paths:
       tags:
       - poller-polls
       summary: PollerDetails
-      description: Return the detailed information about a poll.
+      description: Return the detailed information about a poll in which this
+        peer is the poller.
       operationId: getPollerPollDetails
       # new roles: ROLE_AU_ADMIN
       parameters:
@@ -433,9 +435,10 @@ paths:
     get:
       tags:
       - voter-polls
-      summary: Get the list of recent voter only polls.
-      description: Get the list of recent polls as voter from the poll queue. if size
-        and page are passed in use those arguments to limit return data.
+      summary: Get the list of recent polls in which this peer is a voter.
+      description: Get the list of recent polls in which this peer is a voter
+        from the poll queue. If size and page are passed in, use those arguments
+        to limit return data.
       operationId: getPollsAsVoter
       # new roles: ROLE_AU_ADMIN
       parameters:
@@ -455,7 +458,7 @@ paths:
         example: 1
       responses:
         200:
-          description: A pagable list has been returned.
+          description: A pageable list has been returned.
           headers:
             X-Page-Count:
               description: The total number of pages.
@@ -488,7 +491,8 @@ paths:
       tags:
       - voter-polls
       summary: VoterDetails
-      description: Return the detailed information about a poll.
+      description: Return the detailed information about a poll in which this
+        peer is a voter.
       operationId: getVoterPollDetails
       # new roles: ROLE_AU_ADMIN
       parameters:
