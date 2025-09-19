@@ -35,6 +35,11 @@ JAVA_SRC=$1
 sed -i.backup "s/import $2/import $3/" $JAVA_SRC && rm $JAVA_SRC.backup
 }
 
+function fixResponseCode1234() {
+JAVA_SRC=$1
+sed -i.backup 's/responseCode = "1234"/responseCode = "default"/' $JAVA_SRC && rm $JAVA_SRC.backup
+}
+
 # Edit StatusApiDelegate.java.
 STATUS_API_DELEGATE=src/generated/java/org/lockss/laaws/poller/api/StatusApiDelegate.java
 fixImport $STATUS_API_DELEGATE org.lockss.laaws.poller.model.ApiStatus org.lockss.util.rest.status.ApiStatus
@@ -42,6 +47,7 @@ fixImport $STATUS_API_DELEGATE org.lockss.laaws.poller.model.ApiStatus org.locks
 # Edit StatusApi.java.
 STATUS_API=src/generated/java/org/lockss/laaws/poller/api/StatusApi.java
 fixImport $STATUS_API org.lockss.laaws.poller.model.ApiStatus org.lockss.util.rest.status.ApiStatus
+fixResponseCode1234 $STATUS_API
 
 # Edit PollsApiDelegate.java.
 POLLS_API_DELEGATE=src/generated/java/org/lockss/laaws/poller/api/PollsApiDelegate.java
@@ -52,6 +58,7 @@ fixImport $POLLS_API_DELEGATE org.lockss.laaws.poller.model.PollerSummary org.lo
 POLLS_API=src/generated/java/org/lockss/laaws/poller/api/PollsApi.java
 fixImport $POLLS_API org.lockss.laaws.poller.model.PollDesc org.lockss.util.rest.poller.PollDesc
 fixImport $POLLS_API org.lockss.laaws.poller.model.PollerSummary org.lockss.util.rest.poller.PollerSummary
+fixResponseCode1234 $POLLS_API
 
 # Edit PollerDetail.java.
 POLLER_DETAIL=src/generated/java/org/lockss/laaws/poller/model/PollerDetail.java
@@ -78,6 +85,7 @@ fixImport $WS_API org.lockss.laaws.poller.model.PollWsResult org.lockss.ws.entit
 fixImport $WS_API org.lockss.laaws.poller.model.RepositorySpaceWsResult org.lockss.ws.entities.RepositorySpaceWsResult
 fixImport $WS_API org.lockss.laaws.poller.model.RepositoryWsResult org.lockss.ws.entities.RepositoryWsResult
 fixImport $WS_API org.lockss.laaws.poller.model.VoteWsResult org.lockss.ws.entities.VoteWsResult
+fixResponseCode1234 $WS_API
 
 # Edit Model dependencies
 # PeerData
@@ -99,3 +107,9 @@ fixImport $VOTER_SUMMARY org.lockss.laaws.poller.model.LinkDesc org.lockss.util.
 # PollerPager
 POLLER_PAGER=src/generated/java/org/lockss/laaws/poller/model/PollerPager.java
 fixImport $POLLER_PAGER org.lockss.laaws.poller.model.PollerSummary org.lockss.util.rest.poller.PollerSummary
+
+# AUsApi.java
+AUS_API=src/generated/java/org/lockss/laaws/poller/api/AusApi.java
+fixResponseCode1234 $AUS_API
+
+
