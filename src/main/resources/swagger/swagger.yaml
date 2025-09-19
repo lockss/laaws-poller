@@ -40,6 +40,23 @@ info:
   version: 2.0.0
 security:
 - basicAuth: []
+tags:
+- name: export
+  description: Export operations
+- name: hash
+  description: Hashing operations
+- name: import
+  description: Import operations
+- name: poll-detail
+  description: Poll detail operations
+- name: poller-polls
+  description: Poll operations (as a poller)
+- name: repo
+  description: Repository operations
+- name: service
+  description: Service operations
+- name: voter-polls
+  description: Poll operations (as a voter)
 paths:
   /polls:
     post:
