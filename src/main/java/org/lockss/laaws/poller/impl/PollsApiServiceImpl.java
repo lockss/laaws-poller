@@ -53,6 +53,7 @@ import org.lockss.util.rest.poller.CachedUriSetSpec;
 import org.lockss.util.rest.poller.LinkDesc;
 import org.lockss.util.rest.poller.PollDesc;
 import org.lockss.util.rest.poller.PollerSummary;
+import org.lockss.util.rest.poller.model.PollVariantEnum;
 import org.lockss.util.rest.poller.model.VoterUrlsEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -601,7 +602,7 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     pollDesc.setCuSetSpec(cuss);
     pollDesc.setPollType(pollSpec.getPollType());
     pollDesc.setProtocol(pollSpec.getProtocolVersion());
-    pollDesc.setVariant(PollDesc.VariantEnum.fromValue(pollSpec.getPollVariant().toString()));
+    pollDesc.setVariant(PollVariantEnum.fromValue(pollSpec.getPollVariant().shortName()));
     return pollDesc;
   }
 
@@ -619,7 +620,7 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
       summary.setAuId(v3poller.getAu().getAuId());
       summary.setStatus(V3Poller.POLLER_STATUS_STRINGS[v3poller.getStatus()]);
       summary.setStart(v3poller.getCreateTime());
-      summary.setVariant(v3poller.getPollVariant().toString());
+      summary.setVariant(v3poller.getPollVariant().shortName());
       summary.setDeadline(v3poller.getDuration());
       summary.setPollEnd(psb.getPollEnd());
       summary.setParticipants(v3poller.getParticipants().size());
