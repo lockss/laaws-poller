@@ -535,14 +535,7 @@ paths:
         in: query
         description: The type of archive to create
         schema:
-          type: string
-          default: WARC_RESPONSE
-          enum:
-          - WARC_RESPONSE
-          - WARC_RESOURCE
-          - ARC_RESPONSE
-          - ARC_RESOURCE
-          - ZIP
+          $ref: '#/components/schemas/exportFileTypeEnum'
       - name: isCompress
         in: query
         description: Indication of whether contents should be compressed
@@ -559,12 +552,7 @@ paths:
         in: query
         description: Type of filename translation to be done
         schema:
-          type: string
-          default: XLATE_NONE
-          enum:
-          - XLATE_NONE
-          - XLATE_WINDOWS
-          - XLATE_MAC
+          $ref: '#/components/schemas/exportFilenameTranslationEnum'
       - name: filePrefix
         in: query
         description: The prefix to be used to name the exported file
@@ -1003,6 +991,26 @@ components:
           type: integer
         rootCause:
           type: string
+    exportFileTypeEnum:
+      title: Export File Type
+      description: The type of archive to create
+      type: string
+      default: WARC_RESPONSE
+      enum:
+        - WARC_RESPONSE
+        - WARC_RESOURCE
+        - ARC_RESPONSE
+        - ARC_RESOURCE
+        - ZIP
+    exportFilenameTranslationEnum:
+      title: Export Filename Translation Type
+      description: Type of filename translation to be done
+      type: string
+      default: XLATE_NONE
+      enum:
+        - XLATE_NONE
+        - XLATE_WINDOWS
+        - XLATE_MAC
     hasherWsParams:
       required:
       - algorithm
