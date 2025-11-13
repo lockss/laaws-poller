@@ -40,3 +40,9 @@ src/generated/java/org/lockss/laaws/*/model/PollWsResult.java
 src/generated/java/org/lockss/laaws/*/model/RepositorySpaceWsResult.java
 src/generated/java/org/lockss/laaws/*/model/RepositoryWsResult.java
 src/generated/java/org/lockss/laaws/*/model/VoteWsResult.java
+src/generated/java/org/lockss/laaws/*/model/ExportFilenameTranslationEnum.java
+src/generated/java/org/lockss/laaws/*/model/ExportFileTypeEnum.java
+src/generated/java/org/lockss/laaws/*/model/VoterUrlsEnum.java
+src/generated/java/org/lockss/laaws/*/model/PollVariantEnum.java
+src/generated/java/org/lockss/laaws/*/model/RepairTypeEnum.java
+src/generated/java/org/lockss/laaws/*/model/TallyTypeEnum.java

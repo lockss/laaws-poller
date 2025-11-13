@@ -25,11 +25,11 @@
  */
 package org.lockss.laaws.poller.impl;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.lockss.app.LockssDaemon;
 import org.lockss.laaws.poller.api.PollsApi;
 import org.lockss.laaws.poller.api.PollsApiDelegate;
 import org.lockss.laaws.poller.model.*;
-import org.lockss.laaws.poller.model.RepairData.ResultEnum;
 import org.lockss.plugin.ArchivalUnit;
 import org.lockss.plugin.CachedUrlSet;
 import org.lockss.plugin.PluginManager;
@@ -40,7 +40,6 @@ import org.lockss.poller.PollSpec;
 import org.lockss.poller.v3.*;
 import org.lockss.poller.v3.ParticipantUserData.VoteCounts;
 import org.lockss.poller.v3.PollerStateBean.Repair;
-import org.lockss.poller.v3.PollerStateBean.TallyStatus;
 import org.lockss.protocol.PeerIdentity;
 import org.lockss.protocol.psm.PsmInterp;
 import org.lockss.protocol.psm.PsmState;
@@ -53,8 +52,8 @@ import org.lockss.util.UrlUtil;
 import org.lockss.util.rest.poller.CachedUriSetSpec;
 import org.lockss.util.rest.poller.LinkDesc;
 import org.lockss.util.rest.poller.PollDesc;
-import org.lockss.util.rest.poller.PollDesc.VariantEnum;
 import org.lockss.util.rest.poller.PollerSummary;
+import org.lockss.util.rest.poller.model.VoterUrlsEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,7 +61,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import jakarta.servlet.http.HttpServletRequest;
 import java.net.MalformedURLException;
 import java.util.*;
 
@@ -296,7 +294,7 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
    * @see PollsApi#getPollPeerVoteUrls
    */
   @Override
-  public ResponseEntity<UrlPager> getPollPeerVoteUrls(String pollKey, String peerId, String urls,
+  public ResponseEntity<UrlPager> getPollPeerVoteUrls(String pollKey, String peerId, VoterUrlsEnum urls,
     Integer page, Integer size) {
 
     // Check whether the service has not been fully initialized.
@@ -319,16 +317,16 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
         if (voteCounts.hasPeerUrlLists() && userData.hasVoted()) {
           Collection<String> counts;
           switch (urls) {
-            case "agreed":
+            case AGREED:
               counts = voteCounts.getAgreedUrls();
               break;
-            case "disagreed":
+            case DISAGREED:
               counts = voteCounts.getDisagreedUrls();
               break;
-            case "pollerOnly":
+            case POLLERONLY:
               counts = voteCounts.getPollerOnlyUrls();
               break;
-            case "voterOnly":
+            case VOTERONLY:
               counts = voteCounts.getVoterOnlyUrls();
               break;
             default:
@@ -603,7 +601,7 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     pollDesc.setCuSetSpec(cuss);
     pollDesc.setPollType(pollSpec.getPollType());
     pollDesc.setProtocol(pollSpec.getProtocolVersion());
-    pollDesc.setVariant(PollDesc.VariantEnum.fromValue(pollSpec.getPollVariant().shortName()));
+    pollDesc.setVariant(PollDesc.VariantEnum.fromValue(pollSpec.getPollVariant().toString()));
     return pollDesc;
   }
 
@@ -621,7 +619,7 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
       summary.setAuId(v3poller.getAu().getAuId());
       summary.setStatus(V3Poller.POLLER_STATUS_STRINGS[v3poller.getStatus()]);
       summary.setStart(v3poller.getCreateTime());
-      summary.setVariant(v3poller.getPollVariant().shortName());
+      summary.setVariant(v3poller.getPollVariant().toString());
       summary.setDeadline(v3poller.getDuration());
       summary.setPollEnd(psb.getPollEnd());
       summary.setParticipants(v3poller.getParticipants().size());

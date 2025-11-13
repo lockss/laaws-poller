@@ -43,6 +43,8 @@ import org.lockss.exporter.Exporter;
 import org.lockss.exporter.Exporter.FilenameTranslation;
 import org.lockss.exporter.Exporter.Type;
 import org.lockss.laaws.poller.api.AusApiDelegate;
+import org.lockss.util.rest.poller.model.ExportFileTypeEnum;
+import org.lockss.util.rest.poller.model.ExportFilenameTranslationEnum;
 import org.lockss.util.rest.repo.util.NamedInputStreamResource;
 import org.lockss.log.L4JLogger;
 import org.lockss.plugin.ArchivalUnit;
@@ -111,8 +113,8 @@ public class AusApiServiceImpl extends BaseSpringApiServiceImpl
    * the Archival Unit artifacts.
    */
   @Override
-  public ResponseEntity getExportFiles(String auid, String fileType,
-    Boolean isCompress, Boolean isExcludeDirNodes, String xlateFilenames,
+  public ResponseEntity getExportFiles(String auid, ExportFileTypeEnum fileType,
+    Boolean isCompress, Boolean isExcludeDirNodes, ExportFilenameTranslationEnum xlateFilenames,
     String filePrefix, Long maxSize, Integer maxVersions) {
     String parsedRequest = String.format("auid: %s, fileType: %s, "
         + "isCompress: %s, isExcludeDirNodes: %s, xlateFilenames: %s, "
@@ -148,19 +150,19 @@ public class AusApiServiceImpl extends BaseSpringApiServiceImpl
       Exporter exp = null;
 
       switch (fileType) {
-        case "WARC_RESPONSE":
+        case WARC_RESPONSE:
           exp = Type.WARC_RESPONSE.makeExporter(daemon, au);
           break;
-        case "ARC_RESPONSE":
+        case ARC_RESPONSE:
           exp = Type.ARC_RESPONSE.makeExporter(daemon, au);
           break;
-        case "WARC_RESOURCE":
+        case WARC_RESOURCE:
           exp = Type.WARC_RESOURCE.makeExporter(daemon, au);
           break;
-        case "ARC_RESOURCE":
+        case ARC_RESOURCE:
           exp = Type.ARC_RESOURCE.makeExporter(daemon, au);
           break;
-        case "ZIP":
+        case ZIP:
           exp = Type.ZIP.makeExporter(daemon, au);
           break;
         default:
@@ -194,13 +196,13 @@ public class AusApiServiceImpl extends BaseSpringApiServiceImpl
 
       // Specify any filename translation.
       switch (xlateFilenames) {
-        case "XLATE_MAC":
+        case MAC:
           exp.setFilenameTranslation(FilenameTranslation.XLATE_MAC);
           break;
-        case "XLATE_WINDOWS":
+        case WINDOWS:
           exp.setFilenameTranslation(FilenameTranslation.XLATE_WINDOWS);
           break;
-        case "XLATE_NONE":
+        case NONE:
           exp.setFilenameTranslation(FilenameTranslation.XLATE_NONE);
           break;
         default:

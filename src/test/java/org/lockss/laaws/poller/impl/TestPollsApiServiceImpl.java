@@ -143,7 +143,7 @@ public class TestPollsApiServiceImpl extends LockssTestCase4 {
     // no  poll
     // get details of the non-existent poll.
     ResponseEntity<UrlPager> peersVoteUrls = pollsApiServiceImpl
-        .getPollPeerVoteUrls("pollKey", "peerId", "urls", 1, 20);
+        .getPollPeerVoteUrls("pollKey", "peerId", null, 1, 20);
     Assert.assertEquals(HttpStatus.NOT_FOUND, peersVoteUrls.getStatusCode());
     ResponseEntity<RepairPager> repairData = pollsApiServiceImpl
         .getRepairQueueData("pollKey", "repair", 1, 20);
