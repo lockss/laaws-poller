@@ -307,12 +307,7 @@ paths:
         description: The voter urls to return.
         required: true
         schema:
-          type: string
-          enum:
-          - agreed
-          - disagreed
-          - pollerOnly
-          - voterOnly
+          $ref: '#/components/schemas/voterUrlsEnum'
       - name: page
         in: query
         description: The page number
@@ -1695,6 +1690,15 @@ components:
         detailLink:
           $ref: '#/components/schemas/LinkDesc'
       description: A summary of a poll in which we are acting just as a voter.
+    voterUrlsEnum:
+      title: Voter URLs Type
+      description: The voter URLs to return
+      type: string
+      enum:
+        - agreed
+        - disagreed
+        - pollerOnly
+        - voterOnly
   securitySchemes:
     basicAuth:
       type: http
