@@ -1529,11 +1529,11 @@ components:
       description: The kind of tally element to return
       type: string
       enum:
-       - agree
-       - disagree
-       - error
-       - noQuorum
-       - tooClose
+        - agree
+        - disagree
+        - error
+        - noQuorum
+        - tooClose
     UrlPager:
       required:
       - pageDesc
