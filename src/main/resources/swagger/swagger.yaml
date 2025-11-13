@@ -178,13 +178,7 @@ paths:
         description: The kind of tally element to return.
         required: true
         schema:
-          type: string
-          enum:
-          - agree
-          - disagree
-          - error
-          - noQuorum
-          - tooClose
+          $ref: '#/components/schemas/tallyTypeEnum'
       - name: page
         in: query
         description: The page number.
@@ -1530,6 +1524,16 @@ components:
           format: float
           default: 0.0
       description: The tally for the current poll.
+    tallyTypeEnum:
+      title: Tally Type
+      description: The kind of tally element to return
+      type: string
+      enum:
+       - agree
+       - disagree
+       - error
+       - noQuorum
+       - tooClose
     UrlPager:
       required:
       - pageDesc
