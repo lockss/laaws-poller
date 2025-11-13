@@ -239,11 +239,7 @@ paths:
         description: The repair queue elements to return.
         required: true
         schema:
-          type: string
-          enum:
-          - pending
-          - active
-          - completed
+          $ref: '#/components/schemas/repairTypeEnum'
       - name: page
         in: query
         description: The page number.
@@ -1446,6 +1442,14 @@ components:
         completedLink:
           $ref: '#/components/schemas/LinkDesc'
       description: Description of the RepairQueue.
+    repairTypeEnum:
+      title: Repair Type
+      description: The repair queue elements to return
+      type: string
+      enum:
+        - pending
+        - active
+        - completed
     repositorySpaceWsResult:
       required:
       - repositorySpaceId
