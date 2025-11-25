@@ -80,7 +80,7 @@ paths:
       - service
       summary: Send a request to call a poll to the poller
       description: Use the information found in the descriptor object to initiate
-        a  poll.
+        a poll.
       operationId: callPoll
       # new roles: ROLE_AU_ADMIN
       requestBody:
@@ -1097,7 +1097,7 @@ components:
           example: 5
         total:
           type: integer
-          description: The mTotal number of elements.
+          description: The total number of elements.
           example: 150
         prevPage:
           type: string
