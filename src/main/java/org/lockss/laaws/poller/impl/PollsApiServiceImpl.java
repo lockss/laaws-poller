@@ -81,6 +81,7 @@ import org.springframework.stereotype.Service;
 import java.net.MalformedURLException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.UUID;
 
 /**
  * The Polls api service.
@@ -99,11 +100,11 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
   private static final String NOT_INITIALIZED_MESSAGE = "The service has not been fully initialized.";
 
   // The poll iterators used in pagination.
-  private Map<Integer, Iterator<V3Poller>> pollerIterators = new ConcurrentHashMap<>();
-  private Map<Integer, Iterator<V3Voter>> voterIterators = new ConcurrentHashMap<>();
-  private Map<Integer, Iterator<String>> tallyIterators = new ConcurrentHashMap<>();
-  private Map<Integer, Iterator<Repair>> repairIterators = new ConcurrentHashMap<>();
-  private Map<Integer, Iterator<String>> peerIterators = new ConcurrentHashMap<>();
+  private Map<String, Iterator<V3Poller>> pollerIterators = new ConcurrentHashMap<>();
+  private Map<String, Iterator<V3Voter>> voterIterators = new ConcurrentHashMap<>();
+  private Map<String, Iterator<String>> tallyIterators = new ConcurrentHashMap<>();
+  private Map<String, Iterator<Repair>> repairIterators = new ConcurrentHashMap<>();
+  private Map<String, Iterator<String>> peerIterators = new ConcurrentHashMap<>();
 
   ////////////////////////////////////////////////////////////////////////////////
   // PARAMS //////////////////////////////////////////////////////////////////////
@@ -434,9 +435,9 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     Integer requestLimit = limit;
     limit = validateLimit(requestLimit, defaultPollPageSize, maxPollPageSize, parsedRequest);
 
-    TallyContinuationToken requestTct = new TallyContinuationToken(continuationToken);
-    String requestLastUrl = requestTct.getUrl();
-    Integer requestIteratorHashCode = requestTct.getIteratorHashCode();
+    ContinuationToken requestTct = new ContinuationToken(continuationToken);
+    String requestLastUrl = requestTct.getKey();
+    String requestIteratorId = requestTct.getIteratorId();
 
     PollManager pm = getPollManager();
     Poll poll = pm.getPoll(pollKey);
@@ -491,14 +492,14 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     }
 
     Iterator<String> iterator = null;
-    if (requestIteratorHashCode != null) {
-      iterator = peerIterators.get(requestIteratorHashCode);
-      logger.trace("Retrieved iterator from map: hashCode={}, iterator={}", requestIteratorHashCode, iterator);
+    if (requestIteratorId != null) {
+      iterator = peerIterators.get(requestIteratorId);
+      logger.trace("Retrieved iterator from map: iteratorId={}, iterator={}", requestIteratorId, iterator);
     }
 
     if (iterator == null) {
       iterator = new ArrayList<>(counts).iterator();
-      logger.trace("Created new iterator: hashCode={}", iterator.hashCode());
+      logger.trace("Created new iterator");
 
       if (requestLastUrl != null) {
         logger.trace("Skipping to last URL: {}", requestLastUrl);
@@ -519,11 +520,12 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     List<String> urlsList = populateTallyUrls(iterator, limit);
     logger.trace("Populated {} URLs", urlsList.size());
 
-    TallyContinuationToken responseTct = null;
+    ContinuationToken responseTct = null;
     if (iterator.hasNext()) {
       String lastUrl = urlsList.get(urlsList.size() - 1);
-      peerIterators.put(iterator.hashCode(), iterator);
-      responseTct = new TallyContinuationToken(lastUrl, iterator.hashCode());
+      String iteratorId = UUID.randomUUID().toString();
+      peerIterators.put(iteratorId, iterator);
+      responseTct = new ContinuationToken(lastUrl, iteratorId);
       logger.trace("Stored iterator and created response continuation token: {}", responseTct);
     }
 
@@ -583,10 +585,10 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     limit = validateLimit(requestLimit, defaultPollPageSize, maxPollPageSize, parsedRequest);
 
     // Parse the request continuation token.
-    RepairContinuationToken requestRct = null;
+    ContinuationToken requestRct = null;
 
     try {
-      requestRct = new RepairContinuationToken(continuationToken);
+      requestRct = new ContinuationToken(continuationToken);
       logger.trace("requestRct = {}", requestRct);
     } catch (IllegalArgumentException iae) {
       String message = "Invalid continuation token '" + continuationToken + "'";
@@ -627,25 +629,25 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     }
 
     List<RepairData> repairs = new ArrayList<>();
-    RepairContinuationToken responseRct = null;
+    ContinuationToken responseRct = null;
     Iterator<Repair> iterator = null;
     boolean missingIterator = false;
 
-    // Get the iterator hash code (if any) used to provide a previous page of results.
-    Integer iteratorHashCode = requestRct.getIteratorHashCode();
-    logger.trace("iteratorHashCode = {}", iteratorHashCode);
+    // Get the iterator ID (if any) used to provide a previous page of results.
+    String iteratorId = requestRct.getIteratorId();
+    logger.trace("iteratorId = {}", iteratorId);
 
     // Check whether a previous page of results exists.
-    if (iteratorHashCode != null) {
+    if (iteratorId != null) {
       // Yes: Get the iterator for it.
-      iterator = repairIterators.get(iteratorHashCode);
+      iterator = repairIterators.get(iteratorId);
       logger.trace("iterator = {}", iterator);
 
       // Check whether the iterator was not found.
       if (iterator == null) {
         // Yes: Report the problem.
         missingIterator = true;
-        logger.warn("No existing iterator for iteratorHashCode = {}", iteratorHashCode);
+        logger.warn("No existing iterator for iteratorId = {}", iteratorId);
       }
     }
 
@@ -653,10 +655,10 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     if (iterator == null) {
       // No: Get the repair items.
       iterator = repairList.iterator();
-      logger.trace("Created new iterator with hash code = {}", iterator.hashCode());
+      logger.trace("Created new iterator");
 
       // Check whether there was a request continuation token.
-      if (requestRct.getIteratorHashCode() != null) {
+      if (requestRct.getIteratorId() != null) {
         // Yes: Loop through the repairs until the repair after the last one in the previous
         // page of results is reached.
         while (iterator.hasNext()) {
@@ -664,7 +666,7 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
           logger.trace("repairUrl = {}", repairItem.getUrl());
 
           // Check whether this is the repair after the last one in the previous page of results.
-          if (requestRct.getRepairUrl().equals(repairItem.getUrl())) {
+          if (requestRct.getKey().equals(repairItem.getUrl())) {
             // Yes: Finish the loop.
             logger.trace("Found last repair URL from previous request");
             break;
@@ -683,11 +685,12 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
       String lastRepairUrl = repairs.get(repairs.size() - 1).getRepairUrl();
 
       // Save the iterator for the next page of results.
-      repairIterators.put(iterator.hashCode(), iterator);
+      String newIteratorId = UUID.randomUUID().toString();
+      repairIterators.put(newIteratorId, iterator);
       logger.trace("Populated repairIterators.size() = {}", repairIterators.size());
 
       // Create the response continuation token.
-      responseRct = new RepairContinuationToken(lastRepairUrl, iterator.hashCode());
+      responseRct = new ContinuationToken(lastRepairUrl, newIteratorId);
       logger.trace("responseRct = {}", responseRct);
     }
 
@@ -792,10 +795,10 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     limit = validateLimit(requestLimit, defaultPollPageSize, maxPollPageSize, parsedRequest);
 
     // Parse the request continuation token.
-    TallyContinuationToken requestTct = null;
+    ContinuationToken requestTct = null;
 
     try {
-      requestTct = new TallyContinuationToken(continuationToken);
+      requestTct = new ContinuationToken(continuationToken);
       logger.trace("requestTct = {}", requestTct);
     } catch (IllegalArgumentException iae) {
       String message = "Invalid continuation token '" + continuationToken + "'";
@@ -842,25 +845,25 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     }
 
     List<String> urls = new ArrayList<>();
-    TallyContinuationToken responseTct = null;
+    ContinuationToken responseTct = null;
     Iterator<String> iterator = null;
     boolean missingIterator = false;
 
-    // Get the iterator hash code (if any) used to provide a previous page of results.
-    Integer iteratorHashCode = requestTct.getIteratorHashCode();
-    logger.trace("iteratorHashCode = {}", iteratorHashCode);
+    // Get the iterator ID (if any) used to provide a previous page of results.
+    String iteratorId = requestTct.getIteratorId();
+    logger.trace("iteratorId = {}", iteratorId);
 
     // Check whether a previous page of results exists.
-    if (iteratorHashCode != null) {
+    if (iteratorId != null) {
       // Yes: Get the iterator for it.
-      iterator = tallyIterators.get(iteratorHashCode);
+      iterator = tallyIterators.get(iteratorId);
       logger.trace("iterator = {}", iterator);
 
       // Check whether the iterator was not found.
       if (iterator == null) {
         // Yes: Report the problem.
         missingIterator = true;
-        logger.warn("No existing iterator for iteratorHashCode = {}", iteratorHashCode);
+        logger.warn("No existing iterator for iteratorId = {}", iteratorId);
       }
     }
 
@@ -868,10 +871,10 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     if (iterator == null) {
       // No: Get the tally URLs.
       iterator = new ArrayList<>(tallySet).iterator();
-      logger.trace("Created new iterator with hash code = {}", iterator.hashCode());
+      logger.trace("Created new iterator");
 
       // Check whether there was a request continuation token.
-      if (requestTct.getIteratorHashCode() != null) {
+      if (requestTct.getIteratorId() != null) {
         // Yes: Loop through the URLs until the URL after the last one in the previous
         // page of results is reached.
         while (iterator.hasNext()) {
@@ -879,7 +882,7 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
           logger.trace("url = {}", url);
 
           // Check whether this is the URL after the last one in the previous page of results.
-          if (requestTct.getUrl().equals(url)) {
+          if (requestTct.getKey().equals(url)) {
             // Yes: Finish the loop.
             logger.trace("Found last URL from previous request");
             break;
@@ -898,11 +901,12 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
       String lastUrl = urls.get(urls.size() - 1);
 
       // Save the iterator for the next page of results.
-      tallyIterators.put(iterator.hashCode(), iterator);
+      String newIteratorId = UUID.randomUUID().toString();
+      tallyIterators.put(newIteratorId, iterator);
       logger.trace("Populated tallyIterators.size() = {}", tallyIterators.size());
 
       // Create the response continuation token.
-      responseTct = new TallyContinuationToken(lastUrl, iterator.hashCode());
+      responseTct = new ContinuationToken(lastUrl, newIteratorId);
       logger.trace("responseTct = {}", responseTct);
     }
 
@@ -1005,10 +1009,10 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     limit = validateLimit(requestLimit, defaultPollPageSize, maxPollPageSize, parsedRequest);
 
     // Parse the request continuation token.
-    PollContinuationToken requestPct = null;
+    ContinuationToken requestPct = null;
 
     try {
-      requestPct = new PollContinuationToken(continuationToken);
+      requestPct = new ContinuationToken(continuationToken);
       logger.trace("requestPct = {}", requestPct);
     } catch (IllegalArgumentException iae) {
       String message = "Invalid continuation token '" + continuationToken + "'";
@@ -1022,17 +1026,17 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     }
 
     List<PollerSummary> polls = new ArrayList<>();
-    PollContinuationToken responsePct = null;
+    ContinuationToken responsePct = null;
     Iterator<V3Poller> iterator = null;
     boolean missingIterator = false;
 
-    // Get the iterator hash code (if any) used to provide a previous page of results.
-    Integer iteratorHashCode = requestPct.getIteratorHashCode();
+    // Get the iterator ID (if any) used to provide a previous page of results.
+    String iteratorId = requestPct.getIteratorId();
 
     // Check whether this request is for a previous page of results.
-    if (iteratorHashCode != null) {
+    if (iteratorId != null) {
       // Yes: Get the iterator (if any) used to provide a previous page of results.
-      iterator = pollerIterators.remove(iteratorHashCode);
+      iterator = pollerIterators.remove(iteratorId);
       missingIterator = iterator == null;
     }
 
@@ -1045,7 +1049,7 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
       // Check whether we need to skip polls already returned.
       if (missingIterator) {
         // Yes: Get the last poll key from the continuation token.
-        String lastPollKey = requestPct.getPollKey();
+        String lastPollKey = requestPct.getKey();
 
         // Loop through the polls skipping those already returned.
         while (iterator.hasNext()) {
@@ -1068,12 +1072,12 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     // Check whether the iterator may be used in the future to provide more results.
     if (iterator.hasNext()) {
       // Yes: Store it locally.
-      iteratorHashCode = iterator.hashCode();
-      pollerIterators.put(iteratorHashCode, iterator);
+      String newIteratorId = UUID.randomUUID().toString();
+      pollerIterators.put(newIteratorId, iterator);
 
       // Create the response continuation token.
       PollerSummary lastPoll = polls.get(polls.size() - 1);
-      responsePct = new PollContinuationToken(lastPoll.getPollKey(), iteratorHashCode);
+      responsePct = new ContinuationToken(lastPoll.getPollKey(), newIteratorId);
       logger.trace("responsePct = {}", responsePct);
     }
 
@@ -1167,10 +1171,10 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     limit = validateLimit(requestLimit, defaultPollPageSize, maxPollPageSize, parsedRequest);
 
     // Parse the request continuation token.
-    PollContinuationToken requestPct = null;
+    ContinuationToken requestPct = null;
 
     try {
-      requestPct = new PollContinuationToken(continuationToken);
+      requestPct = new ContinuationToken(continuationToken);
       logger.trace("requestPct = {}", requestPct);
     } catch (IllegalArgumentException iae) {
       String message = "Invalid continuation token '" + continuationToken + "'";
@@ -1184,17 +1188,17 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     }
 
     List<VoterSummary> polls = new ArrayList<>();
-    PollContinuationToken responsePct = null;
+    ContinuationToken responsePct = null;
     Iterator<V3Voter> iterator = null;
     boolean missingIterator = false;
 
-    // Get the iterator hash code (if any) used to provide a previous page of results.
-    Integer iteratorHashCode = requestPct.getIteratorHashCode();
+    // Get the iterator ID (if any) used to provide a previous page of results.
+    String iteratorId = requestPct.getIteratorId();
 
     // Check whether this request is for a previous page of results.
-    if (iteratorHashCode != null) {
+    if (iteratorId != null) {
       // Yes: Get the iterator (if any) used to provide a previous page of results.
-      iterator = voterIterators.remove(iteratorHashCode);
+      iterator = voterIterators.remove(iteratorId);
       missingIterator = iterator == null;
     }
 
@@ -1207,7 +1211,7 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
       // Check whether we need to skip polls already returned.
       if (missingIterator) {
         // Yes: Get the last poll key from the continuation token.
-        String lastPollKey = requestPct.getPollKey();
+        String lastPollKey = requestPct.getKey();
 
         // Loop through the polls skipping those already returned.
         while (iterator.hasNext()) {
@@ -1230,12 +1234,12 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     // Check whether the iterator may be used in the future to provide more results.
     if (iterator.hasNext()) {
       // Yes: Store it locally.
-      iteratorHashCode = iterator.hashCode();
-      voterIterators.put(iteratorHashCode, iterator);
+      String newIteratorId = UUID.randomUUID().toString();
+      voterIterators.put(newIteratorId, iterator);
 
       // Create the response continuation token.
       VoterSummary lastPoll = polls.get(polls.size() - 1);
-      responsePct = new PollContinuationToken(lastPoll.getPollKey(), iteratorHashCode);
+      responsePct = new ContinuationToken(lastPoll.getPollKey(), newIteratorId);
       logger.trace("responsePct = {}", responsePct);
     }
 
