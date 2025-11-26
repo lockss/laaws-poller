@@ -52,18 +52,30 @@ fixResponseCode1234 $STATUS_API
 # Edit PollsApiDelegate.java.
 POLLS_API_DELEGATE=src/generated/java/org/lockss/laaws/poller/api/PollsApiDelegate.java
 fixImport $POLLS_API_DELEGATE org.lockss.laaws.poller.model.PollDesc org.lockss.util.rest.poller.PollDesc
+fixImport $POLLS_API_DELEGATE org.lockss.laaws.poller.model.PollerPageInfo org.lockss.util.rest.poller.PollerPageInfo
 fixImport $POLLS_API_DELEGATE org.lockss.laaws.poller.model.PollerSummary org.lockss.util.rest.poller.PollerSummary
-fixImport $POLLS_API_DELEGATE org.lockss.laaws.poller.model.VoterUrlsEnum org.lockss.util.rest.poller.model.VoterUrlsEnum
+fixImport $POLLS_API_DELEGATE org.lockss.laaws.poller.model.RepairData org.lockss.util.rest.poller.RepairData
+fixImport $POLLS_API_DELEGATE org.lockss.laaws.poller.model.RepairPageInfo org.lockss.util.rest.poller.RepairPageInfo
 fixImport $POLLS_API_DELEGATE org.lockss.laaws.poller.model.RepairTypeEnum org.lockss.util.rest.poller.model.RepairTypeEnum
 fixImport $POLLS_API_DELEGATE org.lockss.laaws.poller.model.TallyTypeEnum org.lockss.util.rest.poller.model.TallyTypeEnum
+fixImport $POLLS_API_DELEGATE org.lockss.laaws.poller.model.UrlPageInfo org.lockss.util.rest.poller.UrlPageInfo
+fixImport $POLLS_API_DELEGATE org.lockss.laaws.poller.model.VoterPageInfo org.lockss.util.rest.poller.VoterPageInfo
+fixImport $POLLS_API_DELEGATE org.lockss.laaws.poller.model.VoterSummary org.lockss.util.rest.poller.VoterSummary
+fixImport $POLLS_API_DELEGATE org.lockss.laaws.poller.model.VoterUrlsEnum org.lockss.util.rest.poller.model.VoterUrlsEnum
 
 # Edit PollsApi.java.
 POLLS_API=src/generated/java/org/lockss/laaws/poller/api/PollsApi.java
 fixImport $POLLS_API org.lockss.laaws.poller.model.PollDesc org.lockss.util.rest.poller.PollDesc
+fixImport $POLLS_API org.lockss.laaws.poller.model.PollerPageInfo org.lockss.util.rest.poller.PollerPageInfo
 fixImport $POLLS_API org.lockss.laaws.poller.model.PollerSummary org.lockss.util.rest.poller.PollerSummary
-fixImport $POLLS_API org.lockss.laaws.poller.model.VoterUrlsEnum org.lockss.util.rest.poller.model.VoterUrlsEnum
+fixImport $POLLS_API org.lockss.laaws.poller.model.RepairData org.lockss.util.rest.poller.RepairData
+fixImport $POLLS_API org.lockss.laaws.poller.model.RepairPageInfo org.lockss.util.rest.poller.RepairPageInfo
 fixImport $POLLS_API org.lockss.laaws.poller.model.RepairTypeEnum org.lockss.util.rest.poller.model.RepairTypeEnum
 fixImport $POLLS_API org.lockss.laaws.poller.model.TallyTypeEnum org.lockss.util.rest.poller.model.TallyTypeEnum
+fixImport $POLLS_API org.lockss.laaws.poller.model.UrlPageInfo org.lockss.util.rest.poller.UrlPageInfo
+fixImport $POLLS_API org.lockss.laaws.poller.model.VoterPageInfo org.lockss.util.rest.poller.VoterPageInfo
+fixImport $POLLS_API org.lockss.laaws.poller.model.VoterSummary org.lockss.util.rest.poller.VoterSummary
+fixImport $POLLS_API org.lockss.laaws.poller.model.VoterUrlsEnum org.lockss.util.rest.poller.model.VoterUrlsEnum
 fixResponseCode1234 $POLLS_API
 
 # Edit PollerDetail.java.
@@ -106,13 +118,17 @@ fixImport $REPAIR_QUEUE org.lockss.laaws.poller.model.LinkDesc org.lockss.util.r
 TALLY_DATA=src/generated/java/org/lockss/laaws/poller/model/TallyData.java
 fixImport $TALLY_DATA org.lockss.laaws.poller.model.LinkDesc org.lockss.util.rest.poller.LinkDesc
 
-# VoterSummary
-VOTER_SUMMARY=src/generated/java/org/lockss/laaws/poller/model/VoterSummary.java
-fixImport $VOTER_SUMMARY org.lockss.laaws.poller.model.LinkDesc org.lockss.util.rest.poller.LinkDesc
+# VoterSummary (removed - now in lockss-util-rest)
 
-# PollerPager
-POLLER_PAGER=src/generated/java/org/lockss/laaws/poller/model/PollerPager.java
-fixImport $POLLER_PAGER org.lockss.laaws.poller.model.PollerSummary org.lockss.util.rest.poller.PollerSummary
+# PollerPageInfo (removed - now in lockss-util-rest)
+
+# RepairData (removed - now in lockss-util-rest)
+
+# RepairPageInfo (removed - now in lockss-util-rest)
+
+# UrlPageInfo (removed - now in lockss-util-rest)
+
+# VoterPageInfo (removed - now in lockss-util-rest)
 
 # AUsApi.java
 AUS_API=src/generated/java/org/lockss/laaws/poller/api/AusApi.java
