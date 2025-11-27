@@ -1439,22 +1439,6 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
   }
 
   /**
-   * Given a link and a page number return a page description
-   *
-   * @param page the current page
-   * @return a PageDesc.
-   */
-  private PageDesc getPageDesc(Page page) {
-    PageDesc desc = new PageDesc();
-    desc.setTotal(page.getTotal());
-    desc.setSize(page.getPageSize());
-    desc.setPage(page.getPageNum());
-    desc.setNextPage(page.getNextLink());
-    desc.setPrevPage(page.getPrevLink());
-    return desc;
-  }
-
-  /**
    * Convert a PollManager V3Voter Poll into a VoterDetail
    *
    * @param poll the poll to convert
