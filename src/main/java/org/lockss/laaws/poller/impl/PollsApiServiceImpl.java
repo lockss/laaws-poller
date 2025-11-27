@@ -79,7 +79,6 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
   private LockssDaemon theDaemon;
   @Autowired
   private HttpServletRequest request;
-  private static final String DETAIL_UNAVAILABLE = "Unable to add details link.";
   private static final String NOT_INITIALIZED_MESSAGE = "The service has not been fully initialized.";
 
   /* ------------------------------------------------------------------------
@@ -875,7 +874,8 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
       return ldesc;
     }
     catch (MalformedURLException e) {
-      logger.error(DETAIL_UNAVAILABLE);
+      logger.error("Unable to create detail link for pollKey '{}' from request URI '{}'",
+          pollKey, request.getRequestURI(), e);
       // throw or ErrorDesc.
     }
     return null;
@@ -897,7 +897,8 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
       return ldesc;
     }
     catch (MalformedURLException e) {
-      logger.error(DETAIL_UNAVAILABLE);
+      logger.error("Unable to create tally link for pollKey '{}', tallyType '{}' from request URI '{}'",
+          pollKey, tallyType, request.getRequestURI(), e);
       // throw or ErrorDesc.
     }
     return null;
@@ -919,7 +920,8 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
       return ldesc;
     }
     catch (MalformedURLException e) {
-      logger.error(DETAIL_UNAVAILABLE);
+      logger.error("Unable to create repair queue link for pollKey '{}', repairType '{}' from request URI '{}'",
+          pollKey, repairType, request.getRequestURI(), e);
     }
     return null;
   }
@@ -941,7 +943,8 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
       return ldesc;
     }
     catch (MalformedURLException e) {
-      logger.error(DETAIL_UNAVAILABLE);
+      logger.error("Unable to create peer link for pollKey '{}', peerId '{}', tallyType '{}' from request URI '{}'",
+          pollKey, peerId, tallyType, request.getRequestURI(), e);
     }
     return null;
   }
