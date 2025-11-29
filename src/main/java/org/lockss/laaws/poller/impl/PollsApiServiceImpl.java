@@ -54,6 +54,8 @@ import org.lockss.util.rest.poller.LinkDesc;
 import org.lockss.util.rest.poller.PollDesc;
 import org.lockss.util.rest.poller.PollerSummary;
 import org.lockss.util.rest.poller.model.PollVariantEnum;
+import org.lockss.util.rest.poller.model.RepairTypeEnum;
+import org.lockss.util.rest.poller.model.TallyTypeEnum;
 import org.lockss.util.rest.poller.model.VoterUrlsEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -369,7 +371,8 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
    * @return A RepairPager of the current page of urls.
    * @see PollsApi#getRepairQueueData
    */
-  public ResponseEntity<RepairPager> getRepairQueueData(String pollKey, String repair, Integer page,
+  @Override
+  public ResponseEntity<RepairPager> getRepairQueueData(String pollKey, RepairTypeEnum repair, Integer page,
     Integer size) {
     // Check whether the service has not been fully initialized.
     if (!isReady()) {
@@ -386,13 +389,13 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
         .getRepairQueue();
       List<Repair> repairList;
       switch (repair) {
-        case "active":
+        case ACTIVE:
           repairList = repairQueue.getActiveRepairs();
           break;
-        case "pending":
+        case PENDING:
           repairList = repairQueue.getPendingRepairs();
           break;
-        case "completed":
+        case COMPLETED:
           repairList = repairQueue.getCompletedRepairs();
           break;
         default:
@@ -411,7 +414,7 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
             RepairData rdata = new RepairData();
             rdata.setRepairUrl(rep.getUrl());
             rdata.setRepairFrom(rep.getRepairFrom().getIdString());
-            if ("completed".equals(repair)) {
+            if (RepairTypeEnum.COMPLETED.equals(repair)) {
               rdata.setResult(RepairData.ResultEnum.fromValue(rep.getTallyResult().toString()));
             }
             pager.addRepairsItem(rdata);
@@ -433,7 +436,8 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
    * @return A UrlPager of paged urls.
    * @see PollsApi#getTallyUrls
    */
-  public ResponseEntity<UrlPager> getTallyUrls(String pollKey, String tally, Integer page,
+  @Override
+  public ResponseEntity<UrlPager> getTallyUrls(String pollKey, TallyTypeEnum tally, Integer page,
     Integer size) {
 
     // Check whether the service has not been fully initialized.
@@ -452,19 +456,19 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
         .getTallyStatus();
       Set tallySet;
       switch (tally) {
-        case "agree":
+        case AGREE:
           tallySet = tallyStatus.getAgreedUrls();
           break;
-        case "disagree":
+        case DISAGREE:
           tallySet = tallyStatus.getDisagreedUrls();
           break;
-        case "error":
+        case ERROR:
           tallySet = tallyStatus.getErrorUrls().keySet();
           break;
-        case "noQuorum":
+        case NOQUORUM:
           tallySet = tallyStatus.getNoQuorumUrls();
           break;
-        case "tooClose":
+        case TOOCLOSE:
           tallySet = tallyStatus.getTooCloseUrls();
           break;
         default:
@@ -489,6 +493,7 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
    * @return A PollPager used to page in the PollerSummary objects.
    * @see PollsApi#getPollsAsPoller
    */
+  @Override
   public ResponseEntity<PollerPager> getPollsAsPoller(Integer size, Integer page) {
     if (logger.isDebugEnabled()) {
       logger.debug("request for  a page " + page + " of voter polls with page size " + size);
@@ -530,6 +535,7 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
    * @return A VoterPager used to page in the VoterSummary objects.
    * @see PollsApi#getPollsAsVoter
    */
+  @Override
   public ResponseEntity<VoterPager> getPollsAsVoter(Integer size, Integer page) {
     if (logger.isDebugEnabled()) {
       logger.debug("request for  a page " + page + " of voter polls with page size " + size);
