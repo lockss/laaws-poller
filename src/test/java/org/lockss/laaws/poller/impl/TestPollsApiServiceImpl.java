@@ -44,6 +44,8 @@ import org.lockss.spring.auth.*;
 import org.lockss.test.*;
 import org.lockss.util.*;
 import org.lockss.util.rest.poller.*;
+import org.lockss.util.rest.poller.model.RepairTypeEnum;
+import org.lockss.util.rest.poller.model.TallyTypeEnum;
 import org.lockss.util.rest.repo.model.*;
 import org.mockito.*;
 import org.springframework.boot.test.context.*;
@@ -147,10 +149,10 @@ public class TestPollsApiServiceImpl extends LockssTestCase4 {
         .getPollPeerVoteUrls("pollKey", "peerId", null, 20, null);
     Assert.assertEquals(HttpStatus.NOT_FOUND, peersVoteUrls.getStatusCode());
     ResponseEntity<RepairPageInfo> repairData = pollsApiServiceImpl
-        .getRepairQueueData("pollKey", "repair", 20, null);
+        .getRepairQueueData("pollKey", RepairTypeEnum.PENDING, 20, null);
     Assert.assertEquals(HttpStatus.NOT_FOUND, repairData.getStatusCode());
     ResponseEntity<UrlPageInfo> tallyUrls = pollsApiServiceImpl
-        .getTallyUrls("pollKey", "tally", 20, null);
+        .getTallyUrls("pollKey", TallyTypeEnum.AGREE, 20, null);
     Assert.assertEquals(HttpStatus.NOT_FOUND, repairData.getStatusCode());
   }
 
@@ -230,7 +232,7 @@ public class TestPollsApiServiceImpl extends LockssTestCase4 {
     final String pollKey = "akeyforthispoll";
     addRunningV3Poll(100000L, 0.99f);
 
-    ResponseEntity<UrlPageInfo> result = pollsApiServiceImpl.getTallyUrls(pollKey, "agree", 20, null);
+    ResponseEntity<UrlPageInfo> result = pollsApiServiceImpl.getTallyUrls(pollKey, TallyTypeEnum.AGREE, 20, null);
     Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
     Assert.assertNotNull(result.getBody());
   }
@@ -239,7 +241,7 @@ public class TestPollsApiServiceImpl extends LockssTestCase4 {
   public void testGetTallyUrlsNotFound() {
     final String pollKey = "nonexistent-poll-key";
 
-    ResponseEntity<UrlPageInfo> result = pollsApiServiceImpl.getTallyUrls(pollKey, "agree", 20, null);
+    ResponseEntity<UrlPageInfo> result = pollsApiServiceImpl.getTallyUrls(pollKey, TallyTypeEnum.AGREE, 20, null);
     Assert.assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
     Assert.assertNotNull(result.getBody());
   }

@@ -67,6 +67,8 @@ import org.lockss.util.rest.poller.UrlPageInfo;
 import org.lockss.util.rest.poller.VoterPageInfo;
 import org.lockss.util.rest.poller.VoterSummary;
 import org.lockss.util.rest.poller.model.PollVariantEnum;
+import org.lockss.util.rest.poller.model.RepairTypeEnum;
+import org.lockss.util.rest.poller.model.TallyTypeEnum;
 import org.lockss.util.rest.poller.model.VoterUrlsEnum;
 import org.lockss.util.rest.repo.model.PageInfo;
 import org.lockss.util.time.Deadline;
@@ -153,53 +155,26 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
               DEFAULT_POLL_ITERATOR_TIMEOUT);
 
       // The first time setConfig() is called, replace the temporary
-      // iterator continuation maps
+      // iterator continuation maps with PassiveExpiringMap instances.
+      // PassiveExpiringMap is already thread-safe (uses ConcurrentHashMap)
+      // and handles expiration automatically, so no manual synchronization
+      // or timer is needed.
       if (!(pollerIterators instanceof PassiveExpiringMap)) {
-        pollerIterators =
-            Collections.synchronizedMap(new PassiveExpiringMap<>(pollIteratorTimeout));
+        pollerIterators = new PassiveExpiringMap<>(pollIteratorTimeout);
       }
       if (!(voterIterators instanceof PassiveExpiringMap)) {
-        voterIterators =
-            Collections.synchronizedMap(new PassiveExpiringMap<>(pollIteratorTimeout));
+        voterIterators = new PassiveExpiringMap<>(pollIteratorTimeout);
       }
       if (!(tallyIterators instanceof PassiveExpiringMap)) {
-        tallyIterators =
-            Collections.synchronizedMap(new PassiveExpiringMap<>(pollIteratorTimeout));
+        tallyIterators = new PassiveExpiringMap<>(pollIteratorTimeout);
       }
       if (!(repairIterators instanceof PassiveExpiringMap)) {
-        repairIterators =
-            Collections.synchronizedMap(new PassiveExpiringMap<>(pollIteratorTimeout));
+        repairIterators = new PassiveExpiringMap<>(pollIteratorTimeout);
       }
       if (!(peerIterators instanceof PassiveExpiringMap)) {
-        peerIterators =
-            Collections.synchronizedMap(new PassiveExpiringMap<>(pollIteratorTimeout));
+        peerIterators = new PassiveExpiringMap<>(pollIteratorTimeout);
       }
-
-      if (iteratorMapTimer != null) {
-        TimerQueue.cancel(iteratorMapTimer);
-      }
-      iteratorMapTimer = TimerQueue.schedule(Deadline.in(
-          1 * TimeUtil.HOUR), 1 * TimeUtil.HOUR, iteratorMapTimeout, null);
     }
-  }
-
-  TimerQueue.Request iteratorMapTimer;
-
-  // Timer callback for periodic removal of timed-out iterator continuations
-  private TimerQueue.Callback iteratorMapTimeout =
-      new TimerQueue.Callback() {
-        public void timerExpired(Object cookie) {
-          timeoutIterators(pollerIterators);
-          timeoutIterators(voterIterators);
-          timeoutIterators(tallyIterators);
-          timeoutIterators(repairIterators);
-          timeoutIterators(peerIterators);
-        }
-      };
-
-  private void timeoutIterators(Map map) {
-    // Call isEmpty() for effect - runs removeAllExpired()
-    map.isEmpty();
   }
 
   /* ------------------------------------------------------------------------
@@ -564,7 +539,8 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
    * @return A RepairPager of the current page of urls.
    * @see PollsApi#getRepairQueueData
    */
-  public ResponseEntity<RepairPageInfo> getRepairQueueData(String pollKey, String repair, Integer limit,
+  @Override
+  public ResponseEntity<RepairPageInfo> getRepairQueueData(String pollKey, RepairTypeEnum repair, Integer limit,
                                                             String continuationToken) {
     String parsedRequest = String.format("pollKey: %s, repair: %s, limit: %s, continuationToken: %s, requestUrl: %s",
         pollKey, repair, limit, continuationToken, getFullRequestUrl(request));
@@ -611,13 +587,13 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     PollerStateBean.RepairQueue repairQueue = ((V3Poller) poll).getPollerStateBean().getRepairQueue();
     List<Repair> repairList;
     switch (repair) {
-      case "active":
+      case ACTIVE:
         repairList = repairQueue.getActiveRepairs();
         break;
-      case "pending":
+      case PENDING:
         repairList = repairQueue.getPendingRepairs();
         break;
-      case "completed":
+      case COMPLETED:
         repairList = repairQueue.getCompletedRepairs();
         break;
       default:
@@ -774,7 +750,8 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
    * @return A UrlPager of paged urls.
    * @see PollsApi#getTallyUrls
    */
-  public ResponseEntity<UrlPageInfo> getTallyUrls(String pollKey, String tally, Integer limit,
+  @Override
+  public ResponseEntity<UrlPageInfo> getTallyUrls(String pollKey, TallyTypeEnum tally, Integer limit,
                                                    String continuationToken) {
     String parsedRequest = String.format("pollKey: %s, tally: %s, limit: %s, continuationToken: %s, requestUrl: %s",
         pollKey, tally, limit, continuationToken, getFullRequestUrl(request));
@@ -821,19 +798,19 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     PollerStateBean.TallyStatus tallyStatus = ((V3Poller) poll).getPollerStateBean().getTallyStatus();
     Set<String> tallySet;
     switch (tally) {
-      case "agree":
+      case AGREE:
         tallySet = tallyStatus.getAgreedUrls();
         break;
-      case "disagree":
+      case DISAGREE:
         tallySet = tallyStatus.getDisagreedUrls();
         break;
-      case "error":
+      case ERROR:
         tallySet = tallyStatus.getErrorUrls().keySet();
         break;
-      case "noQuorum":
+      case NOQUORUM:
         tallySet = tallyStatus.getNoQuorumUrls();
         break;
-      case "tooClose":
+      case TOOCLOSE:
         tallySet = tallyStatus.getTooCloseUrls();
         break;
       default:
@@ -989,6 +966,7 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
    * @return A PollerPageInfo used to page in the PollerSummary objects.
    * @see PollsApi#getPollsAsPoller
    */
+  @Override
   public ResponseEntity<PollerPageInfo> getPollsAsPoller(Integer limit, String continuationToken) {
     String parsedRequest = String.format("limit: %s, continuationToken: %s, requestUrl: %s",
         limit, continuationToken, getFullRequestUrl(request));
@@ -1036,7 +1014,7 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     // Check whether this request is for a previous page of results.
     if (iteratorId != null) {
       // Yes: Get the iterator (if any) used to provide a previous page of results.
-      iterator = pollerIterators.remove(iteratorId);
+      iterator = pollerIterators.get(iteratorId);
       missingIterator = iterator == null;
     }
 
@@ -1069,16 +1047,26 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     // Populate the rest of the results for this response.
     populatePolls(iterator, limit, polls);
 
-    // Check whether the iterator may be used in the future to provide more results.
+    // Handle iterator storage/removal and create continuation token if needed
     if (iterator.hasNext()) {
-      // Yes: Store it locally.
-      String newIteratorId = UUID.randomUUID().toString();
-      pollerIterators.put(newIteratorId, iterator);
+      // More results exist: Store iterator and create continuation token
+      // If iteratorId is null, this is a new iterator (first page), so generate a new UUID.
+      // If iteratorId exists, this is an existing iterator (subsequent page), so reuse
+      // the same ID to maintain continuity for the client.
+      if (iteratorId == null) {
+        iteratorId = UUID.randomUUID().toString();
+      }
+      pollerIterators.put(iteratorId, iterator);
 
       // Create the response continuation token.
       PollerSummary lastPoll = polls.get(polls.size() - 1);
-      responsePct = new ContinuationToken(lastPoll.getPollKey(), newIteratorId);
+      responsePct = new ContinuationToken(lastPoll.getPollKey(), iteratorId);
       logger.trace("responsePct = {}", responsePct);
+    } else {
+      // No more results: Remove the iterator if it exists
+      if (iteratorId != null) {
+        pollerIterators.remove(iteratorId);
+      }
     }
 
     logger.trace("polls.size() = {}", polls.size());
@@ -1151,6 +1139,7 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
    * @return A VoterPageInfo used to page in the VoterSummary objects.
    * @see PollsApi#getPollsAsVoter
    */
+  @Override
   public ResponseEntity<VoterPageInfo> getPollsAsVoter(Integer limit, String continuationToken) {
     String parsedRequest = String.format("limit: %s, continuationToken: %s, requestUrl: %s",
         limit, continuationToken, getFullRequestUrl(request));
@@ -1867,10 +1856,10 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
    * @param iterator An Iterator with the Repair source iterator.
    * @param limit    An Integer with the maximum number of repair items to be
    *                 included in the response.
-   * @param repair   A String indicating the repair type ("completed", "active", "pending")
+   * @param repair   A RepairTypeEnum indicating the repair type (COMPLETED, ACTIVE, PENDING)
    * @return A List with the RepairData items to be included in the response.
    */
-  private List<RepairData> populateRepairData(Iterator<Repair> iterator, Integer limit, String repair) {
+  private List<RepairData> populateRepairData(Iterator<Repair> iterator, Integer limit, RepairTypeEnum repair) {
     logger.debug("limit = {}, repair = {}", limit, repair);
     List<RepairData> repairs = new ArrayList<>();
 
@@ -1880,7 +1869,7 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
       RepairData rdata = new RepairData();
       rdata.setRepairUrl(repairItem.getUrl());
       rdata.setRepairFrom(repairItem.getRepairFrom().getIdString());
-      if ("completed".equals(repair)) {
+      if (RepairTypeEnum.COMPLETED.equals(repair)) {
         rdata.setResult(RepairData.ResultEnum.fromValue(repairItem.getTallyResult().toString()));
       }
       repairs.add(rdata);
