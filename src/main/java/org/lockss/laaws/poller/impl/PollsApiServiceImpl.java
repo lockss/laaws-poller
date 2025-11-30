@@ -32,7 +32,6 @@ import org.lockss.config.Configuration;
 import org.lockss.laaws.poller.api.PollsApi;
 import org.lockss.laaws.poller.api.PollsApiDelegate;
 import org.lockss.laaws.poller.model.*;
-import org.lockss.util.rest.poller.RepairData.ResultEnum;
 import org.lockss.plugin.ArchivalUnit;
 import org.lockss.plugin.CachedUrlSet;
 import org.lockss.plugin.PluginManager;
@@ -53,25 +52,16 @@ import org.lockss.spring.base.LockssConfigurableService;
 import org.lockss.spring.error.LockssRestServiceException;
 import org.lockss.util.ByteArray;
 import org.lockss.util.StringUtil;
-import org.lockss.util.TimerQueue;
 import org.lockss.util.UrlUtil;
 import org.lockss.util.rest.exception.LockssRestHttpException;
-import org.lockss.util.rest.poller.CachedUriSetSpec;
-import org.lockss.util.rest.poller.LinkDesc;
-import org.lockss.util.rest.poller.PollDesc;
-import org.lockss.util.rest.poller.PollerPageInfo;
-import org.lockss.util.rest.poller.PollerSummary;
+import org.lockss.util.rest.poller.*;
 import org.lockss.util.rest.poller.RepairData;
-import org.lockss.util.rest.poller.RepairPageInfo;
-import org.lockss.util.rest.poller.UrlPageInfo;
-import org.lockss.util.rest.poller.VoterPageInfo;
 import org.lockss.util.rest.poller.VoterSummary;
 import org.lockss.util.rest.poller.model.PollVariantEnum;
 import org.lockss.util.rest.poller.model.RepairTypeEnum;
 import org.lockss.util.rest.poller.model.TallyTypeEnum;
 import org.lockss.util.rest.poller.model.VoterUrlsEnum;
 import org.lockss.util.rest.repo.model.PageInfo;
-import org.lockss.util.time.Deadline;
 import org.lockss.util.time.TimeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,7 +73,6 @@ import org.springframework.stereotype.Service;
 import java.net.MalformedURLException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.UUID;
 
 /**
  * The Polls api service.
@@ -382,11 +371,11 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
   /**
    * Get a Participant peers's urls for a Poller
    *
-   * @param pollKey the PollKey assigned by the Poll Manager
-   * @param peerId the id of the peer
-   * @param urls the type of urls to return
-   * @param page the page number of the paged results
-   * @param size the size of the page.
+   * @param pollKey           the PollKey assigned by the Poll Manager
+   * @param peerId            the id of the peer
+   * @param urls              the type of urls to return
+   * @param limit             the requested maximum number of URLs per response
+   * @param continuationToken the continuation token of the next page of URLs to be returned
    * @return A UrlPager of paged urls.
    * @see PollsApi#getPollPeerVoteUrls
    */
@@ -496,26 +485,74 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     logger.trace("Populated {} URLs", urlsList.size());
 
     ContinuationToken responseTct = null;
+    // Handle iterator storage/removal and create continuation token if needed
     if (iterator.hasNext()) {
-      String lastUrl = urlsList.get(urlsList.size() - 1);
-      String iteratorId = UUID.randomUUID().toString();
+      // More results exist: Store iterator and create continuation token
+      // If requestIteratorId is null, this is a new iterator (first page), so generate a new UUID.
+      // If requestIteratorId exists, this is an existing iterator (subsequent page), so reuse
+      // the same ID to maintain continuity for the client.
+      String iteratorId = requestIteratorId;
+      if (iteratorId == null) {
+        iteratorId = UUID.randomUUID().toString();
+      }
       peerIterators.put(iteratorId, iterator);
+
+      String lastUrl = urlsList.get(urlsList.size() - 1);
       responseTct = new ContinuationToken(lastUrl, iteratorId);
       logger.trace("Stored iterator and created response continuation token: {}", responseTct);
+    } else {
+      // No more results: Remove the iterator if it exists
+      if (requestIteratorId != null) {
+        peerIterators.remove(requestIteratorId);
+      }
     }
 
     PageInfo pageInfo = new PageInfo();
     pageInfo.setItemsInPage(urlsList.size());
-    pageInfo.setCurLink(request.getRequestURI());
 
+    // Build the current link from the request URL and query string
+    StringBuffer curLinkBuffer = request.getRequestURL();
+    if (request.getQueryString() != null
+        && !request.getQueryString().trim().isEmpty()) {
+      curLinkBuffer.append("?").append(request.getQueryString());
+    }
+    String curLink = curLinkBuffer.toString();
+    logger.trace("curLink = {}", curLink);
+    pageInfo.setCurLink(curLink);
+
+    // If there's a continuation token, build the nextLink
     if (responseTct != null) {
-      String token = responseTct.toWebResponseContinuationToken();
-      pageInfo.setContinuationToken(token);
+      String continuationTokenValue = responseTct.toWebResponseContinuationToken();
+      pageInfo.setContinuationToken(continuationTokenValue);
 
-      String nextLink = String.format("%s?limit=%d&continuationToken=%s",
-          request.getRequestURI(), limit, UrlUtil.encodeUrl(token));
+      StringBuffer nextLinkBuffer = request.getRequestURL();
+      boolean hasQueryParameters = false;
+
+      // Add limit parameter if user specified one
+      if (requestLimit != null) {
+        nextLinkBuffer.append("?limit=").append(requestLimit);
+        hasQueryParameters = true;
+      }
+
+      // Add urls parameter (required parameter)
+      if (!hasQueryParameters) {
+        nextLinkBuffer.append("?");
+      } else {
+        nextLinkBuffer.append("&");
+      }
+      nextLinkBuffer.append("urls=").append(urls.toString());
+      hasQueryParameters = true;
+
+      // Add continuation token
+      if (continuationTokenValue != null) {
+        nextLinkBuffer.append("&");
+        nextLinkBuffer.append("continuationToken=")
+            .append(UrlUtil.encodeUrl(continuationTokenValue));
+      }
+
+      String nextLink = nextLinkBuffer.toString();
+      logger.trace("nextLink = {}", nextLink);
       pageInfo.setNextLink(nextLink);
-      logger.trace("Set nextLink: {}", nextLink);
     }
 
     UrlPageInfo result = new UrlPageInfo();
@@ -532,10 +569,10 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
   /**
    * Return details of form the RepairQueue of a called poll.
    *
-   * @param pollKey the PollKey assigned by the Poll Manager
-   * @param repair the kind of repair data to return.
-   * @param page the page number of the paged results
-   * @param size the size of the page.
+   * @param pollKey           the PollKey assigned by the Poll Manager
+   * @param repair            the kind of repair data to return.
+   * @param limit             the requested maximum number of repair items per response
+   * @param continuationToken the continuation token of the next page of repair items to be returned
    * @return A RepairPager of the current page of urls.
    * @see PollsApi#getRepairQueueData
    */
@@ -607,7 +644,6 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     List<RepairData> repairs = new ArrayList<>();
     ContinuationToken responseRct = null;
     Iterator<Repair> iterator = null;
-    boolean missingIterator = false;
 
     // Get the iterator ID (if any) used to provide a previous page of results.
     String iteratorId = requestRct.getIteratorId();
@@ -622,7 +658,6 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
       // Check whether the iterator was not found.
       if (iterator == null) {
         // Yes: Report the problem.
-        missingIterator = true;
         logger.warn("No existing iterator for iteratorId = {}", iteratorId);
       }
     }
@@ -655,19 +690,27 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     repairs = populateRepairData(iterator, limit, repair);
     logger.trace("repairs.size() = {}", repairs.size());
 
-    // Check whether there are repairs to be linked to the next page of results.
+    // Handle iterator storage/removal and create continuation token if needed
     if (iterator.hasNext()) {
-      // Yes: Peek to get the first repair for the next page.
-      String lastRepairUrl = repairs.get(repairs.size() - 1).getRepairUrl();
-
-      // Save the iterator for the next page of results.
-      String newIteratorId = UUID.randomUUID().toString();
-      repairIterators.put(newIteratorId, iterator);
+      // More results exist: Store iterator and create continuation token
+      // If iteratorId is null, this is a new iterator (first page), so generate a new UUID.
+      // If iteratorId exists, this is an existing iterator (subsequent page), so reuse
+      // the same ID to maintain continuity for the client.
+      if (iteratorId == null) {
+        iteratorId = UUID.randomUUID().toString();
+      }
+      repairIterators.put(iteratorId, iterator);
       logger.trace("Populated repairIterators.size() = {}", repairIterators.size());
 
-      // Create the response continuation token.
-      responseRct = new ContinuationToken(lastRepairUrl, newIteratorId);
+      String lastRepairUrl = repairs.get(repairs.size() - 1).getRepairUrl();
+      responseRct = new ContinuationToken(lastRepairUrl, iteratorId);
       logger.trace("responseRct = {}", responseRct);
+    } else {
+      // No more results: Remove the iterator if it exists
+      if (iteratorId != null) {
+        repairIterators.remove(iteratorId);
+        logger.trace("Removed iterator from repairIterators, size = {}", repairIterators.size());
+      }
     }
 
     // Create the response PageInfo.
@@ -697,22 +740,20 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
       StringBuffer nextLinkBuffer = request.getRequestURL();
       boolean hasQueryParameters = false;
 
-      // Check if limit parameter exists
-      if (curLink.indexOf("limit=") > 0) {
+      // Add limit parameter if user specified one
+      if (requestLimit != null) {
         nextLinkBuffer.append("?limit=").append(requestLimit);
         hasQueryParameters = true;
       }
 
-      // Check if repair parameter exists
-      if (curLink.indexOf("repair=") > 0) {
-        if (!hasQueryParameters) {
-          nextLinkBuffer.append("?");
-        } else {
-          nextLinkBuffer.append("&");
-        }
-        nextLinkBuffer.append("repair=").append(repair);
-        hasQueryParameters = true;
+      // Add repair parameter (required parameter)
+      if (!hasQueryParameters) {
+        nextLinkBuffer.append("?");
+      } else {
+        nextLinkBuffer.append("&");
       }
+      nextLinkBuffer.append("repair=").append(repair);
+      hasQueryParameters = true;
 
       if (continuationTokenValue != null) {
         if (!hasQueryParameters) {
@@ -743,10 +784,10 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
   /**
    * Return the Tallied Urls.
    *
-   * @param pollKey the PollKey assigned by the Poll Manager
-   * @param tally the kind of tally data to return.
-   * @param page the page number of the paged results
-   * @param size the size of the page.
+   * @param pollKey           the PollKey assigned by the Poll Manager
+   * @param tally             the kind of tally data to return.
+   * @param limit             the requested maximum number of URLs per response
+   * @param continuationToken the continuation token of the next page of URLs to be returned
    * @return A UrlPager of paged urls.
    * @see PollsApi#getTallyUrls
    */
@@ -824,7 +865,6 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     List<String> urls = new ArrayList<>();
     ContinuationToken responseTct = null;
     Iterator<String> iterator = null;
-    boolean missingIterator = false;
 
     // Get the iterator ID (if any) used to provide a previous page of results.
     String iteratorId = requestTct.getIteratorId();
@@ -839,7 +879,6 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
       // Check whether the iterator was not found.
       if (iterator == null) {
         // Yes: Report the problem.
-        missingIterator = true;
         logger.warn("No existing iterator for iteratorId = {}", iteratorId);
       }
     }
@@ -872,19 +911,27 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     urls = populateTallyUrls(iterator, limit);
     logger.trace("urls.size() = {}", urls.size());
 
-    // Check whether there are URLs to be linked to the next page of results.
+    // Handle iterator storage/removal and create continuation token if needed
     if (iterator.hasNext()) {
-      // Yes: Peek to get the first URL for the next page.
-      String lastUrl = urls.get(urls.size() - 1);
-
-      // Save the iterator for the next page of results.
-      String newIteratorId = UUID.randomUUID().toString();
-      tallyIterators.put(newIteratorId, iterator);
+      // More results exist: Store iterator and create continuation token
+      // If iteratorId is null, this is a new iterator (first page), so generate a new UUID.
+      // If iteratorId exists, this is an existing iterator (subsequent page), so reuse
+      // the same ID to maintain continuity for the client.
+      if (iteratorId == null) {
+        iteratorId = UUID.randomUUID().toString();
+      }
+      tallyIterators.put(iteratorId, iterator);
       logger.trace("Populated tallyIterators.size() = {}", tallyIterators.size());
 
       // Create the response continuation token.
-      responseTct = new ContinuationToken(lastUrl, newIteratorId);
+      String lastUrl = urls.get(urls.size() - 1);
+      responseTct = new ContinuationToken(lastUrl, iteratorId);
       logger.trace("responseTct = {}", responseTct);
+    } else {
+      // No more results: Remove the iterator if it exists
+      if (iteratorId != null) {
+        tallyIterators.remove(iteratorId);
+      }
     }
 
     // Create the response PageInfo.
@@ -914,22 +961,20 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
       StringBuffer nextLinkBuffer = request.getRequestURL();
       boolean hasQueryParameters = false;
 
-      // Check if limit parameter exists
-      if (curLink.indexOf("limit=") > 0) {
+      // Add limit parameter if user specified one
+      if (requestLimit != null) {
         nextLinkBuffer.append("?limit=").append(requestLimit);
         hasQueryParameters = true;
       }
 
-      // Check if tally parameter exists
-      if (curLink.indexOf("tally=") > 0) {
-        if (!hasQueryParameters) {
-          nextLinkBuffer.append("?");
-        } else {
-          nextLinkBuffer.append("&");
-        }
-        nextLinkBuffer.append("tally=").append(tally);
-        hasQueryParameters = true;
+      // Add tally parameter (required parameter)
+      if (!hasQueryParameters) {
+        nextLinkBuffer.append("?");
+      } else {
+        nextLinkBuffer.append("&");
       }
+      nextLinkBuffer.append("tally=").append(tally);
+      hasQueryParameters = true;
 
       if (continuationTokenValue != null) {
         if (!hasQueryParameters) {
@@ -1006,7 +1051,6 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     List<PollerSummary> polls = new ArrayList<>();
     ContinuationToken responsePct = null;
     Iterator<V3Poller> iterator = null;
-    boolean missingIterator = false;
 
     // Get the iterator ID (if any) used to provide a previous page of results.
     String iteratorId = requestPct.getIteratorId();
@@ -1015,7 +1059,6 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     if (iteratorId != null) {
       // Yes: Get the iterator (if any) used to provide a previous page of results.
       iterator = pollerIterators.get(iteratorId);
-      missingIterator = iterator == null;
     }
 
     if (iterator == null) {
@@ -1025,7 +1068,7 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
       iterator = pollers.iterator();
 
       // Check whether we need to skip polls already returned.
-      if (missingIterator) {
+      if (requestPct.getIteratorId() != null) {
         // Yes: Get the last poll key from the continuation token.
         String lastPollKey = requestPct.getKey();
 
@@ -1097,7 +1140,8 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
       StringBuffer nextLinkBuffer = request.getRequestURL();
       boolean hasQueryParameters = false;
 
-      if (curLink.indexOf("limit=") > 0) {
+      // Add limit parameter if user specified one
+      if (requestLimit != null) {
         nextLinkBuffer.append("?limit=").append(requestLimit);
         hasQueryParameters = true;
       }
@@ -1179,7 +1223,6 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     List<VoterSummary> polls = new ArrayList<>();
     ContinuationToken responsePct = null;
     Iterator<V3Voter> iterator = null;
-    boolean missingIterator = false;
 
     // Get the iterator ID (if any) used to provide a previous page of results.
     String iteratorId = requestPct.getIteratorId();
@@ -1187,8 +1230,7 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     // Check whether this request is for a previous page of results.
     if (iteratorId != null) {
       // Yes: Get the iterator (if any) used to provide a previous page of results.
-      iterator = voterIterators.remove(iteratorId);
-      missingIterator = iterator == null;
+      iterator = voterIterators.get(iteratorId);
     }
 
     if (iterator == null) {
@@ -1198,7 +1240,7 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
       iterator = voters.iterator();
 
       // Check whether we need to skip polls already returned.
-      if (missingIterator) {
+      if (requestPct.getIteratorId() != null) {
         // Yes: Get the last poll key from the continuation token.
         String lastPollKey = requestPct.getKey();
 
@@ -1220,16 +1262,26 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     // Populate the rest of the results for this response.
     populateVoterPolls(iterator, limit, polls);
 
-    // Check whether the iterator may be used in the future to provide more results.
+    // Handle iterator storage/removal and create continuation token if needed
     if (iterator.hasNext()) {
-      // Yes: Store it locally.
-      String newIteratorId = UUID.randomUUID().toString();
-      voterIterators.put(newIteratorId, iterator);
+      // More results exist: Store iterator and create continuation token
+      // If iteratorId is null, this is a new iterator (first page), so generate a new UUID.
+      // If iteratorId exists, this is an existing iterator (subsequent page), so reuse
+      // the same ID to maintain continuity for the client.
+      if (iteratorId == null) {
+        iteratorId = UUID.randomUUID().toString();
+      }
+      voterIterators.put(iteratorId, iterator);
 
       // Create the response continuation token.
       VoterSummary lastPoll = polls.get(polls.size() - 1);
-      responsePct = new ContinuationToken(lastPoll.getPollKey(), newIteratorId);
+      responsePct = new ContinuationToken(lastPoll.getPollKey(), iteratorId);
       logger.trace("responsePct = {}", responsePct);
+    } else {
+      // No more results: Remove the iterator if it exists
+      if (iteratorId != null) {
+        voterIterators.remove(iteratorId);
+      }
     }
 
     logger.trace("polls.size() = {}", polls.size());
@@ -1260,7 +1312,8 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
       StringBuffer nextLinkBuffer = request.getRequestURL();
       boolean hasQueryParameters = false;
 
-      if (curLink.indexOf("limit=") > 0) {
+      // Add limit parameter if user specified one
+      if (requestLimit != null) {
         nextLinkBuffer.append("?limit=").append(requestLimit);
         hasQueryParameters = true;
       }
