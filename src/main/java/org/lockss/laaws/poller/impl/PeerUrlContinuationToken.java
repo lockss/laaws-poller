@@ -44,7 +44,7 @@ public class PeerUrlContinuationToken {
   private String pollKey = null;
   private String peerId = null;
   private VoterUrlsEnum urls = null;
-  private String url = null;
+  private String lastUrl = null;
   private String iteratorId = null;
 
   /**
@@ -80,8 +80,8 @@ public class PeerUrlContinuationToken {
         urls = VoterUrlsEnum.fromValue(UrlUtil.decodeUrl(tokenItems.get(2).trim()));
         logger.trace("urls = {}", urls);
 
-        url = UrlUtil.decodeUrl(tokenItems.get(3).trim());
-        logger.trace("url = {}", url);
+        lastUrl = UrlUtil.decodeUrl(tokenItems.get(3).trim());
+        logger.trace("lastUrl = {}", lastUrl);
 
         iteratorId = tokenItems.get(4).trim();
         logger.trace("iteratorId = {}", iteratorId);
@@ -106,15 +106,15 @@ public class PeerUrlContinuationToken {
    * @param pollKey    A String with the poll key.
    * @param peerId     A String with the peer ID.
    * @param urls       A VoterUrlsEnum with the voter URLs type.
-   * @param url        A String with the URL of the last item transferred.
+   * @param lastUrl    A String with the URL of the last item transferred.
    * @param iteratorId A String with the UUID of the iterator used.
    */
   public PeerUrlContinuationToken(String pollKey, String peerId, VoterUrlsEnum urls,
-                                  String url, String iteratorId) {
+                                  String lastUrl, String iteratorId) {
     this.pollKey = pollKey;
     this.peerId = peerId;
     this.urls = urls;
-    this.url = url;
+    this.lastUrl = lastUrl;
     this.iteratorId = iteratorId;
 
     validateMembers();
@@ -152,8 +152,8 @@ public class PeerUrlContinuationToken {
    *
    * @return a String with the URL of the last item transferred.
    */
-  public String getUrl() {
-    return url;
+  public String getLastUrl() {
+    return lastUrl;
   }
 
   /**
@@ -171,12 +171,12 @@ public class PeerUrlContinuationToken {
    * @return a String with this object in the form of a web response continuation token.
    */
   public String toWebResponseContinuationToken() {
-    if (pollKey != null && peerId != null && urls != null && url != null && iteratorId != null) {
+    if (pollKey != null && peerId != null && urls != null && lastUrl != null && iteratorId != null) {
       String encodedToken =
           UrlUtil.encodeUrl(pollKey) + separator +
           UrlUtil.encodeUrl(peerId) + separator +
           UrlUtil.encodeUrl(urls.toString()) + separator +
-          UrlUtil.encodeUrl(url) + separator +
+          UrlUtil.encodeUrl(lastUrl) + separator +
           iteratorId;
       logger.trace("encodedToken = {}", encodedToken);
       return encodedToken;
@@ -192,7 +192,7 @@ public class PeerUrlContinuationToken {
     return "[PeerUrlContinuationToken pollKey=" + pollKey
         + ", peerId=" + peerId
         + ", urls=" + urls
-        + ", url=" + url
+        + ", lastUrl=" + lastUrl
         + ", iteratorId=" + iteratorId + "]";
   }
 
@@ -201,12 +201,12 @@ public class PeerUrlContinuationToken {
    */
   private void validateMembers() {
     // Validate that all members are all null or all non-null.
-    if ((pollKey == null && peerId == null && urls == null && url == null && iteratorId != null)
-        || (pollKey != null && peerId != null && urls != null && url != null && iteratorId == null)) {
+    if ((pollKey == null && peerId == null && urls == null && lastUrl == null && iteratorId != null)
+        || (pollKey != null && peerId != null && urls != null && lastUrl != null && iteratorId == null)) {
       String message = "Invalid member combination: pollKey = '" + pollKey
           + "', peerId = '" + peerId
           + "', urls = '" + urls
-          + "', url = '" + url
+          + "', lastUrl = '" + lastUrl
           + "', iteratorId = '" + iteratorId + "'";
       logger.warn(message);
       throw new IllegalArgumentException(message);
@@ -226,9 +226,9 @@ public class PeerUrlContinuationToken {
       throw new IllegalArgumentException(message);
     }
 
-    // Validate that the url is not empty.
-    if (url != null && url.isEmpty()) {
-      String message = "Invalid member: url = '" + url + "'";
+    // Validate that the lastUrl is not empty.
+    if (lastUrl != null && lastUrl.isEmpty()) {
+      String message = "Invalid member: lastUrl = '" + lastUrl + "'";
       logger.warn(message);
       throw new IllegalArgumentException(message);
     }

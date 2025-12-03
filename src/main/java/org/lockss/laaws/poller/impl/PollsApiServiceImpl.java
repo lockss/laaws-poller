@@ -400,7 +400,7 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     limit = validateLimit(requestLimit, defaultPollPageSize, maxPollPageSize, parsedRequest);
 
     PeerUrlContinuationToken requestTct = new PeerUrlContinuationToken(continuationToken);
-    String requestLastUrl = requestTct.getUrl();
+    String requestLastUrl = requestTct.getLastUrl();
     String requestIteratorId = requestTct.getIteratorId();
 
     PollManager pm = getPollManager();
@@ -677,7 +677,7 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
           logger.trace("repairUrl = {}", repairItem.getUrl());
 
           // Check whether this is the repair after the last one in the previous page of results.
-          if (requestRct.getUrl().equals(repairItem.getUrl())) {
+          if (requestRct.getLastUrl().equals(repairItem.getUrl())) {
             // Yes: Finish the loop.
             logger.trace("Found last repair URL from previous request");
             break;
@@ -898,7 +898,7 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
           logger.trace("url = {}", url);
 
           // Check whether this is the URL after the last one in the previous page of results.
-          if (requestTct.getUrl().equals(url)) {
+          if (requestTct.getLastUrl().equals(url)) {
             // Yes: Finish the loop.
             logger.trace("Found last URL from previous request");
             break;

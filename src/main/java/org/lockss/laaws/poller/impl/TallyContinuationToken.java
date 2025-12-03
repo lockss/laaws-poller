@@ -43,7 +43,7 @@ public class TallyContinuationToken {
 
   private String pollKey = null;
   private TallyTypeEnum tally = null;
-  private String url = null;
+  private String lastUrl = null;
   private String iteratorId = null;
 
   /**
@@ -76,8 +76,8 @@ public class TallyContinuationToken {
         tally = TallyTypeEnum.fromValue(UrlUtil.decodeUrl(tokenItems.get(1).trim()));
         logger.trace("tally = {}", tally);
 
-        url = UrlUtil.decodeUrl(tokenItems.get(2).trim());
-        logger.trace("url = {}", url);
+        lastUrl = UrlUtil.decodeUrl(tokenItems.get(2).trim());
+        logger.trace("lastUrl = {}", lastUrl);
 
         iteratorId = tokenItems.get(3).trim();
         logger.trace("iteratorId = {}", iteratorId);
@@ -101,13 +101,13 @@ public class TallyContinuationToken {
    *
    * @param pollKey    A String with the poll key.
    * @param tally      A TallyTypeEnum with the tally type.
-   * @param url        A String with the URL of the last item transferred.
+   * @param lastUrl    A String with the URL of the last item transferred.
    * @param iteratorId A String with the UUID of the iterator used.
    */
-  public TallyContinuationToken(String pollKey, TallyTypeEnum tally, String url, String iteratorId) {
+  public TallyContinuationToken(String pollKey, TallyTypeEnum tally, String lastUrl, String iteratorId) {
     this.pollKey = pollKey;
     this.tally = tally;
-    this.url = url;
+    this.lastUrl = lastUrl;
     this.iteratorId = iteratorId;
 
     validateMembers();
@@ -136,8 +136,8 @@ public class TallyContinuationToken {
    *
    * @return a String with the URL of the last item transferred.
    */
-  public String getUrl() {
-    return url;
+  public String getLastUrl() {
+    return lastUrl;
   }
 
   /**
@@ -155,11 +155,11 @@ public class TallyContinuationToken {
    * @return a String with this object in the form of a web response continuation token.
    */
   public String toWebResponseContinuationToken() {
-    if (pollKey != null && tally != null && url != null && iteratorId != null) {
+    if (pollKey != null && tally != null && lastUrl != null && iteratorId != null) {
       String encodedToken =
           UrlUtil.encodeUrl(pollKey) + separator +
           UrlUtil.encodeUrl(tally.toString()) + separator +
-          UrlUtil.encodeUrl(url) + separator +
+          UrlUtil.encodeUrl(lastUrl) + separator +
           iteratorId;
       logger.trace("encodedToken = {}", encodedToken);
       return encodedToken;
@@ -174,7 +174,7 @@ public class TallyContinuationToken {
   public String toString() {
     return "[TallyContinuationToken pollKey=" + pollKey
         + ", tally=" + tally
-        + ", url=" + url
+        + ", lastUrl=" + lastUrl
         + ", iteratorId=" + iteratorId + "]";
   }
 
@@ -183,11 +183,11 @@ public class TallyContinuationToken {
    */
   private void validateMembers() {
     // Validate that all members are all null or all non-null.
-    if ((pollKey == null && tally == null && url == null && iteratorId != null)
-        || (pollKey != null && tally != null && url != null && iteratorId == null)) {
+    if ((pollKey == null && tally == null && lastUrl == null && iteratorId != null)
+        || (pollKey != null && tally != null && lastUrl != null && iteratorId == null)) {
       String message = "Invalid member combination: pollKey = '" + pollKey
           + "', tally = '" + tally
-          + "', url = '" + url
+          + "', lastUrl = '" + lastUrl
           + "', iteratorId = '" + iteratorId + "'";
       logger.warn(message);
       throw new IllegalArgumentException(message);
@@ -200,9 +200,9 @@ public class TallyContinuationToken {
       throw new IllegalArgumentException(message);
     }
 
-    // Validate that the url is not empty.
-    if (url != null && url.isEmpty()) {
-      String message = "Invalid member: url = '" + url + "'";
+    // Validate that the lastUrl is not empty.
+    if (lastUrl != null && lastUrl.isEmpty()) {
+      String message = "Invalid member: lastUrl = '" + lastUrl + "'";
       logger.warn(message);
       throw new IllegalArgumentException(message);
     }
