@@ -34,14 +34,13 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Generic continuation token used to paginate through lists.
- * Encodes a key (poll key, URL, etc.) and an iterator UUID.
+ * The continuation token used to paginate through a list of polls (poller or voter).
  */
-public class ContinuationToken {
-  private static final Logger logger = LoggerFactory.getLogger(ContinuationToken.class);
+public class PollContinuationToken {
+  private static final Logger logger = LoggerFactory.getLogger(PollContinuationToken.class);
   private static final String separator = ":";
 
-  private String key = null;
+  private String pollKey = null;
   private String iteratorId = null;
 
   /**
@@ -50,7 +49,7 @@ public class ContinuationToken {
    * @param webRequestContinuationToken A String with the web request continuation token.
    * @throws IllegalArgumentException if the web request continuation token is not syntactically valid.
    */
-  public ContinuationToken(String webRequestContinuationToken)
+  public PollContinuationToken(String webRequestContinuationToken)
       throws IllegalArgumentException {
     logger.debug("webRequestContinuationToken = {}", webRequestContinuationToken);
 
@@ -68,8 +67,8 @@ public class ContinuationToken {
             StringUtil.breakAt(webRequestContinuationToken.trim(), separator);
         logger.trace("tokenItems = {}", tokenItems);
 
-        key = UrlUtil.decodeUrl(tokenItems.get(0).trim());
-        logger.trace("key = {}", key);
+        pollKey = UrlUtil.decodeUrl(tokenItems.get(0).trim());
+        logger.trace("pollKey = {}", pollKey);
 
         iteratorId = tokenItems.get(1).trim();
         logger.trace("iteratorId = {}", iteratorId);
@@ -91,23 +90,23 @@ public class ContinuationToken {
   /**
    * Constructor from members.
    *
-   * @param key        A String with the key of the last item transferred (poll key, URL, etc.).
+   * @param pollKey    A String with the poll key of the last poll transferred.
    * @param iteratorId A String with the UUID of the iterator used.
    */
-  public ContinuationToken(String key, String iteratorId) {
-    this.key = key;
+  public PollContinuationToken(String pollKey, String iteratorId) {
+    this.pollKey = pollKey;
     this.iteratorId = iteratorId;
 
     validateMembers();
   }
 
   /**
-   * Provides the key of the last item transferred.
+   * Provides the poll key of the last poll transferred.
    *
-   * @return a String with the key of the last item transferred.
+   * @return a String with the poll key of the last poll transferred.
    */
-  public String getKey() {
-    return key;
+  public String getPollKey() {
+    return pollKey;
   }
 
   /**
@@ -125,9 +124,9 @@ public class ContinuationToken {
    * @return a String with this object in the form of a web response continuation token.
    */
   public String toWebResponseContinuationToken() {
-    if (key != null && iteratorId != null) {
+    if (pollKey != null && iteratorId != null) {
       String encodedToken =
-          UrlUtil.encodeUrl(key) + separator + iteratorId;
+          UrlUtil.encodeUrl(pollKey) + separator + iteratorId;
       logger.trace("encodedToken = {}", encodedToken);
       return encodedToken;
     }
@@ -139,7 +138,7 @@ public class ContinuationToken {
 
   @Override
   public String toString() {
-    return "[ContinuationToken key=" + key
+    return "[PollContinuationToken pollKey=" + pollKey
         + ", iteratorId=" + iteratorId + "]";
   }
 
@@ -148,17 +147,17 @@ public class ContinuationToken {
    */
   private void validateMembers() {
     // Validate that both members are both null or both non-null.
-    if ((key == null && iteratorId != null)
-        || (key != null && iteratorId == null)) {
-      String message = "Invalid member combination: key = '" + key
+    if ((pollKey == null && iteratorId != null)
+        || (pollKey != null && iteratorId == null)) {
+      String message = "Invalid member combination: pollKey = '" + pollKey
           + "', iteratorId = '" + iteratorId + "'";
       logger.warn(message);
       throw new IllegalArgumentException(message);
     }
 
-    // Validate that the key is not empty.
-    if (key != null && key.isEmpty()) {
-      String message = "Invalid member: key = '" + key + "'";
+    // Validate that the pollKey is not empty.
+    if (pollKey != null && pollKey.isEmpty()) {
+      String message = "Invalid member: pollKey = '" + pollKey + "'";
       logger.warn(message);
       throw new IllegalArgumentException(message);
     }

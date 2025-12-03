@@ -118,18 +118,6 @@ fixImport $REPAIR_QUEUE org.lockss.laaws.poller.model.LinkDesc org.lockss.util.r
 TALLY_DATA=src/generated/java/org/lockss/laaws/poller/model/TallyData.java
 fixImport $TALLY_DATA org.lockss.laaws.poller.model.LinkDesc org.lockss.util.rest.poller.LinkDesc
 
-# VoterSummary (removed - now in lockss-util-rest)
-
-# PollerPageInfo (removed - now in lockss-util-rest)
-
-# RepairData (removed - now in lockss-util-rest)
-
-# RepairPageInfo (removed - now in lockss-util-rest)
-
-# UrlPageInfo (removed - now in lockss-util-rest)
-
-# VoterPageInfo (removed - now in lockss-util-rest)
-
 # AUsApi.java
 AUS_API=src/generated/java/org/lockss/laaws/poller/api/AusApi.java
 fixImport $AUS_API org.lockss.laaws.poller.model.ExportFilenameTranslationEnum org.lockss.util.rest.poller.model.ExportFilenameTranslationEnum
