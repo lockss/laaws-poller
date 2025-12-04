@@ -40,36 +40,41 @@ JAVA_SRC=$1
 sed -i.backup 's/responseCode = "1234"/responseCode = "default"/' $JAVA_SRC && rm $JAVA_SRC.backup
 }
 
+# Support both Maven (src/generated/java) and Gradle (build/generated/sources/openapi/src/main/java) paths
+GENERATED_DIR="${GENERATED_DIR:-src/generated/java}"
+API_DIR="${GENERATED_DIR}/org/lockss/laaws/poller/api"
+MODEL_DIR="${GENERATED_DIR}/org/lockss/laaws/poller/model"
+
 # Edit StatusApiDelegate.java.
-STATUS_API_DELEGATE=src/generated/java/org/lockss/laaws/poller/api/StatusApiDelegate.java
+STATUS_API_DELEGATE=${API_DIR}/StatusApiDelegate.java
 fixImport $STATUS_API_DELEGATE org.lockss.laaws.poller.model.ApiStatus org.lockss.util.rest.status.ApiStatus
 
 # Edit StatusApi.java.
-STATUS_API=src/generated/java/org/lockss/laaws/poller/api/StatusApi.java
+STATUS_API=${API_DIR}/StatusApi.java
 fixImport $STATUS_API org.lockss.laaws.poller.model.ApiStatus org.lockss.util.rest.status.ApiStatus
 fixResponseCode1234 $STATUS_API
 
 # Edit PollsApiDelegate.java.
-POLLS_API_DELEGATE=src/generated/java/org/lockss/laaws/poller/api/PollsApiDelegate.java
+POLLS_API_DELEGATE=${API_DIR}/PollsApiDelegate.java
 fixImport $POLLS_API_DELEGATE org.lockss.laaws.poller.model.PollDesc org.lockss.util.rest.poller.PollDesc
 fixImport $POLLS_API_DELEGATE org.lockss.laaws.poller.model.PollerSummary org.lockss.util.rest.poller.PollerSummary
 
 # Edit PollsApi.java.
-POLLS_API=src/generated/java/org/lockss/laaws/poller/api/PollsApi.java
+POLLS_API=${API_DIR}/PollsApi.java
 fixImport $POLLS_API org.lockss.laaws.poller.model.PollDesc org.lockss.util.rest.poller.PollDesc
 fixImport $POLLS_API org.lockss.laaws.poller.model.PollerSummary org.lockss.util.rest.poller.PollerSummary
 fixResponseCode1234 $POLLS_API
 
 # Edit PollerDetail.java.
-POLLER_DETAIL=src/generated/java/org/lockss/laaws/poller/model/PollerDetail.java
+POLLER_DETAIL=${MODEL_DIR}/PollerDetail.java
 fixImport $POLLER_DETAIL org.lockss.laaws.poller.model.PollDesc org.lockss.util.rest.poller.PollDesc
 
 # Edit VoterDetail.java.
-VOTER_DETAIL=src/generated/java/org/lockss/laaws/poller/model/VoterDetail.java
+VOTER_DETAIL=${MODEL_DIR}/VoterDetail.java
 fixImport $VOTER_DETAIL org.lockss.laaws.poller.model.PollDesc org.lockss.util.rest.poller.PollDesc
 
 # Edit WsApiDelegate.java.
-WS_API_DELEGATE=src/generated/java/org/lockss/laaws/poller/api/WsApiDelegate.java
+WS_API_DELEGATE=${API_DIR}/WsApiDelegate.java
 fixImport $WS_API_DELEGATE org.lockss.laaws.poller.model.HasherWsParams org.lockss.ws.entities.HasherWsParams
 fixImport $WS_API_DELEGATE org.lockss.laaws.poller.model.PollWsResult org.lockss.ws.entities.PollWsResult
 fixImport $WS_API_DELEGATE org.lockss.laaws.poller.model.PeerWsResult org.lockss.ws.entities.PeerWsResult
@@ -78,7 +83,7 @@ fixImport $WS_API_DELEGATE org.lockss.laaws.poller.model.RepositoryWsResult org.
 fixImport $WS_API_DELEGATE org.lockss.laaws.poller.model.VoteWsResult org.lockss.ws.entities.VoteWsResult
 
 # Edit WsApi.java.
-WS_API=src/generated/java/org/lockss/laaws/poller/api/WsApi.java
+WS_API=${API_DIR}/WsApi.java
 fixImport $WS_API org.lockss.laaws.poller.model.HasherWsParams org.lockss.ws.entities.HasherWsParams
 fixImport $WS_API org.lockss.laaws.poller.model.PeerWsResult org.lockss.ws.entities.PeerWsResult
 fixImport $WS_API org.lockss.laaws.poller.model.PollWsResult org.lockss.ws.entities.PollWsResult
@@ -89,27 +94,27 @@ fixResponseCode1234 $WS_API
 
 # Edit Model dependencies
 # PeerData
-PEER_DATA=src/generated/java/org/lockss/laaws/poller/model/PeerData.java
+PEER_DATA=${MODEL_DIR}/PeerData.java
 fixImport $PEER_DATA org.lockss.laaws.poller.model.LinkDesc org.lockss.util.rest.poller.LinkDesc
 
 # RepairQueue
-REPAIR_QUEUE=src/generated/java/org/lockss/laaws/poller/model/RepairQueue.java
+REPAIR_QUEUE=${MODEL_DIR}/RepairQueue.java
 fixImport $REPAIR_QUEUE org.lockss.laaws.poller.model.LinkDesc org.lockss.util.rest.poller.LinkDesc
 
-# TallyDaTa
-TALLY_DATA=src/generated/java/org/lockss/laaws/poller/model/TallyData.java
+# TallyData
+TALLY_DATA=${MODEL_DIR}/TallyData.java
 fixImport $TALLY_DATA org.lockss.laaws.poller.model.LinkDesc org.lockss.util.rest.poller.LinkDesc
 
 # VoterSummary
-VOTER_SUMMARY=src/generated/java/org/lockss/laaws/poller/model/VoterSummary.java
+VOTER_SUMMARY=${MODEL_DIR}/VoterSummary.java
 fixImport $VOTER_SUMMARY org.lockss.laaws.poller.model.LinkDesc org.lockss.util.rest.poller.LinkDesc
 
 # PollerPager
-POLLER_PAGER=src/generated/java/org/lockss/laaws/poller/model/PollerPager.java
+POLLER_PAGER=${MODEL_DIR}/PollerPager.java
 fixImport $POLLER_PAGER org.lockss.laaws.poller.model.PollerSummary org.lockss.util.rest.poller.PollerSummary
 
 # AUsApi.java
-AUS_API=src/generated/java/org/lockss/laaws/poller/api/AusApi.java
+AUS_API=${API_DIR}/AusApi.java
 fixResponseCode1234 $AUS_API
 
 
