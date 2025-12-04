@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Board of Trustees of Leland Stanford Jr. University,
+ * Copyright (c) 2018-2025 Board of Trustees of Leland Stanford Jr. University,
  * all rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,11 +25,13 @@
  */
 package org.lockss.laaws.poller.impl;
 
+import jakarta.servlet.http.HttpServletRequest;
+import org.apache.commons.collections4.map.PassiveExpiringMap;
 import org.lockss.app.LockssDaemon;
+import org.lockss.config.Configuration;
 import org.lockss.laaws.poller.api.PollsApi;
 import org.lockss.laaws.poller.api.PollsApiDelegate;
 import org.lockss.laaws.poller.model.*;
-import org.lockss.laaws.poller.model.RepairData.ResultEnum;
 import org.lockss.plugin.ArchivalUnit;
 import org.lockss.plugin.CachedUrlSet;
 import org.lockss.plugin.PluginManager;
@@ -40,21 +42,27 @@ import org.lockss.poller.PollSpec;
 import org.lockss.poller.v3.*;
 import org.lockss.poller.v3.ParticipantUserData.VoteCounts;
 import org.lockss.poller.v3.PollerStateBean.Repair;
-import org.lockss.poller.v3.PollerStateBean.TallyStatus;
 import org.lockss.protocol.PeerIdentity;
 import org.lockss.protocol.psm.PsmInterp;
 import org.lockss.protocol.psm.PsmState;
 import org.lockss.spring.auth.AuthUtil;
 import org.lockss.spring.auth.Roles;
 import org.lockss.spring.base.BaseSpringApiServiceImpl;
+import org.lockss.spring.base.LockssConfigurableService;
+import org.lockss.spring.error.LockssRestServiceException;
 import org.lockss.util.ByteArray;
 import org.lockss.util.StringUtil;
 import org.lockss.util.UrlUtil;
-import org.lockss.util.rest.poller.CachedUriSetSpec;
-import org.lockss.util.rest.poller.LinkDesc;
-import org.lockss.util.rest.poller.PollDesc;
-import org.lockss.util.rest.poller.PollDesc.VariantEnum;
-import org.lockss.util.rest.poller.PollerSummary;
+import org.lockss.util.rest.exception.LockssRestHttpException;
+import org.lockss.util.rest.poller.*;
+import org.lockss.util.rest.poller.RepairData;
+import org.lockss.util.rest.poller.VoterSummary;
+import org.lockss.util.rest.poller.model.PollVariantEnum;
+import org.lockss.util.rest.poller.model.RepairTypeEnum;
+import org.lockss.util.rest.poller.model.TallyTypeEnum;
+import org.lockss.util.rest.poller.model.VoterUrlsEnum;
+import org.lockss.util.rest.repo.model.PageInfo;
+import org.lockss.util.time.TimeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,15 +70,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import jakarta.servlet.http.HttpServletRequest;
 import java.net.MalformedURLException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The Polls api service.
  */
 @Service
-public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements PollsApiDelegate {
+public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements PollsApiDelegate, LockssConfigurableService {
 
   private static Logger logger = LoggerFactory
       .getLogger(PollsApiServiceImpl.class);
@@ -80,6 +88,82 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
   @Autowired
   private HttpServletRequest request;
   private static final String NOT_INITIALIZED_MESSAGE = "The service has not been fully initialized.";
+
+  // The poll iterators used in pagination.
+  private Map<String, Iterator<V3Poller>> pollerIterators = new ConcurrentHashMap<>();
+  private Map<String, Iterator<V3Voter>> voterIterators = new ConcurrentHashMap<>();
+  private Map<String, Iterator<String>> tallyIterators = new ConcurrentHashMap<>();
+  private Map<String, Iterator<Repair>> repairIterators = new ConcurrentHashMap<>();
+  private Map<String, Iterator<String>> peerIterators = new ConcurrentHashMap<>();
+
+  ////////////////////////////////////////////////////////////////////////////////
+  // PARAMS //////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////
+
+  public static final String PREFIX = "org.lockss.poller.";
+
+  /**
+   * Default number of polls that will be returned in a single (paged) response
+   */
+  public static final String PARAM_DEFAULT_POLL_PAGESIZE = PREFIX + "poll.pagesize.default";
+  public static final int DEFAULT_DEFAULT_POLL_PAGESIZE = 1000;
+  private int defaultPollPageSize = DEFAULT_DEFAULT_POLL_PAGESIZE;
+
+  /**
+   * Max number of polls that will be returned in a single (paged) response
+   */
+  public static final String PARAM_MAX_POLL_PAGESIZE = PREFIX + "poll.pagesize.max";
+  public static final int DEFAULT_MAX_POLL_PAGESIZE = 2000;
+  private int maxPollPageSize = DEFAULT_MAX_POLL_PAGESIZE;
+
+  /**
+   * Interval after which unused poll iterator continuations will
+   * be discarded.  Change requires restart to take effect.
+   */
+  public static final String PARAM_POLL_ITERATOR_TIMEOUT = PREFIX + "poll.iterator.timeout";
+  public static final long DEFAULT_POLL_ITERATOR_TIMEOUT = 48 * TimeUtil.HOUR;
+  private long pollIteratorTimeout = DEFAULT_POLL_ITERATOR_TIMEOUT;
+
+  ////////////////////////////////////////////////////////////////////////////////
+  // CONFIG //////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////
+
+  @Override
+  public void setConfig(Configuration newConfig,
+                        Configuration prevConfig,
+                        Configuration.Differences changedKeys) {
+    if (changedKeys.contains(PREFIX)) {
+      defaultPollPageSize =
+          newConfig.getInt(PARAM_DEFAULT_POLL_PAGESIZE,
+              DEFAULT_DEFAULT_POLL_PAGESIZE);
+      maxPollPageSize = newConfig.getInt(PARAM_MAX_POLL_PAGESIZE,
+          DEFAULT_MAX_POLL_PAGESIZE);
+      pollIteratorTimeout =
+          newConfig.getTimeInterval(PARAM_POLL_ITERATOR_TIMEOUT,
+              DEFAULT_POLL_ITERATOR_TIMEOUT);
+
+      // The first time setConfig() is called, replace the temporary
+      // iterator continuation maps with PassiveExpiringMap instances.
+      // PassiveExpiringMap is already thread-safe (uses ConcurrentHashMap)
+      // and handles expiration automatically, so no manual synchronization
+      // or timer is needed.
+      if (!(pollerIterators instanceof PassiveExpiringMap)) {
+        pollerIterators = new PassiveExpiringMap<>(pollIteratorTimeout);
+      }
+      if (!(voterIterators instanceof PassiveExpiringMap)) {
+        voterIterators = new PassiveExpiringMap<>(pollIteratorTimeout);
+      }
+      if (!(tallyIterators instanceof PassiveExpiringMap)) {
+        tallyIterators = new PassiveExpiringMap<>(pollIteratorTimeout);
+      }
+      if (!(repairIterators instanceof PassiveExpiringMap)) {
+        repairIterators = new PassiveExpiringMap<>(pollIteratorTimeout);
+      }
+      if (!(peerIterators instanceof PassiveExpiringMap)) {
+        peerIterators = new PassiveExpiringMap<>(pollIteratorTimeout);
+      }
+    }
+  }
 
   /* ------------------------------------------------------------------------
       PollsApiDelegate implementation.
@@ -286,91 +370,221 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
   /**
    * Get a Participant peers's urls for a Poller
    *
-   * @param pollKey the PollKey assigned by the Poll Manager
-   * @param peerId the id of the peer
-   * @param urls the type of urls to return
-   * @param page the page number of the paged results
-   * @param size the size of the page.
+   * @param pollKey           the PollKey assigned by the Poll Manager
+   * @param peerId            the id of the peer
+   * @param urls              the type of urls to return
+   * @param limit             the requested maximum number of URLs per response
+   * @param continuationToken the continuation token of the next page of URLs to be returned
    * @return A UrlPager of paged urls.
    * @see PollsApi#getPollPeerVoteUrls
    */
   @Override
-  public ResponseEntity<UrlPager> getPollPeerVoteUrls(String pollKey, String peerId, String urls,
-    Integer page, Integer size) {
+  public ResponseEntity<UrlPageInfo> getPollPeerVoteUrls(String pollKey, String peerId, VoterUrlsEnum urls,
+                                                          Integer limit, String continuationToken) {
+    String parsedRequest = String.format("pollKey: %s, peerId: %s, urls: %s, limit: %s, continuationToken: %s, requestUrl: %s",
+        pollKey, peerId, urls, limit, continuationToken, request.getRequestURI());
 
-    // Check whether the service has not been fully initialized.
+    if (logger.isDebugEnabled()) {
+      logger.debug("getPollPeerVoteUrls called with request {}", parsedRequest);
+    }
+
     if (!isReady()) {
       logger.error(NOT_INITIALIZED_MESSAGE);
       return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
-    // are we authorized
+
     AuthUtil.checkHasRole(Roles.ROLE_AU_ADMIN);
+
+    Integer requestLimit = limit;
+    limit = validateLimit(requestLimit, defaultPollPageSize, maxPollPageSize, parsedRequest);
+
+    PeerUrlContinuationToken requestTct = new PeerUrlContinuationToken(continuationToken);
+    String requestLastUrl = requestTct.getLastUrl();
+    String requestIteratorId = requestTct.getIteratorId();
 
     PollManager pm = getPollManager();
     Poll poll = pm.getPoll(pollKey);
-    String baseLink = request.getRequestURI();
-    if (poll instanceof V3Poller) {
-      final List<ParticipantUserData> participants = ((V3Poller) poll)
-          .getParticipants();
-      ParticipantUserData userData = userDataForPeer(peerId, participants);
-      if (userData != null) {
-        VoteCounts voteCounts = userData.getVoteCounts();
-        if (voteCounts.hasPeerUrlLists() && userData.hasVoted()) {
-          Collection<String> counts;
-          switch (urls) {
-            case "agreed":
-              counts = voteCounts.getAgreedUrls();
-              break;
-            case "disagreed":
-              counts = voteCounts.getDisagreedUrls();
-              break;
-            case "pollerOnly":
-              counts = voteCounts.getPollerOnlyUrls();
-              break;
-            case "voterOnly":
-              counts = voteCounts.getVoterOnlyUrls();
-              break;
-            default:
-              counts = Collections.emptyList();
+
+    if (!(poll instanceof V3Poller)) {
+      UrlPageInfo emptyResult = new UrlPageInfo();
+      emptyResult.setUrls(Collections.emptyList());
+      PageInfo pageInfo = new PageInfo();
+      pageInfo.setItemsInPage(0);
+      emptyResult.setPageInfo(pageInfo);
+      return new ResponseEntity<>(emptyResult, HttpStatus.NOT_FOUND);
+    }
+
+    final List<ParticipantUserData> participants = ((V3Poller) poll).getParticipants();
+    ParticipantUserData userData = userDataForPeer(peerId, participants);
+
+    if (userData == null || !userData.hasVoted()) {
+      UrlPageInfo emptyResult = new UrlPageInfo();
+      emptyResult.setUrls(Collections.emptyList());
+      PageInfo pageInfo = new PageInfo();
+      pageInfo.setItemsInPage(0);
+      emptyResult.setPageInfo(pageInfo);
+      return new ResponseEntity<>(emptyResult, HttpStatus.NOT_FOUND);
+    }
+
+    VoteCounts voteCounts = userData.getVoteCounts();
+    if (!voteCounts.hasPeerUrlLists()) {
+      UrlPageInfo emptyResult = new UrlPageInfo();
+      emptyResult.setUrls(Collections.emptyList());
+      PageInfo pageInfo = new PageInfo();
+      pageInfo.setItemsInPage(0);
+      emptyResult.setPageInfo(pageInfo);
+      return new ResponseEntity<>(emptyResult, HttpStatus.NOT_FOUND);
+    }
+
+    Collection<String> counts;
+    switch (urls) {
+      case AGREED:
+        counts = voteCounts.getAgreedUrls();
+        break;
+      case DISAGREED:
+        counts = voteCounts.getDisagreedUrls();
+        break;
+      case POLLERONLY:
+        counts = voteCounts.getPollerOnlyUrls();
+        break;
+      case VOTERONLY:
+        counts = voteCounts.getVoterOnlyUrls();
+        break;
+      default:
+        counts = Collections.emptyList();
+    }
+
+    Iterator<String> iterator = null;
+    if (requestIteratorId != null) {
+      iterator = peerIterators.get(requestIteratorId);
+      logger.trace("Retrieved iterator from map: iteratorId={}, iterator={}", requestIteratorId, iterator);
+    }
+
+    if (iterator == null) {
+      iterator = new ArrayList<>(counts).iterator();
+      logger.trace("Created new iterator");
+
+      if (requestLastUrl != null) {
+        logger.trace("Skipping to last URL: {}", requestLastUrl);
+        boolean found = false;
+        while (iterator.hasNext()) {
+          String url = iterator.next();
+          if (url.equals(requestLastUrl)) {
+            found = true;
+            break;
           }
-          if (counts != null) {
-            Page<String> strPage = new Page<>(counts, page, size, baseLink);
-            UrlPager pager = getUrlPager(strPage);
-            return new ResponseEntity<>(pager, strPage.getPageHeaders(), HttpStatus.OK);
-          }
+        }
+        if (!found) {
+          logger.warn("Continuation URL not found in iterator: {}", requestLastUrl);
         }
       }
     }
-    return new ResponseEntity<>(new UrlPager(), HttpStatus.NOT_FOUND);
-  }
 
-  /**
-   * Return a UrlPager.
-   *
-   * @param urlPage the Page Description
-   * @return a UrlPager from a Page description
-   */
-  private UrlPager getUrlPager(Page<String> urlPage) {
-    PageDesc desc = getPageDesc(urlPage);
-    UrlPager pager = new UrlPager();
-    pager.setPageDesc(desc);
-    pager.setUrls(urlPage.getPageContent());
-    return pager;
+    List<String> urlsList = populateTallyUrls(iterator, limit);
+    logger.trace("Populated {} URLs", urlsList.size());
+
+    PeerUrlContinuationToken responseTct = null;
+    // Handle iterator storage/removal and create continuation token if needed
+    if (iterator.hasNext()) {
+      // More results exist: Store iterator and create continuation token
+      // If requestIteratorId is null, this is a new iterator (first page), so generate a new UUID.
+      // If requestIteratorId exists, this is an existing iterator (subsequent page), so reuse
+      // the same ID to maintain continuity for the client.
+      String iteratorId = requestIteratorId;
+      if (iteratorId == null) {
+        iteratorId = UUID.randomUUID().toString();
+      }
+      peerIterators.put(iteratorId, iterator);
+
+      String lastUrl = urlsList.get(urlsList.size() - 1);
+      responseTct = new PeerUrlContinuationToken(pollKey, peerId, urls, lastUrl, iteratorId);
+      logger.trace("Stored iterator and created response continuation token: {}", responseTct);
+    } else {
+      // No more results: Remove the iterator if it exists
+      if (requestIteratorId != null) {
+        peerIterators.remove(requestIteratorId);
+      }
+    }
+
+    PageInfo pageInfo = new PageInfo();
+    pageInfo.setItemsInPage(urlsList.size());
+
+    // Build the current link from the request URL and query string
+    StringBuffer curLinkBuffer = request.getRequestURL();
+    if (request.getQueryString() != null
+        && !request.getQueryString().trim().isEmpty()) {
+      curLinkBuffer.append("?").append(request.getQueryString());
+    }
+    String curLink = curLinkBuffer.toString();
+    logger.trace("curLink = {}", curLink);
+    pageInfo.setCurLink(curLink);
+
+    // If there's a continuation token (-> iterator.hasNext() == true), build the nextLink
+    if (responseTct != null) {
+      String continuationTokenValue = responseTct.toWebResponseContinuationToken();
+      pageInfo.setContinuationToken(continuationTokenValue);
+
+      StringBuffer nextLinkBuffer = request.getRequestURL();
+      boolean hasQueryParameters = false;
+
+      // Add limit parameter if user specified one
+      if (requestLimit != null) {
+        nextLinkBuffer.append("?limit=").append(requestLimit);
+        hasQueryParameters = true;
+      }
+
+      // Add urls parameter (required parameter)
+      if (!hasQueryParameters) {
+        nextLinkBuffer.append("?");
+      } else {
+        nextLinkBuffer.append("&");
+      }
+      nextLinkBuffer.append("urls=").append(urls.toString());
+      hasQueryParameters = true;
+
+      // Add continuation token
+      if (continuationTokenValue != null) {
+        nextLinkBuffer.append("&");
+        nextLinkBuffer.append("continuationToken=")
+            .append(UrlUtil.encodeUrl(continuationTokenValue));
+      }
+
+      String nextLink = nextLinkBuffer.toString();
+      logger.trace("nextLink = {}", nextLink);
+      pageInfo.setNextLink(nextLink);
+    }
+
+    UrlPageInfo result = new UrlPageInfo();
+    result.setUrls(urlsList);
+    result.setPageInfo(pageInfo);
+
+    if (logger.isDebugEnabled()) {
+      logger.debug("getPollPeerVoteUrls returning {} URLs", urlsList.size());
+    }
+    return new ResponseEntity<>(result, HttpStatus.OK);
   }
 
 
   /**
    * Return details of form the RepairQueue of a called poll.
    *
-   * @param pollKey the PollKey assigned by the Poll Manager
-   * @param repair the kind of repair data to return.
-   * @param page the page number of the paged results
-   * @param size the size of the page.
+   * @param pollKey           the PollKey assigned by the Poll Manager
+   * @param repair            the kind of repair data to return.
+   * @param limit             the requested maximum number of repair items per response
+   * @param continuationToken the continuation token of the next page of repair items to be returned
    * @return A RepairPager of the current page of urls.
    * @see PollsApi#getRepairQueueData
    */
-  public ResponseEntity<RepairPager> getRepairQueueData(String pollKey, String repair, Integer page,
-    Integer size) {
+  @Override
+  public ResponseEntity<RepairPageInfo> getRepairQueueData(String pollKey, RepairTypeEnum repair, Integer limit,
+                                                            String continuationToken) {
+    String parsedRequest = String.format("pollKey: %s, repair: %s, limit: %s, continuationToken: %s, requestUrl: %s",
+        pollKey, repair, limit, continuationToken, getFullRequestUrl(request));
+
+    if (logger.isDebugEnabled()) {
+      logger.debug("Parsed request: {}", parsedRequest);
+    }
+
     // Check whether the service has not been fully initialized.
     if (!isReady()) {
       logger.error(NOT_INITIALIZED_MESSAGE);
@@ -378,63 +592,213 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     }
     // are we authorized
     AuthUtil.checkHasRole(Roles.ROLE_AU_ADMIN);
+
+    Integer requestLimit = limit;
+    limit = validateLimit(requestLimit, defaultPollPageSize, maxPollPageSize, parsedRequest);
+
+    // Parse the request continuation token.
+    RepairContinuationToken requestRct = null;
+
+    try {
+      requestRct = new RepairContinuationToken(continuationToken);
+      logger.trace("requestRct = {}", requestRct);
+    } catch (IllegalArgumentException iae) {
+      String message = "Invalid continuation token '" + continuationToken + "'";
+      logger.warn(message);
+
+      throw new LockssRestServiceException(
+          LockssRestHttpException.ServerErrorType.NONE,
+          HttpStatus.BAD_REQUEST,
+          message,
+          parsedRequest);
+    }
+
     PollManager pm = getPollManager();
     Poll poll = pm.getPoll(pollKey);
-    String baseLink = request.getRequestURI();
-    if (poll instanceof V3Poller) {
-      PollerStateBean.RepairQueue repairQueue = ((V3Poller) poll).getPollerStateBean()
-        .getRepairQueue();
-      List<Repair> repairList;
-      switch (repair) {
-        case "active":
-          repairList = repairQueue.getActiveRepairs();
-          break;
-        case "pending":
-          repairList = repairQueue.getPendingRepairs();
-          break;
-        case "completed":
-          repairList = repairQueue.getCompletedRepairs();
-          break;
-        default:
-          repairList = new ArrayList<>();
-      }
-      if (repairList != null) {
-        Page<Repair> rpage = new Page<>(repairList, page, size, baseLink);
-        // The page description.
-        PageDesc desc = getPageDesc(rpage);
-        RepairPager pager = new RepairPager();
-        pager.setPageDesc(desc);
-        // The page content.
-        if (rpage.hasContent()) {
-          List<Repair> rlist = rpage.getPageContent();
-          for (Repair rep : rlist) {
-            RepairData rdata = new RepairData();
-            rdata.setRepairUrl(rep.getUrl());
-            rdata.setRepairFrom(rep.getRepairFrom().getIdString());
-            if ("completed".equals(repair)) {
-              rdata.setResult(RepairData.ResultEnum.fromValue(rep.getTallyResult().toString()));
-            }
-            pager.addRepairsItem(rdata);
-          }
-        }
-        return new ResponseEntity<>(pager, rpage.getPageHeaders(), HttpStatus.OK);
+
+    if (!(poll instanceof V3Poller)) {
+      return new ResponseEntity<>(new RepairPageInfo(), HttpStatus.NOT_FOUND);
+    }
+
+    PollerStateBean.RepairQueue repairQueue = ((V3Poller) poll).getPollerStateBean().getRepairQueue();
+    List<Repair> repairList;
+    switch (repair) {
+      case ACTIVE:
+        repairList = repairQueue.getActiveRepairs();
+        break;
+      case PENDING:
+        repairList = repairQueue.getPendingRepairs();
+        break;
+      case COMPLETED:
+        repairList = repairQueue.getCompletedRepairs();
+        break;
+      default:
+        repairList = new ArrayList<>();
+    }
+
+    if (repairList == null) {
+      return new ResponseEntity<>(new RepairPageInfo(), HttpStatus.NOT_FOUND);
+    }
+
+    List<RepairData> repairs = new ArrayList<>();
+    RepairContinuationToken responseRct = null;
+    Iterator<Repair> iterator = null;
+
+    // Get the iterator ID (if any) used to provide a previous page of results.
+    String iteratorId = requestRct.getIteratorId();
+    logger.trace("iteratorId = {}", iteratorId);
+
+    // Check whether a previous page of results exists.
+    if (iteratorId != null) {
+      // Yes: Get the iterator for it.
+      iterator = repairIterators.get(iteratorId);
+      logger.trace("iterator = {}", iterator);
+
+      // Check whether the iterator was not found.
+      if (iterator == null) {
+        // Yes: Report the problem.
+        logger.warn("No existing iterator for iteratorId = {}", iteratorId);
       }
     }
-    return new ResponseEntity<>(new RepairPager(), HttpStatus.NOT_FOUND);
+
+    // Check whether an iterator exists for a previous page of results.
+    if (iterator == null) {
+      // No: Get the repair items.
+      iterator = repairList.iterator();
+      logger.trace("Created new iterator");
+
+      // Check whether there was a request continuation token.
+      if (requestRct.getIteratorId() != null) {
+        // Yes: Loop through the repairs until the repair after the last one in the previous
+        // page of results is reached.
+        while (iterator.hasNext()) {
+          Repair repairItem = iterator.next();
+          logger.trace("repairUrl = {}", repairItem.getUrl());
+
+          // Check whether this is the repair after the last one in the previous page of results.
+          if (requestRct.getLastUrl().equals(repairItem.getUrl())) {
+            // Yes: Finish the loop.
+            logger.trace("Found last repair URL from previous request");
+            break;
+          }
+        }
+      }
+    }
+
+    // Populate the page of repairs.
+    repairs = populateRepairData(iterator, limit, repair);
+    logger.trace("repairs.size() = {}", repairs.size());
+
+    // Handle iterator storage/removal and create continuation token if needed
+    if (iterator.hasNext()) {
+      // More results exist: Store iterator and create continuation token
+      // If iteratorId is null, this is a new iterator (first page), so generate a new UUID.
+      // If iteratorId exists, this is an existing iterator (subsequent page), so reuse
+      // the same ID to maintain continuity for the client.
+      if (iteratorId == null) {
+        iteratorId = UUID.randomUUID().toString();
+      }
+      repairIterators.put(iteratorId, iterator);
+      logger.trace("Populated repairIterators.size() = {}", repairIterators.size());
+
+      String lastRepairUrl = repairs.get(repairs.size() - 1).getRepairUrl();
+      responseRct = new RepairContinuationToken(pollKey, repair, lastRepairUrl, iteratorId);
+      logger.trace("responseRct = {}", responseRct);
+    } else {
+      // No more results: Remove the iterator if it exists
+      if (iteratorId != null) {
+        repairIterators.remove(iteratorId);
+        logger.trace("Removed iterator from repairIterators, size = {}", repairIterators.size());
+      }
+    }
+
+    // Create the response PageInfo.
+    PageInfo pageInfo = new PageInfo();
+    pageInfo.setItemsInPage(repairs.size());
+
+    // Get the current link.
+    StringBuffer curLinkBuffer = request.getRequestURL();
+
+    if (request.getQueryString() != null
+        && !request.getQueryString().trim().isEmpty()) {
+      curLinkBuffer.append("?").append(request.getQueryString());
+    }
+
+    String curLink = curLinkBuffer.toString();
+    logger.trace("curLink = {}", curLink);
+
+    pageInfo.setCurLink(curLink);
+
+    // Check whether there is a response continuation token.
+    if (responseRct != null) {
+      // Yes.
+      String continuationTokenValue = responseRct.toWebResponseContinuationToken();
+      pageInfo.setContinuationToken(continuationTokenValue);
+
+      // Start building the next link.
+      StringBuffer nextLinkBuffer = request.getRequestURL();
+      boolean hasQueryParameters = false;
+
+      // Add limit parameter if user specified one
+      if (requestLimit != null) {
+        nextLinkBuffer.append("?limit=").append(requestLimit);
+        hasQueryParameters = true;
+      }
+
+      // Add repair parameter (required parameter)
+      if (!hasQueryParameters) {
+        nextLinkBuffer.append("?");
+      } else {
+        nextLinkBuffer.append("&");
+      }
+      nextLinkBuffer.append("repair=").append(repair);
+      hasQueryParameters = true;
+
+      if (continuationTokenValue != null) {
+        if (!hasQueryParameters) {
+          nextLinkBuffer.append("?");
+        } else {
+          nextLinkBuffer.append("&");
+        }
+
+        nextLinkBuffer.append("continuationToken=")
+            .append(UrlUtil.encodeUrl(continuationTokenValue));
+      }
+
+      String nextLink = nextLinkBuffer.toString();
+      logger.trace("nextLink = {}", nextLink);
+
+      pageInfo.setNextLink(nextLink);
+    }
+
+    // Create the response RepairPageInfo.
+    RepairPageInfo result = new RepairPageInfo();
+    result.setRepairs(repairs);
+    result.setPageInfo(pageInfo);
+
+    logger.debug("result = {}", result);
+    return new ResponseEntity<>(result, HttpStatus.OK);
   }
 
   /**
    * Return the Tallied Urls.
    *
-   * @param pollKey the PollKey assigned by the Poll Manager
-   * @param tally the kind of tally data to return.
-   * @param page the page number of the paged results
-   * @param size the size of the page.
+   * @param pollKey           the PollKey assigned by the Poll Manager
+   * @param tally             the kind of tally data to return.
+   * @param limit             the requested maximum number of URLs per response
+   * @param continuationToken the continuation token of the next page of URLs to be returned
    * @return A UrlPager of paged urls.
    * @see PollsApi#getTallyUrls
    */
-  public ResponseEntity<UrlPager> getTallyUrls(String pollKey, String tally, Integer page,
-    Integer size) {
+  @Override
+  public ResponseEntity<UrlPageInfo> getTallyUrls(String pollKey, TallyTypeEnum tally, Integer limit,
+                                                   String continuationToken) {
+    String parsedRequest = String.format("pollKey: %s, tally: %s, limit: %s, continuationToken: %s, requestUrl: %s",
+        pollKey, tally, limit, continuationToken, getFullRequestUrl(request));
+
+    if (logger.isDebugEnabled()) {
+      logger.debug("Parsed request: {}", parsedRequest);
+    }
 
     // Check whether the service has not been fully initialized.
     if (!isReady()) {
@@ -444,54 +808,215 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     // are we authorized
     AuthUtil.checkHasRole(Roles.ROLE_AU_ADMIN);
 
+    Integer requestLimit = limit;
+    limit = validateLimit(requestLimit, defaultPollPageSize, maxPollPageSize, parsedRequest);
+
+    // Parse the request continuation token.
+    TallyContinuationToken requestTct = null;
+
+    try {
+      requestTct = new TallyContinuationToken(continuationToken);
+      logger.trace("requestTct = {}", requestTct);
+    } catch (IllegalArgumentException iae) {
+      String message = "Invalid continuation token '" + continuationToken + "'";
+      logger.warn(message);
+
+      throw new LockssRestServiceException(
+          LockssRestHttpException.ServerErrorType.NONE,
+          HttpStatus.BAD_REQUEST,
+          message,
+          parsedRequest);
+    }
+
     PollManager pm = getPollManager();
     Poll poll = pm.getPoll(pollKey);
-    String baseLink = request.getRequestURI();
-    if (poll instanceof V3Poller) {
-      PollerStateBean.TallyStatus tallyStatus = ((V3Poller) poll).getPollerStateBean()
-        .getTallyStatus();
-      Set tallySet;
-      switch (tally) {
-        case "agree":
-          tallySet = tallyStatus.getAgreedUrls();
-          break;
-        case "disagree":
-          tallySet = tallyStatus.getDisagreedUrls();
-          break;
-        case "error":
-          tallySet = tallyStatus.getErrorUrls().keySet();
-          break;
-        case "noQuorum":
-          tallySet = tallyStatus.getNoQuorumUrls();
-          break;
-        case "tooClose":
-          tallySet = tallyStatus.getTooCloseUrls();
-          break;
-        default:
-          tallySet = new HashSet<String>();
-      }
-      if (tallySet != null) {
-        Page<String> strPage = new Page<>(tallySet, page, size, baseLink);
-        UrlPager pager = getUrlPager(strPage);
-        return new ResponseEntity<>(pager, strPage.getPageHeaders(), HttpStatus.OK);
 
+    if (!(poll instanceof V3Poller)) {
+      return new ResponseEntity<>(new UrlPageInfo(), HttpStatus.NOT_FOUND);
+    }
+
+    PollerStateBean.TallyStatus tallyStatus = ((V3Poller) poll).getPollerStateBean().getTallyStatus();
+    Set<String> tallySet;
+    switch (tally) {
+      case AGREE:
+        tallySet = tallyStatus.getAgreedUrls();
+        break;
+      case DISAGREE:
+        tallySet = tallyStatus.getDisagreedUrls();
+        break;
+      case ERROR:
+        tallySet = tallyStatus.getErrorUrls().keySet();
+        break;
+      case NOQUORUM:
+        tallySet = tallyStatus.getNoQuorumUrls();
+        break;
+      case TOOCLOSE:
+        tallySet = tallyStatus.getTooCloseUrls();
+        break;
+      default:
+        tallySet = new HashSet<>();
+    }
+
+    if (tallySet == null) {
+      return new ResponseEntity<>(new UrlPageInfo(), HttpStatus.NOT_FOUND);
+    }
+
+    List<String> urls = new ArrayList<>();
+    TallyContinuationToken responseTct = null;
+    Iterator<String> iterator = null;
+
+    // Get the iterator ID (if any) used to provide a previous page of results.
+    String iteratorId = requestTct.getIteratorId();
+    logger.trace("iteratorId = {}", iteratorId);
+
+    // Check whether a previous page of results exists.
+    if (iteratorId != null) {
+      // Yes: Get the iterator for it.
+      iterator = tallyIterators.get(iteratorId);
+      logger.trace("iterator = {}", iterator);
+
+      // Check whether the iterator was not found.
+      if (iterator == null) {
+        // Yes: Report the problem.
+        logger.warn("No existing iterator for iteratorId = {}", iteratorId);
       }
     }
-    return new ResponseEntity<>(new UrlPager(), HttpStatus.NOT_FOUND);
+
+    // Check whether an iterator exists for a previous page of results.
+    if (iterator == null) {
+      // No: Get the tally URLs.
+      iterator = new ArrayList<>(tallySet).iterator();
+      logger.trace("Created new iterator");
+
+      // Check whether there was a request continuation token.
+      if (requestTct.getIteratorId() != null) {
+        // Yes: Loop through the URLs until the URL after the last one in the previous
+        // page of results is reached.
+        while (iterator.hasNext()) {
+          String url = iterator.next();
+          logger.trace("url = {}", url);
+
+          // Check whether this is the URL after the last one in the previous page of results.
+          if (requestTct.getLastUrl().equals(url)) {
+            // Yes: Finish the loop.
+            logger.trace("Found last URL from previous request");
+            break;
+          }
+        }
+      }
+    }
+
+    // Populate the page of URLs.
+    urls = populateTallyUrls(iterator, limit);
+    logger.trace("urls.size() = {}", urls.size());
+
+    // Handle iterator storage/removal and create continuation token if needed
+    if (iterator.hasNext()) {
+      // More results exist: Store iterator and create continuation token
+      // If iteratorId is null, this is a new iterator (first page), so generate a new UUID.
+      // If iteratorId exists, this is an existing iterator (subsequent page), so reuse
+      // the same ID to maintain continuity for the client.
+      if (iteratorId == null) {
+        iteratorId = UUID.randomUUID().toString();
+      }
+      tallyIterators.put(iteratorId, iterator);
+      logger.trace("Populated tallyIterators.size() = {}", tallyIterators.size());
+
+      // Create the response continuation token.
+      String lastUrl = urls.get(urls.size() - 1);
+      responseTct = new TallyContinuationToken(pollKey, tally, lastUrl, iteratorId);
+      logger.trace("responseTct = {}", responseTct);
+    } else {
+      // No more results: Remove the iterator if it exists
+      if (iteratorId != null) {
+        tallyIterators.remove(iteratorId);
+      }
+    }
+
+    // Create the response PageInfo.
+    PageInfo pageInfo = new PageInfo();
+    pageInfo.setItemsInPage(urls.size());
+
+    // Get the current link.
+    StringBuffer curLinkBuffer = request.getRequestURL();
+
+    if (request.getQueryString() != null
+        && !request.getQueryString().trim().isEmpty()) {
+      curLinkBuffer.append("?").append(request.getQueryString());
+    }
+
+    String curLink = curLinkBuffer.toString();
+    logger.trace("curLink = {}", curLink);
+
+    pageInfo.setCurLink(curLink);
+
+    // Check whether there is a response continuation token.
+    if (responseTct != null) {
+      // Yes.
+      String continuationTokenValue = responseTct.toWebResponseContinuationToken();
+      pageInfo.setContinuationToken(continuationTokenValue);
+
+      // Start building the next link.
+      StringBuffer nextLinkBuffer = request.getRequestURL();
+      boolean hasQueryParameters = false;
+
+      // Add limit parameter if user specified one
+      if (requestLimit != null) {
+        nextLinkBuffer.append("?limit=").append(requestLimit);
+        hasQueryParameters = true;
+      }
+
+      // Add tally parameter (required parameter)
+      if (!hasQueryParameters) {
+        nextLinkBuffer.append("?");
+      } else {
+        nextLinkBuffer.append("&");
+      }
+      nextLinkBuffer.append("tally=").append(tally);
+      hasQueryParameters = true;
+
+      if (continuationTokenValue != null) {
+        if (!hasQueryParameters) {
+          nextLinkBuffer.append("?");
+        } else {
+          nextLinkBuffer.append("&");
+        }
+
+        nextLinkBuffer.append("continuationToken=")
+            .append(UrlUtil.encodeUrl(continuationTokenValue));
+      }
+
+      String nextLink = nextLinkBuffer.toString();
+      logger.trace("nextLink = {}", nextLink);
+
+      pageInfo.setNextLink(nextLink);
+    }
+
+    // Create the response UrlPageInfo.
+    UrlPageInfo result = new UrlPageInfo();
+    result.setUrls(urls);
+    result.setPageInfo(pageInfo);
+
+    logger.debug("result = {}", result);
+    return new ResponseEntity<>(result, HttpStatus.OK);
   }
   /*  -------------------Poller methods. --------------------------- */
 
   /**
    * Get the Polls for which we are the poller.
    *
-   * @param page the page number of the paged results
-   * @param size the size of the page.
-   * @return A PollPager used to page in the PollerSummary objects.
+   * @param limit             The requested maximum number of poll summaries per response
+   * @param continuationToken The continuation token of the next page of poll summaries to be returned
+   * @return A PollerPageInfo used to page in the PollerSummary objects.
    * @see PollsApi#getPollsAsPoller
    */
-  public ResponseEntity<PollerPager> getPollsAsPoller(Integer size, Integer page) {
+  @Override
+  public ResponseEntity<PollerPageInfo> getPollsAsPoller(Integer limit, String continuationToken) {
+    String parsedRequest = String.format("limit: %s, continuationToken: %s, requestUrl: %s",
+        limit, continuationToken, getFullRequestUrl(request));
+
     if (logger.isDebugEnabled()) {
-      logger.debug("request for  a page " + page + " of voter polls with page size " + size);
+      logger.debug("Parsed request: {}", parsedRequest);
     }
 
     // Check whether the service has not been fully initialized.
@@ -502,21 +1027,148 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     // are we authorized
     AuthUtil.checkHasRole(Roles.ROLE_AU_ADMIN);
 
-    PollManager pm = getPollManager();
-    Collection<V3Poller> pollers = pm.getV3Pollers();
-    String baseLink = request.getRequestURI();
-    Page<V3Poller> pollerPage = new Page<>(pollers, size, page, baseLink);
-    PollerPager pager = new PollerPager();
-    // The page description.
-    PageDesc desc = getPageDesc(pollerPage);
-    pager.setPageDesc(desc);
-    if (pollerPage.hasContent()) {
-      List<V3Poller> pollerList = pollerPage.getPageContent();
-      for (V3Poller poll : pollerList) {
-        pager.addPollsItem(summarizePollerPoll(poll));
+    Integer requestLimit = limit;
+    limit = validateLimit(requestLimit, defaultPollPageSize, maxPollPageSize, parsedRequest);
+
+    // Parse the request continuation token.
+    PollContinuationToken requestPct = null;
+
+    try {
+      requestPct = new PollContinuationToken(continuationToken);
+      logger.trace("requestPct = {}", requestPct);
+    } catch (IllegalArgumentException iae) {
+      String message = "Invalid continuation token '" + continuationToken + "'";
+      logger.warn(message);
+
+      throw new LockssRestServiceException(
+          LockssRestHttpException.ServerErrorType.NONE,
+          HttpStatus.BAD_REQUEST,
+          message,
+          parsedRequest);
+    }
+
+    List<PollerSummary> polls = new ArrayList<>();
+    PollContinuationToken responsePct = null;
+    Iterator<V3Poller> iterator = null;
+
+    // Get the iterator ID (if any) used to provide a previous page of results.
+    String iteratorId = requestPct.getIteratorId();
+
+    // Check whether this request is for a previous page of results.
+    if (iteratorId != null) {
+      // Yes: Get the iterator (if any) used to provide a previous page of results.
+      iterator = pollerIterators.get(iteratorId);
+    }
+
+    if (iterator == null) {
+      // Get the iterator pointing to the first page of results.
+      PollManager pm = getPollManager();
+      Collection<V3Poller> pollers = pm.getV3Pollers();
+      iterator = pollers.iterator();
+
+      // Check whether we need to skip polls already returned.
+      if (requestPct.getIteratorId() != null) {
+        // Yes: Get the last poll key from the continuation token.
+        String lastPollKey = requestPct.getPollKey();
+
+        // Loop through the polls skipping those already returned.
+        while (iterator.hasNext()) {
+          V3Poller poll = iterator.next();
+
+          // Check whether this poll comes after the last one returned.
+          if (poll.getKey().compareTo(lastPollKey) > 0) {
+            // Yes: Add this poll to the results.
+            polls.add(summarizePollerPoll(poll));
+            // Add the rest of the polls separately.
+            break;
+          }
+        }
       }
     }
-    return new ResponseEntity<>(pager, pollerPage.getPageHeaders(), HttpStatus.OK);
+
+    // Populate the rest of the results for this response.
+    populatePolls(iterator, limit, polls);
+
+    // Handle iterator storage/removal and create continuation token if needed
+    if (iterator.hasNext()) {
+      // More results exist: Store iterator and create continuation token
+      // If iteratorId is null, this is a new iterator (first page), so generate a new UUID.
+      // If iteratorId exists, this is an existing iterator (subsequent page), so reuse
+      // the same ID to maintain continuity for the client.
+      if (iteratorId == null) {
+        iteratorId = UUID.randomUUID().toString();
+      }
+      pollerIterators.put(iteratorId, iterator);
+
+      // Create the response continuation token.
+      PollerSummary lastPoll = polls.get(polls.size() - 1);
+      responsePct = new PollContinuationToken(lastPoll.getPollKey(), iteratorId);
+      logger.trace("responsePct = {}", responsePct);
+    } else {
+      // No more results: Remove the iterator if it exists
+      if (iteratorId != null) {
+        pollerIterators.remove(iteratorId);
+      }
+    }
+
+    logger.trace("polls.size() = {}", polls.size());
+
+    PageInfo pageInfo = new PageInfo();
+    pageInfo.setItemsInPage(polls.size());
+
+    // Get the current link.
+    StringBuffer curLinkBuffer = request.getRequestURL();
+
+    if (request.getQueryString() != null
+        && !request.getQueryString().trim().isEmpty()) {
+      curLinkBuffer.append("?").append(request.getQueryString());
+    }
+
+    String curLink = curLinkBuffer.toString();
+    logger.trace("curLink = {}", curLink);
+
+    pageInfo.setCurLink(curLink);
+
+    // Check whether there is a response continuation token.
+    if (responsePct != null) {
+      // Yes.
+      continuationToken = responsePct.toWebResponseContinuationToken();
+      pageInfo.setContinuationToken(continuationToken);
+
+      // Start building the next link.
+      StringBuffer nextLinkBuffer = request.getRequestURL();
+      boolean hasQueryParameters = false;
+
+      // Add limit parameter if user specified one
+      if (requestLimit != null) {
+        nextLinkBuffer.append("?limit=").append(requestLimit);
+        hasQueryParameters = true;
+      }
+
+      if (continuationToken != null) {
+        if (!hasQueryParameters) {
+          nextLinkBuffer.append("?");
+        } else {
+          nextLinkBuffer.append("&");
+        }
+
+        nextLinkBuffer.append("continuationToken=")
+            .append(UrlUtil.encodeUrl(continuationToken));
+      }
+
+      String nextLink = nextLinkBuffer.toString();
+      logger.trace("nextLink = {}", nextLink);
+
+      pageInfo.setNextLink(nextLink);
+    }
+
+    PollerPageInfo pageInfoResponse = new PollerPageInfo();
+    pageInfoResponse.setPolls(polls);
+    pageInfoResponse.setPageInfo(pageInfo);
+    logger.trace("pageInfoResponse = {}", pageInfoResponse);
+
+    logger.debug("Returning OK.");
+    return new ResponseEntity<>(pageInfoResponse, HttpStatus.OK);
   }
 
 
@@ -525,14 +1177,18 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
   /**
    * Get the Polls for which we are only a voter.
    *
-   * @param page the page number of the paged results
-   * @param size the size of the page.
-   * @return A VoterPager used to page in the VoterSummary objects.
+   * @param limit             The requested maximum number of poll summaries per response
+   * @param continuationToken The continuation token of the next page of poll summaries to be returned
+   * @return A VoterPageInfo used to page in the VoterSummary objects.
    * @see PollsApi#getPollsAsVoter
    */
-  public ResponseEntity<VoterPager> getPollsAsVoter(Integer size, Integer page) {
+  @Override
+  public ResponseEntity<VoterPageInfo> getPollsAsVoter(Integer limit, String continuationToken) {
+    String parsedRequest = String.format("limit: %s, continuationToken: %s, requestUrl: %s",
+        limit, continuationToken, getFullRequestUrl(request));
+
     if (logger.isDebugEnabled()) {
-      logger.debug("request for  a page " + page + " of voter polls with page size " + size);
+      logger.debug("Parsed request: {}", parsedRequest);
     }
 
     // Check whether the service has not been fully initialized.
@@ -543,27 +1199,148 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     // are we authorized
     AuthUtil.checkHasRole(Roles.ROLE_AU_ADMIN);
 
-    PollManager pm = getPollManager();
-    Collection<V3Voter> voters = pm.getV3Voters();
-    String baseLink = request.getRequestURI();
-    Page<V3Voter> voterPage = new Page<>(voters, size, page, baseLink);
-    VoterPager pager = new VoterPager();
-    // The page description.
-    PageDesc desc = new PageDesc();
-    desc.setTotal(voterPage.getTotal());
-    desc.setSize(voterPage.getPageSize());
-    desc.setPage(voterPage.getPageNum());
-    desc.setNextPage(voterPage.getNextLink());
-    desc.setPrevPage(voterPage.getPrevLink());
-    pager.setPageDesc(desc);
-    // The page content.
-    if (voterPage.hasContent()) {
-      List<V3Voter> pollerList = voterPage.getPageContent();
-      for (V3Voter poll : pollerList) {
-        pager.addPollsItem(summarizeVoterPoll((poll)));
+    Integer requestLimit = limit;
+    limit = validateLimit(requestLimit, defaultPollPageSize, maxPollPageSize, parsedRequest);
+
+    // Parse the request continuation token.
+    PollContinuationToken requestPct = null;
+
+    try {
+      requestPct = new PollContinuationToken(continuationToken);
+      logger.trace("requestPct = {}", requestPct);
+    } catch (IllegalArgumentException iae) {
+      String message = "Invalid continuation token '" + continuationToken + "'";
+      logger.warn(message);
+
+      throw new LockssRestServiceException(
+          LockssRestHttpException.ServerErrorType.NONE,
+          HttpStatus.BAD_REQUEST,
+          message,
+          parsedRequest);
+    }
+
+    List<VoterSummary> polls = new ArrayList<>();
+    PollContinuationToken responsePct = null;
+    Iterator<V3Voter> iterator = null;
+
+    // Get the iterator ID (if any) used to provide a previous page of results.
+    String iteratorId = requestPct.getIteratorId();
+
+    // Check whether this request is for a previous page of results.
+    if (iteratorId != null) {
+      // Yes: Get the iterator (if any) used to provide a previous page of results.
+      iterator = voterIterators.get(iteratorId);
+    }
+
+    if (iterator == null) {
+      // Get the iterator pointing to the first page of results.
+      PollManager pm = getPollManager();
+      Collection<V3Voter> voters = pm.getV3Voters();
+      iterator = voters.iterator();
+
+      // Check whether we need to skip polls already returned.
+      if (requestPct.getIteratorId() != null) {
+        // Yes: Get the last poll key from the continuation token.
+        String lastPollKey = requestPct.getPollKey();
+
+        // Loop through the polls skipping those already returned.
+        while (iterator.hasNext()) {
+          V3Voter poll = iterator.next();
+
+          // Check whether this poll comes after the last one returned.
+          if (poll.getKey().compareTo(lastPollKey) > 0) {
+            // Yes: Add this poll to the results.
+            polls.add(summarizeVoterPoll(poll));
+            // Add the rest of the polls separately.
+            break;
+          }
+        }
       }
     }
-    return new ResponseEntity<>(pager, HttpStatus.OK);
+
+    // Populate the rest of the results for this response.
+    populateVoterPolls(iterator, limit, polls);
+
+    // Handle iterator storage/removal and create continuation token if needed
+    if (iterator.hasNext()) {
+      // More results exist: Store iterator and create continuation token
+      // If iteratorId is null, this is a new iterator (first page), so generate a new UUID.
+      // If iteratorId exists, this is an existing iterator (subsequent page), so reuse
+      // the same ID to maintain continuity for the client.
+      if (iteratorId == null) {
+        iteratorId = UUID.randomUUID().toString();
+      }
+      voterIterators.put(iteratorId, iterator);
+
+      // Create the response continuation token.
+      VoterSummary lastPoll = polls.get(polls.size() - 1);
+      responsePct = new PollContinuationToken(lastPoll.getPollKey(), iteratorId);
+      logger.trace("responsePct = {}", responsePct);
+    } else {
+      // No more results: Remove the iterator if it exists
+      if (iteratorId != null) {
+        voterIterators.remove(iteratorId);
+      }
+    }
+
+    logger.trace("polls.size() = {}", polls.size());
+
+    PageInfo pageInfo = new PageInfo();
+    pageInfo.setItemsInPage(polls.size());
+
+    // Get the current link.
+    StringBuffer curLinkBuffer = request.getRequestURL();
+
+    if (request.getQueryString() != null
+        && !request.getQueryString().trim().isEmpty()) {
+      curLinkBuffer.append("?").append(request.getQueryString());
+    }
+
+    String curLink = curLinkBuffer.toString();
+    logger.trace("curLink = {}", curLink);
+
+    pageInfo.setCurLink(curLink);
+
+    // Check whether there is a response continuation token.
+    if (responsePct != null) {
+      // Yes.
+      continuationToken = responsePct.toWebResponseContinuationToken();
+      pageInfo.setContinuationToken(continuationToken);
+
+      // Start building the next link.
+      StringBuffer nextLinkBuffer = request.getRequestURL();
+      boolean hasQueryParameters = false;
+
+      // Add limit parameter if user specified one
+      if (requestLimit != null) {
+        nextLinkBuffer.append("?limit=").append(requestLimit);
+        hasQueryParameters = true;
+      }
+
+      if (continuationToken != null) {
+        if (!hasQueryParameters) {
+          nextLinkBuffer.append("?");
+        } else {
+          nextLinkBuffer.append("&");
+        }
+
+        nextLinkBuffer.append("continuationToken=")
+            .append(UrlUtil.encodeUrl(continuationToken));
+      }
+
+      String nextLink = nextLinkBuffer.toString();
+      logger.trace("nextLink = {}", nextLink);
+
+      pageInfo.setNextLink(nextLink);
+    }
+
+    VoterPageInfo pageInfoResponse = new VoterPageInfo();
+    pageInfoResponse.setPolls(polls);
+    pageInfoResponse.setPageInfo(pageInfo);
+    logger.trace("pageInfoResponse = {}", pageInfoResponse);
+
+    logger.debug("Returning OK.");
+    return new ResponseEntity<>(pageInfoResponse, HttpStatus.OK);
   }
 
   /* ------------------ DTO Mappings ---------------------- */
@@ -602,7 +1379,7 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
     pollDesc.setCuSetSpec(cuss);
     pollDesc.setPollType(pollSpec.getPollType());
     pollDesc.setProtocol(pollSpec.getProtocolVersion());
-    pollDesc.setVariant(PollDesc.VariantEnum.fromValue(pollSpec.getPollVariant().shortName()));
+    pollDesc.setVariant(PollVariantEnum.fromValue(pollSpec.getPollVariant().shortName()));
     return pollDesc;
   }
 
@@ -700,22 +1477,6 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
       detail.setRepairQueue(repairQueue);
     }
     return detail;
-  }
-
-  /**
-   * Given a link and a page number return a page description
-   *
-   * @param page the current page
-   * @return a PageDesc.
-   */
-  private PageDesc getPageDesc(Page page) {
-    PageDesc desc = new PageDesc();
-    desc.setTotal(page.getTotal());
-    desc.setSize(page.getPageSize());
-    desc.setPage(page.getPageNum());
-    desc.setNextPage(page.getNextLink());
-    desc.setPrevPage(page.getPrevLink());
-    return desc;
   }
 
   /**
@@ -1015,6 +1776,163 @@ public class PollsApiServiceImpl extends BaseSpringApiServiceImpl implements Pol
 
   protected boolean isReady() {
     return waitReady();
+  }
+
+  /* ------------------------------------------------------------------------
+      Utility methods for paging
+     ------------------------------------------------------------------------
+  */
+
+  /**
+   * Provides the full URL of the request.
+   *
+   * @param request An HttpServletRequest with the HTTP request.
+   * @return a String with the full URL of the request.
+   */
+  static String getFullRequestUrl(HttpServletRequest request) {
+    if (request == null) {
+      logger.warn("request = null");
+      return "";
+    }
+
+    if (request.getQueryString() == null
+        || request.getQueryString().trim().isEmpty()) {
+      return "'" + request.getMethod() + " " + request.getRequestURL() + "'";
+    }
+
+    return "'" + request.getMethod() + " " + request.getRequestURL() + "?"
+        + request.getQueryString() + "'";
+  }
+
+  /**
+   * Validates the page size specified in the request.
+   *
+   * @param requestLimit An Integer with the page size specified in the request.
+   * @param defaultValue An int with the value to be used when no page size is
+   *                     specified in the request.
+   * @param maxValue     An int with the maximum allowed value for the page
+   *                     size.
+   * @param parsedRequest A String with the parsed request for diagnostic purposes.
+   * @return an int with the validated value for the page size.
+   */
+  static int validateLimit(Integer requestLimit, int defaultValue, int maxValue,
+                           String parsedRequest) {
+    logger.debug("requestLimit = {}, defaultValue = {}, maxValue = {}",
+        requestLimit, defaultValue, maxValue);
+
+    // Check whether it's not a positive integer.
+    if (requestLimit != null && requestLimit.intValue() <= 0) {
+      // Yes: Report the problem.
+      String message =
+          "Limit of requested items must be a positive integer; it was '"
+              + requestLimit + "'";
+      logger.warn(message);
+
+      throw new LockssRestServiceException(
+          LockssRestHttpException.ServerErrorType.NONE, HttpStatus.BAD_REQUEST,
+          message, parsedRequest);
+    }
+
+    // No: Get the result.
+    int result = requestLimit == null ?
+        Math.min(defaultValue, maxValue) : Math.min(requestLimit, maxValue);
+    logger.debug("result = {}", result);
+    return result;
+  }
+
+  /**
+   * Populates the polls to be included in the response.
+   *
+   * @param iterator An Iterator with the poll source iterator.
+   * @param limit    An Integer with the maximum number of polls to be
+   *                 included in the response.
+   * @param polls    A List with the poll summaries to be included in the
+   *                 response.
+   */
+  private void populatePolls(Iterator<V3Poller> iterator, Integer limit,
+                             List<PollerSummary> polls) {
+    logger.debug("limit = {}, polls = {}", limit, polls);
+    int pollCount = polls.size();
+
+    // Loop through as many polls that exist and are requested.
+    while (pollCount < limit && iterator.hasNext()) {
+      // Add this poll to the results.
+      polls.add(summarizePollerPoll(iterator.next()));
+      pollCount++;
+    }
+  }
+
+  /**
+   * Populates the voter polls to be included in the response.
+   *
+   * @param iterator An Iterator with the voter poll source iterator.
+   * @param limit    An Integer with the maximum number of polls to be
+   *                 included in the response.
+   * @param polls    A List with the voter poll summaries to be included in the
+   *                 response.
+   */
+  private void populateVoterPolls(Iterator<V3Voter> iterator, Integer limit,
+                                   List<VoterSummary> polls) {
+    logger.debug("limit = {}, polls = {}", limit, polls);
+    int pollCount = polls.size();
+
+    // Loop through as many polls that exist and are requested.
+    while (pollCount < limit && iterator.hasNext()) {
+      // Add this poll to the results.
+      polls.add(summarizeVoterPoll(iterator.next()));
+      pollCount++;
+    }
+  }
+
+  /**
+   * Populates the tally URLs to be included in the response.
+   *
+   * @param iterator An Iterator with the URL source iterator.
+   * @param limit    An Integer with the maximum number of URLs to be
+   *                 included in the response.
+   * @return A List with the URLs to be included in the response.
+   */
+  private List<String> populateTallyUrls(Iterator<String> iterator, Integer limit) {
+    logger.debug("limit = {}", limit);
+    List<String> urls = new ArrayList<>();
+
+    // Loop through as many URLs that exist and are requested.
+    while (urls.size() < limit && iterator.hasNext()) {
+      // Add this URL to the results.
+      urls.add(iterator.next());
+    }
+
+    logger.debug("urls.size() = {}", urls.size());
+    return urls;
+  }
+
+  /**
+   * Populates the repair data to be included in the response.
+   *
+   * @param iterator An Iterator with the Repair source iterator.
+   * @param limit    An Integer with the maximum number of repair items to be
+   *                 included in the response.
+   * @param repair   A RepairTypeEnum indicating the repair type (COMPLETED, ACTIVE, PENDING)
+   * @return A List with the RepairData items to be included in the response.
+   */
+  private List<RepairData> populateRepairData(Iterator<Repair> iterator, Integer limit, RepairTypeEnum repair) {
+    logger.debug("limit = {}, repair = {}", limit, repair);
+    List<RepairData> repairs = new ArrayList<>();
+
+    // Loop through as many repair items that exist and are requested.
+    while (repairs.size() < limit && iterator.hasNext()) {
+      Repair repairItem = iterator.next();
+      RepairData rdata = new RepairData();
+      rdata.setRepairUrl(repairItem.getUrl());
+      rdata.setRepairFrom(repairItem.getRepairFrom().getIdString());
+      if (RepairTypeEnum.COMPLETED.equals(repair)) {
+        rdata.setResult(RepairData.ResultEnum.fromValue(repairItem.getTallyResult().toString()));
+      }
+      repairs.add(rdata);
+    }
+
+    logger.debug("repairs.size() = {}", repairs.size());
+    return repairs;
   }
 
 }

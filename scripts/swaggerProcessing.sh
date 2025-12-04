@@ -52,12 +52,30 @@ fixResponseCode1234 $STATUS_API
 # Edit PollsApiDelegate.java.
 POLLS_API_DELEGATE=src/generated/java/org/lockss/laaws/poller/api/PollsApiDelegate.java
 fixImport $POLLS_API_DELEGATE org.lockss.laaws.poller.model.PollDesc org.lockss.util.rest.poller.PollDesc
+fixImport $POLLS_API_DELEGATE org.lockss.laaws.poller.model.PollerPageInfo org.lockss.util.rest.poller.PollerPageInfo
 fixImport $POLLS_API_DELEGATE org.lockss.laaws.poller.model.PollerSummary org.lockss.util.rest.poller.PollerSummary
+fixImport $POLLS_API_DELEGATE org.lockss.laaws.poller.model.RepairData org.lockss.util.rest.poller.RepairData
+fixImport $POLLS_API_DELEGATE org.lockss.laaws.poller.model.RepairPageInfo org.lockss.util.rest.poller.RepairPageInfo
+fixImport $POLLS_API_DELEGATE org.lockss.laaws.poller.model.RepairTypeEnum org.lockss.util.rest.poller.model.RepairTypeEnum
+fixImport $POLLS_API_DELEGATE org.lockss.laaws.poller.model.TallyTypeEnum org.lockss.util.rest.poller.model.TallyTypeEnum
+fixImport $POLLS_API_DELEGATE org.lockss.laaws.poller.model.UrlPageInfo org.lockss.util.rest.poller.UrlPageInfo
+fixImport $POLLS_API_DELEGATE org.lockss.laaws.poller.model.VoterPageInfo org.lockss.util.rest.poller.VoterPageInfo
+fixImport $POLLS_API_DELEGATE org.lockss.laaws.poller.model.VoterSummary org.lockss.util.rest.poller.VoterSummary
+fixImport $POLLS_API_DELEGATE org.lockss.laaws.poller.model.VoterUrlsEnum org.lockss.util.rest.poller.model.VoterUrlsEnum
 
 # Edit PollsApi.java.
 POLLS_API=src/generated/java/org/lockss/laaws/poller/api/PollsApi.java
 fixImport $POLLS_API org.lockss.laaws.poller.model.PollDesc org.lockss.util.rest.poller.PollDesc
+fixImport $POLLS_API org.lockss.laaws.poller.model.PollerPageInfo org.lockss.util.rest.poller.PollerPageInfo
 fixImport $POLLS_API org.lockss.laaws.poller.model.PollerSummary org.lockss.util.rest.poller.PollerSummary
+fixImport $POLLS_API org.lockss.laaws.poller.model.RepairData org.lockss.util.rest.poller.RepairData
+fixImport $POLLS_API org.lockss.laaws.poller.model.RepairPageInfo org.lockss.util.rest.poller.RepairPageInfo
+fixImport $POLLS_API org.lockss.laaws.poller.model.RepairTypeEnum org.lockss.util.rest.poller.model.RepairTypeEnum
+fixImport $POLLS_API org.lockss.laaws.poller.model.TallyTypeEnum org.lockss.util.rest.poller.model.TallyTypeEnum
+fixImport $POLLS_API org.lockss.laaws.poller.model.UrlPageInfo org.lockss.util.rest.poller.UrlPageInfo
+fixImport $POLLS_API org.lockss.laaws.poller.model.VoterPageInfo org.lockss.util.rest.poller.VoterPageInfo
+fixImport $POLLS_API org.lockss.laaws.poller.model.VoterSummary org.lockss.util.rest.poller.VoterSummary
+fixImport $POLLS_API org.lockss.laaws.poller.model.VoterUrlsEnum org.lockss.util.rest.poller.model.VoterUrlsEnum
 fixResponseCode1234 $POLLS_API
 
 # Edit PollerDetail.java.
@@ -100,16 +118,14 @@ fixImport $REPAIR_QUEUE org.lockss.laaws.poller.model.LinkDesc org.lockss.util.r
 TALLY_DATA=src/generated/java/org/lockss/laaws/poller/model/TallyData.java
 fixImport $TALLY_DATA org.lockss.laaws.poller.model.LinkDesc org.lockss.util.rest.poller.LinkDesc
 
-# VoterSummary
-VOTER_SUMMARY=src/generated/java/org/lockss/laaws/poller/model/VoterSummary.java
-fixImport $VOTER_SUMMARY org.lockss.laaws.poller.model.LinkDesc org.lockss.util.rest.poller.LinkDesc
-
-# PollerPager
-POLLER_PAGER=src/generated/java/org/lockss/laaws/poller/model/PollerPager.java
-fixImport $POLLER_PAGER org.lockss.laaws.poller.model.PollerSummary org.lockss.util.rest.poller.PollerSummary
-
 # AUsApi.java
 AUS_API=src/generated/java/org/lockss/laaws/poller/api/AusApi.java
+fixImport $AUS_API org.lockss.laaws.poller.model.ExportFilenameTranslationEnum org.lockss.util.rest.poller.model.ExportFilenameTranslationEnum
+fixImport $AUS_API org.lockss.laaws.poller.model.ExportFileTypeEnum org.lockss.util.rest.poller.model.ExportFileTypeEnum
 fixResponseCode1234 $AUS_API
 
-
+# AUsApi.java
+AUS_API_DELEGATE=src/generated/java/org/lockss/laaws/poller/api/AusApiDelegate.java
+fixImport $AUS_API_DELEGATE org.lockss.laaws.poller.model.ExportFilenameTranslationEnum org.lockss.util.rest.poller.model.ExportFilenameTranslationEnum
+fixImport $AUS_API_DELEGATE org.lockss.laaws.poller.model.ExportFileTypeEnum org.lockss.util.rest.poller.model.ExportFileTypeEnum
+fixResponseCode1234 $AUS_API_DELEGATE
