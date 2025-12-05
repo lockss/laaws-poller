@@ -54,6 +54,10 @@ STATUS_API=${API_DIR}/StatusApi.java
 fixImport $STATUS_API org.lockss.laaws.poller.model.ApiStatus org.lockss.util.rest.status.ApiStatus
 fixResponseCode1234 $STATUS_API
 
+# Edit StatusApiController.java.
+STATUS_API_CONTROLLER=${API_DIR}/StatusApiController.java
+fixImport $STATUS_API_CONTROLLER org.lockss.laaws.poller.model.ApiStatus org.lockss.util.rest.status.ApiStatus
+
 # Edit PollsApiDelegate.java.
 POLLS_API_DELEGATE=${API_DIR}/PollsApiDelegate.java
 fixImport $POLLS_API_DELEGATE org.lockss.laaws.poller.model.PollDesc org.lockss.util.rest.poller.PollDesc
@@ -64,6 +68,11 @@ POLLS_API=${API_DIR}/PollsApi.java
 fixImport $POLLS_API org.lockss.laaws.poller.model.PollDesc org.lockss.util.rest.poller.PollDesc
 fixImport $POLLS_API org.lockss.laaws.poller.model.PollerSummary org.lockss.util.rest.poller.PollerSummary
 fixResponseCode1234 $POLLS_API
+
+# Edit PollsApiController.java.
+POLLS_API_CONTROLLER=${API_DIR}/PollsApiController.java
+fixImport $POLLS_API_CONTROLLER org.lockss.laaws.poller.model.PollDesc org.lockss.util.rest.poller.PollDesc
+fixImport $POLLS_API_CONTROLLER org.lockss.laaws.poller.model.PollerSummary org.lockss.util.rest.poller.PollerSummary
 
 # Edit PollerDetail.java.
 POLLER_DETAIL=${MODEL_DIR}/PollerDetail.java
@@ -117,4 +126,9 @@ fixImport $POLLER_PAGER org.lockss.laaws.poller.model.PollerSummary org.lockss.u
 AUS_API=${API_DIR}/AusApi.java
 fixResponseCode1234 $AUS_API
 
-
+# Remove generated model files that already exist in lockss-util-rest
+# These are shared DTOs that should come from lockss-util-rest, not be regenerated
+rm -f ${MODEL_DIR}/PollerSummary.java
+rm -f ${MODEL_DIR}/PollDesc.java
+rm -f ${MODEL_DIR}/LinkDesc.java
+rm -f ${MODEL_DIR}/ApiStatus.java
