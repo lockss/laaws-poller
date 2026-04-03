@@ -1,5 +1,24 @@
 # `laaws-poller` Release Notes
 
+## 2.8.0 (LOCKSS 2.0.91-beta2)
+
+### Features
+
+* Refactor pagination logic with unified `ContinuationToken` and use UUID-based
+  iterator keys to avoid hash code collisions
+* Refactor enum types (`TallyTypeEnum`, `RepairTypeEnum`, `VoterUrlsEnum`,
+  `ExportFileTypeEnum`, `ExportFilenameTranslationEnum`, `PollVariantEnum`) out
+  of endpoint definitions and into standalone component schemas
+* Update method signatures to use `TallyTypeEnum` and `RepairTypeEnum`
+* Improve error logging with detailed context in `PollsApiServiceImpl`
+* Rename `url` to `lastUrl` in continuation token classes for clarity and
+  consistency across API
+* Add pagination and continuation token models
+* Create Python client
+* Patch OpenAPI spec for swagger-codegen Spring and Python generators
+* 2.0-beta2 port conventions
+
+
 ## Changes Since 2.3.0
 
 * Remove  Travis CI
