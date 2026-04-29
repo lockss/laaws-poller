@@ -40,7 +40,8 @@ import org.skyscreamer.jsonassert.*;
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.boot.*;
 import org.springframework.boot.test.context.*;
-import org.springframework.boot.test.web.client.*;
+import org.springframework.web.client.RestTemplate;
+import org.lockss.util.rest.RestUtil;
 import org.springframework.boot.test.web.server.*;
 import org.springframework.context.*;
 import org.springframework.http.*;
@@ -164,7 +165,7 @@ public class TestStatusApiServiceImpl extends SpringLockssTestCase4 {
   private void getStatusTest() throws JsonProcessingException {
     TestStatusApiServiceImpl.log.debug2("Invoked");
 
-    final ResponseEntity<String> successResponse = new TestRestTemplate().exchange(
+    final ResponseEntity<String> successResponse = RestUtil.buildRestTemplate(0, 0).exchange(
         this.getTestUrlTemplate("/status"), HttpMethod.GET, null, String.class);
 
     final HttpStatusCode statusCode = successResponse.getStatusCode();

@@ -87,7 +87,7 @@ public class WsApiServiceImpl extends BaseSpringApiServiceImpl implements WsApiD
     try {
       new Importer().importFile(file.getInputStream(), targetBaseUrlPath,
         targetUrl, userProperties);
-      return new ResponseEntity<Void>(null, null, HttpStatus.OK);
+      return new ResponseEntity<Void>(null, (HttpHeaders) null, HttpStatus.OK);
     }
     catch (IllegalArgumentException | IllegalStateException
            | NoSuchAlgorithmException e) {

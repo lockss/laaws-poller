@@ -49,7 +49,7 @@ import org.lockss.util.rest.poller.model.TallyTypeEnum;
 import org.lockss.util.rest.repo.model.*;
 import org.mockito.*;
 import org.springframework.boot.test.context.*;
-import org.springframework.boot.test.mock.mockito.*;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.http.*;
 import org.springframework.test.annotation.*;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -63,7 +63,7 @@ public class TestPollsApiServiceImpl extends LockssTestCase4 {
 
   private MockedStatic<AuthUtil> authUtilMock;
 
-  @SpyBean
+  @MockitoSpyBean
   PollsApiServiceImpl pollsApiServiceImpl;
 
   private static final String[] rooturls = {"http://www.test.org",
