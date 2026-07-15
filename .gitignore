@@ -311,3 +311,8 @@ daemon/
 /pom.xml.bak
 /*/pom.xml.bak
 /.surefire-*
+/.fastRequest/config/fastRequestCurrentProjectConfig.json
+
+# Patched version of the spec for swagger-codegen
+/src/main/resources/swagger/swagger.yaml.spring
+/src/main/resources/swagger/swagger.yaml.python
