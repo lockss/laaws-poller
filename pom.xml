@@ -56,7 +56,7 @@ POSSIBILITY OF SUCH DAMAGE.
     <build.java.mainClass>${build.java.package}.PollerApplication</build.java.mainClass>
 
     <!-- Is a Docker project -->
-    <skipDockerBuild>false</skipDockerBuild>
+    <skipDocker>false</skipDocker>
     <build.docker.dockerBuild.restPort>24613</build.docker.dockerBuild.restPort>
     <build.docker.dockerBuild.uiPort>24603</build.docker.dockerBuild.uiPort>
 
