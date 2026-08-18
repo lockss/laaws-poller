@@ -51,12 +51,12 @@ POSSIBILITY OF SUCH DAMAGE.
   <description>LOCKSS Poller Service</description>
 
   <properties>
-    <build.java.spring.skip>false</build.java.spring.skip>
+    <skipSpring>false</skipSpring>
     <build.java.projectAbbr>poller</build.java.projectAbbr>
     <build.java.mainClass>${build.java.package}.PollerApplication</build.java.mainClass>
 
     <!-- Is a Docker project -->
-    <build.docker.skip>false</build.docker.skip>
+    <skipDocker>false</skipDocker>
     <build.docker.dockerBuild.restPort>24613</build.docker.dockerBuild.restPort>
     <build.docker.dockerBuild.uiPort>24603</build.docker.dockerBuild.uiPort>
 
